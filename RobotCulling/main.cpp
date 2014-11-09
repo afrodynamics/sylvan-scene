@@ -1,22 +1,18 @@
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
+
+#include "main.h"
+#include "Window.h"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>  // Include GLUT header for Mac OS X
 #else
 #include <GL/glut.h>    // Windows and Linux are normal
 #endif
-#include "Window.h"
-#include "Matrix4.h"
-#include "main.h"
 
 using namespace std;
 
 namespace Globals
 {
-  // added a ball instance to the Globals namespace
   Camera view1 = Camera(
     Vector3( 0, 10, 10 ), Vector3( 0, 0, 0 ), Vector3( 0, 1, 0 )
   );

@@ -11,6 +11,7 @@ public:
 	                  // and up is a vector pointing up (in world coordinates)
 	Matrix4 camera2world; // The camera matrix, in row-major order
 	Matrix4 world2camera; // this will hold the inverse of the camera matrix (row-major order)
+	Matrix4 world2cameraRowMajor;
 
 	// Default constructor constructs an identity matrix for camera2world & world2camera
 	Camera();

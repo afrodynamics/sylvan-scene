@@ -55,17 +55,26 @@ Camera::Camera( Vector3 centerOfProjection, Vector3 lookAtPoint, Vector3 upVecto
   // world2camera =  rInverse  X   tInverse
   
   world2camera = rInverse * tInverse; // should be in row-major order
+  world2cameraRowMajor = world2camera;
   world2camera.transpose();           // now it's in column-major order
 
 };
 
 /**
- * Returns a reference to the column major camera matrix
- * @return a reference to the column major camera matrix
+ * Returns a reference to the column major inverse camera matrix
+ * @return a reference to the column major inverse camera matrix
  */
 Matrix4 Camera::getGlMatrix() {
   return world2camera;
 };
+
+/**
+* Returns a reference to the row major inverse camera matrix
+*/
+Matrix4 Camera::getInverseMatrix() {
+	return world2cameraRowMajor;
+};
+
 
 Vector3 Camera::getPos() {
 	return center;

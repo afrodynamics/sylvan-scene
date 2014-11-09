@@ -6,7 +6,7 @@ class Geode :
 public:
 	Geode();
 	~Geode();
-	virtual void render(Matrix4& C) = 0; // Written in subclasses, i.e. Cube and Sphere
+	virtual void render() = 0; // Written in subclasses, i.e. Cube and Sphere
 	void draw(Matrix4& C);   // Inherited from Node
 };
 
