@@ -22,8 +22,6 @@ class Window	  // OpenGL output window related routines
 {
   public:
     static int width, height; 	            // window size
-    static bool ball;                       // ball/cube mode
-    static int spinDirection;               // spin direction in cube mode
     static int cameraMode;
     static double fov;
     static double leftBound, rightBound,

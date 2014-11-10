@@ -8,10 +8,14 @@
 
 class Node
 {
+protected:
+	Vector3 centerPos;
+	double boundingRadius;
+	bool drawBoundingSphere;
 public:
 	Node();
 	~Node();
-	//virtual Node* clone() const = 0;
 	virtual void draw(Matrix4& C) = 0;
+	void showBoundingBox(bool);
 };
 

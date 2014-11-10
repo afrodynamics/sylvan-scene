@@ -19,8 +19,6 @@ using namespace std;
 
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
-int Window::spinDirection = 1; // 1 is counterclockwise around Y axis
-bool Window::ball = false;  // initially, show the cube model
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 double Window::leftBound = 0;
 double Window::rightBound = 0;
@@ -33,6 +31,7 @@ namespace Scene
 	Group *world = nullptr;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
+	bool showBounds = false;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -147,8 +146,13 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   transformation.identity(); // Make sure the Matrix isn't utter garbage
 
   switch (key) {
-  case 't':
-	  Window::spinDirection *= -1;
+  case 'b':
+	  Scene::showBounds = !Scene::showBounds;
+	  for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); ++iter) {
+		  (*iter)->showBoundingBox(Scene::showBounds);
+	  }
+	  Scene::world->showBoundingBox(Scene::showBounds);
+	  cerr << "showBounds is " << Scene::showBounds << endl;
 	  break;
   default:
       cerr << "Pressed: " << key << endl;

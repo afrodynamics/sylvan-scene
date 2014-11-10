@@ -4,11 +4,13 @@
 Cube::Cube()
 {
 	sideLength = 1;
+	boundingRadius = sideLength;
 }
 
 Cube::Cube(double l)
 {
 	sideLength = l;
+	boundingRadius = sideLength;
 }
 
 
