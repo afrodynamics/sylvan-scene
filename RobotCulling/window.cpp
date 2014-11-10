@@ -13,7 +13,10 @@
 #include <math.h>
 #include "main.h"
 #include "Window.h"
-#include "Geode.h"
+#include "node.h"
+#include "MatrixTransform.h"
+#include "Cube.h"
+#include "Sphere.h"
 
 using namespace std;
 
@@ -26,6 +29,64 @@ double Window::leftBound = 0;
 double Window::rightBound = 0;
 double Window::topBound = 0;
 double Window::bottomBound = 0;
+
+namespace Scene
+{
+	Camera *camera = nullptr;
+	Group *world = nullptr;
+	vector<Node*> nodeList;
+
+	// Create a new robot at the given position in world coordinates
+	MatrixTransform* createRobot(Vector3& pos) {
+		double x, y, z;
+		x = pos.getX();
+		y = pos.getY();
+		z = pos.getZ();
+		MatrixTransform *grp = new MatrixTransform(Matrix4::translate(x, y, z));
+		nodeList.push_back(grp);
+
+		Node *torso = new Cube(5);
+		grp->addChild(torso);
+		nodeList.push_back(torso);
+
+		MatrixTransform *leftLegJoint, *rightLegJoint;
+		Cube *leftLeg, *rightLeg;
+		
+		leftLegJoint = new MatrixTransform(Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1,2,1));
+		rightLegJoint = new MatrixTransform(Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1,2,1));
+		leftLeg = new Cube(2);
+		rightLeg = new Cube(2);
+
+		grp->addChild(leftLegJoint);
+		grp->addChild(rightLegJoint);
+		leftLegJoint->addChild(leftLeg);
+		rightLegJoint->addChild(rightLeg);
+
+		nodeList.push_back(leftLeg);
+		nodeList.push_back(leftLegJoint);
+		nodeList.push_back(rightLegJoint);
+		nodeList.push_back(rightLeg);
+
+		return grp;
+	};
+
+	// Initialize pointers with defaults
+	void setup() {
+		camera = new Camera(
+			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+		);
+		world = new Group();
+		world->addChild( createRobot( Vector3(0,0,0) ) );
+	};
+	void dealloc() {
+		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
+			delete *iter;
+			*iter = nullptr;
+		}
+		delete world; world = nullptr;
+	};
+};
+
 
 //----------------------------------------------------------------------------
 // Callback method called when system is idle.
@@ -76,7 +137,10 @@ void Window::displayCallback()
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
 
   // Draw our scene
-  
+  if ( Scene::camera && Scene::world ) {
+	Scene::world->draw(Scene::camera->getInverseMatrix());
+  }
+
   glFlush();  
   glutSwapBuffers();
 };
@@ -95,7 +159,10 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   transformation.identity(); // Make sure the Matrix isn't utter garbage
 
   switch (key) {
-    default:
+  case 't':
+	  Window::spinDirection *= -1;
+	  break;
+  default:
       cerr << "Pressed: " << key << endl;
       break;
   }

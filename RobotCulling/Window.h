@@ -1,10 +1,22 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
+#include <vector>
 #include "Matrix4.h"
+#include "Camera.h"
+#include "MatrixTransform.h"
 
 /**
-   We shouldn't technically need this class anymore for the project 3 but maybe...?
+ * Keeps all our scene data together
  */
+namespace Scene
+{
+	extern Camera *camera;
+	extern std::vector<Node*> nodeList;
+	extern Group *world;
+	extern MatrixTransform* createRobot(Vector3&);
+	extern void setup();
+	extern void dealloc();
+};
 
 class Window	  // OpenGL output window related routines
 {

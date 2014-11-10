@@ -11,21 +11,14 @@
 
 using namespace std;
 
-namespace Globals
-{
-  Camera view1 = Camera(
-    Vector3( 0, 10, 10 ), Vector3( 0, 0, 0 ), Vector3( 0, 1, 0 )
-  );
-  Camera view2 = Camera(
-    Vector3( -15, 5, 10 ), Vector3( -5, 0, 0 ), Vector3( 0, 1, 0.5 )
-  );
-};
-
 int main(int argc, char *argv[])
 {
   float specular[]  = {1.0, 1.0, 1.0, 1.0};
   float shininess[] = {100.0};
   float position[]  = {0.0, 10.0, 1.0, 0.0};	// lightsource position
+
+  // Initialize the scene
+  Scene::setup();
   
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
@@ -66,6 +59,10 @@ int main(int argc, char *argv[])
     
   // Start the main loop
   glutMainLoop();
+
+  // If we exit the main loop, dealloc
+  Scene::dealloc();
+
   return 0;
 }
 
