@@ -1,6 +1,5 @@
 #include "Robot.h"
 
-
 Robot::Robot()
 {
 	mtx = new Matrix4();
@@ -42,10 +41,15 @@ Robot::~Robot()
  */
 void Robot::createRobot() {
 
-	leftLegJoint = new MatrixTransform(Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1, 2, 1));
-	rightLegJoint = new MatrixTransform(Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1, 2, 1));
-	leftArmJoint = new MatrixTransform(Matrix4::translate(-3.5, 0, 0)  * Matrix4::scale(1, 2, 1));
-	rightArmJoint = new MatrixTransform(Matrix4::translate(3.5, 0, 0) * Matrix4::scale(1, 2, 1));
+	leftArmMtx = Matrix4::translate(-3.5, 0, 0)  * Matrix4::scale(1, 2, 1);
+	rightArmMtx = Matrix4::translate(3.5, 0, 0) * Matrix4::scale(1, 2, 1);
+	leftLegMtx = Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1, 2, 1);
+	rightLegMtx = Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1, 2, 1);
+
+	leftLegJoint = new MatrixTransform( leftLegMtx );
+	rightLegJoint = new MatrixTransform( rightLegMtx );
+	leftArmJoint = new MatrixTransform( leftArmMtx );
+	rightArmJoint = new MatrixTransform( rightArmMtx );
 	neckJoint = new MatrixTransform(Matrix4::translate(0, 5, 0));
 	leftLeg = new Cube(2);
 	rightLeg = new Cube(2);
@@ -70,6 +74,15 @@ void Robot::createRobot() {
 	rightLegJoint->addChild(rightLeg);
 	neckJoint->addChild(head);
 
+	// Initialize the animation state
+	rotateDir = -1;
+	rotateSpeed = .125;
+	leftLimbAngle = rightLimbAngle = 0;
+	armAxis = Vector3(-3.5,1,0);
+	legAxis = Vector3(-1.1,-2,0);
+	armAxis.normalize(); // The vectors need to be normalized or it gets
+	legAxis.normalize(); // weird REALLY fast
+
 }
 
 /**
@@ -77,5 +90,24 @@ void Robot::createRobot() {
  * position of this robot's limbs, etc.
  */
 void Robot::animate() {
-	mtx->transformLocal( Matrix4::rotY(.125) );
+
+	// spin the entire robot around
+	//mtx->transformLocal(Matrix4::rotY(rotateSpeed));
+
+	//we're walking forward
+	mtx->transformLocal(Matrix4::translate(0,0,rotateSpeed/10));
+
+	leftLimbAngle += rotateSpeed * rotateDir;
+	rightLimbAngle += rotateSpeed * -rotateDir;
+
+	if (fabs(leftLimbAngle) > 60) {
+		// If we've moved further than our threshold allows, reverse direction
+		leftLimbAngle = 60 * rotateDir;
+		rightLimbAngle = 60 * -rotateDir;
+		rotateDir *= -1;
+	}
+
+	leftArmJoint->getMatrix() = leftArmMtx * Matrix4::rotX(leftLimbAngle); //Matrix4::rotate(leftLimbAngle, armAxis);
+	rightArmJoint->getMatrix() = rightArmMtx * Matrix4::rotX(rightLimbAngle); //Matrix4::rotate(rightLimbAngle, armAxis);
+
 }

@@ -59,6 +59,8 @@ namespace Scene
 				world->addChild(createRobot(Vector3(x, 0, y)));
 			}
 		}
+		//Robot *ptr = createRobot(Vector3(0, 0, 0));
+		//world->addChild( ptr );
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {

@@ -2,6 +2,7 @@
 #include "MatrixTransform.h"
 #include "Cube.h"
 #include "Sphere.h"
+
 class Robot :
 	public MatrixTransform
 {
@@ -13,6 +14,10 @@ private:
 
 	// Position/Animation state
 	double x, y, z;
+	double leftLimbAngle, rightLimbAngle;
+	double rotateDir, rotateSpeed;
+	Vector3 armAxis, legAxis;
+	Matrix4 leftArmMtx, rightArmMtx, leftLegMtx, rightLegMtx;
 
 	// Helper function for constructing the geometry
 	void createRobot(void);
