@@ -14,9 +14,6 @@
 #include "main.h"
 #include "Window.h"
 #include "node.h"
-#include "MatrixTransform.h"
-#include "Cube.h"
-#include "Sphere.h"
 
 using namespace std;
 
@@ -35,56 +32,17 @@ namespace Scene
 	Camera *camera = nullptr;
 	Group *world = nullptr;
 	vector<Node*> nodeList;
-	vector<MatrixTransform*> robotList;
+	vector<Robot*> robotList;
 
 	// Create a new robot at the given position in world coordinates
-	MatrixTransform* createRobot(Vector3& pos) {
+	Robot* createRobot(Vector3& pos) {
 		double x, y, z;
 		x = pos.getX();
 		y = pos.getY();
 		z = pos.getZ();
-		MatrixTransform *grp = new MatrixTransform(Matrix4::translate(x, y, z));
-		nodeList.push_back(grp);
-
-		Node *torso = new Cube(5);
-		grp->addChild(torso);
-		nodeList.push_back(torso);
-
-		MatrixTransform *leftLegJoint, *rightLegJoint, *neckJoint, *leftArmJoint, *rightArmJoint;
-		Cube *leftLeg, *rightLeg, *leftArm, *rightArm;
-		Sphere *head;
-		
-		leftLegJoint = new MatrixTransform(Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1,2,1));
-		rightLegJoint = new MatrixTransform(Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1,2,1));
-		leftArmJoint = new MatrixTransform(Matrix4::translate(-3.5, 0, 0)  * Matrix4::scale(1, 2, 1));
-		rightArmJoint = new MatrixTransform(Matrix4::translate(3.5, 0, 0) * Matrix4::scale(1, 2, 1));
-		neckJoint = new MatrixTransform(Matrix4::translate(0,5,0));
-		leftLeg = new Cube(2);
-		rightLeg = new Cube(2);
-		rightArm = new Cube(2);
-		leftArm = new Cube(2);
-		head = new Sphere(2.5,8,8);
-
-		grp->addChild(leftLegJoint);
-		grp->addChild(leftArmJoint);
-		grp->addChild(rightLegJoint);
-		grp->addChild(rightArmJoint);
-		grp->addChild(neckJoint);
-
-		leftLegJoint->addChild(leftLeg);
-		leftArmJoint->addChild(leftArm);
-		rightArmJoint->addChild(rightArm);
-		rightLegJoint->addChild(rightLeg);
-		neckJoint->addChild(head);
-
-		nodeList.push_back(leftLeg);
-		nodeList.push_back(leftLegJoint);
-		nodeList.push_back(rightLegJoint);
-		nodeList.push_back(rightLeg);
-
-		robotList.push_back(grp);
-
-		return grp;
+		Robot *roboPtr = new Robot(x, y, z);
+		robotList.push_back(roboPtr);
+		return roboPtr;
 	};
 
 	// Initialize pointers with defaults
@@ -118,7 +76,7 @@ void Window::idleCallback()
 {
     // Rotate the temporary robot I guess
 	for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); iter++) {
-		(*iter)->getMatrix().transformLocal( Matrix4::rotY(.125) );
+		(*iter)->animate();
 	}
 	displayCallback();         // call display routine to show the cube
 };

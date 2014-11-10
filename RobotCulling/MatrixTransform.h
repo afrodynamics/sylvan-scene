@@ -3,7 +3,7 @@
 class MatrixTransform :
 	public Group
 {
-private:
+protected:
 	Matrix4 *mtx;
 public:
 	MatrixTransform();

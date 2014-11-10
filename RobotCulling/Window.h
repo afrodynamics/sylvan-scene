@@ -3,7 +3,7 @@
 #include <vector>
 #include "Matrix4.h"
 #include "Camera.h"
-#include "MatrixTransform.h"
+#include "Robot.h"
 
 /**
  * Keeps all our scene data together
@@ -13,7 +13,7 @@ namespace Scene
 	extern Camera *camera;
 	extern std::vector<Node*> nodeList;
 	extern Group *world;
-	extern MatrixTransform* createRobot(Vector3&);
+	extern Robot* createRobot(Vector3&);
 	extern void setup();
 	extern void dealloc();
 };
