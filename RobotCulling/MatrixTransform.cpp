@@ -20,3 +20,7 @@ MatrixTransform::~MatrixTransform()
 void MatrixTransform::draw(Matrix4& C) {
 	Group::draw( C * *mtx );
 }
+
+Matrix4& MatrixTransform::getMatrix() {
+	return *mtx;
+}

@@ -35,6 +35,7 @@ namespace Scene
 	Camera *camera = nullptr;
 	Group *world = nullptr;
 	vector<Node*> nodeList;
+	vector<MatrixTransform*> robotList;
 
 	// Create a new robot at the given position in world coordinates
 	MatrixTransform* createRobot(Vector3& pos) {
@@ -49,23 +50,39 @@ namespace Scene
 		grp->addChild(torso);
 		nodeList.push_back(torso);
 
-		MatrixTransform *leftLegJoint, *rightLegJoint;
-		Cube *leftLeg, *rightLeg;
+		MatrixTransform *leftLegJoint, *rightLegJoint, *neckJoint, *leftArmJoint, *rightArmJoint;
+		Cube *leftLeg, *rightLeg, *leftArm, *rightArm;
+		Sphere *head;
 		
 		leftLegJoint = new MatrixTransform(Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1,2,1));
 		rightLegJoint = new MatrixTransform(Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1,2,1));
+		leftArmJoint = new MatrixTransform(Matrix4::translate(-3.5, 0, 0)  * Matrix4::scale(1, 2, 1));
+		rightArmJoint = new MatrixTransform(Matrix4::translate(3.5, 0, 0) * Matrix4::scale(1, 2, 1));
+		neckJoint = new MatrixTransform(Matrix4::translate(0,5,0));
 		leftLeg = new Cube(2);
 		rightLeg = new Cube(2);
+		rightArm = new Cube(2);
+		leftArm = new Cube(2);
+		head = new Sphere(2.5,8,8);
 
 		grp->addChild(leftLegJoint);
+		grp->addChild(leftArmJoint);
 		grp->addChild(rightLegJoint);
+		grp->addChild(rightArmJoint);
+		grp->addChild(neckJoint);
+
 		leftLegJoint->addChild(leftLeg);
+		leftArmJoint->addChild(leftArm);
+		rightArmJoint->addChild(rightArm);
 		rightLegJoint->addChild(rightLeg);
+		neckJoint->addChild(head);
 
 		nodeList.push_back(leftLeg);
 		nodeList.push_back(leftLegJoint);
 		nodeList.push_back(rightLegJoint);
 		nodeList.push_back(rightLeg);
+
+		robotList.push_back(grp);
 
 		return grp;
 	};
@@ -73,10 +90,17 @@ namespace Scene
 	// Initialize pointers with defaults
 	void setup() {
 		camera = new Camera(
-			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 10, 50), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 		world = new Group();
-		world->addChild( createRobot( Vector3(0,0,0) ) );
+
+		double robotSpacing = 10;
+		double platoonWidth = 100;
+		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
+			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
+				world->addChild(createRobot(Vector3(x, 0, y)));
+			}
+		}
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
@@ -92,7 +116,11 @@ namespace Scene
 // Callback method called when system is idle.
 void Window::idleCallback()
 {
-  displayCallback();         // call display routine to show the cube
+    // Rotate the temporary robot I guess
+	for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); iter++) {
+		(*iter)->getMatrix().transformLocal( Matrix4::rotY(.125) );
+	}
+	displayCallback();         // call display routine to show the cube
 };
 
 //----------------------------------------------------------------------------

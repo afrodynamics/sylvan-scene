@@ -22,9 +22,15 @@ void Group::draw(Matrix4& C) {
 
 // We aren't going to manage the memory in the list anymore
 void Group::addChild(Node* node) {
+	if (node == nullptr) {
+		throw "Can't add nullptr to a SceneGraph group.";
+	}
 	children.emplace_front( node );
 };
 
 void Group::removeChild(Node* node) {
+	if (node == nullptr) {
+		throw "Can't remove nullptr from a SceneGraph group.";
+	}
 	children.remove(node);
 };
