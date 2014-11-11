@@ -53,13 +53,13 @@ namespace Scene
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
-		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
+		/*for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
 				world->addChild(createRobot(Vector3(x, 0, y)));
 			}
-		}
-		//Robot *ptr = createRobot(Vector3(0, 0, 0));
-		//world->addChild( ptr );
+		}*/
+		Robot *ptr = createRobot(Vector3(0, 0, 0));
+		world->addChild( ptr );
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {

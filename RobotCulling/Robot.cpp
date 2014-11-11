@@ -41,10 +41,10 @@ Robot::~Robot()
  */
 void Robot::createRobot() {
 
-	leftArmMtx = Matrix4::translate(-3.5, 0, 0)  * Matrix4::scale(1, 2, 1);
-	rightArmMtx = Matrix4::translate(3.5, 0, 0) * Matrix4::scale(1, 2, 1);
-	leftLegMtx = Matrix4::translate(-1.1, -4, 0)  * Matrix4::scale(1, 2, 1);
-	rightLegMtx = Matrix4::translate(1.1, -4, 0) * Matrix4::scale(1, 2, 1);
+	leftArmMtx = Matrix4::translate(-3.5, -2, 0)  * Matrix4::scale(1, 3, 1);
+	rightArmMtx = Matrix4::translate(3.5, -2, 0) * Matrix4::scale(1, 3, 1);
+	leftLegMtx = Matrix4::translate(-1.1, -5, 0)  * Matrix4::scale(1, 3, 1);
+	rightLegMtx = Matrix4::translate(1.1, -5, 0) * Matrix4::scale(1, 3, 1);
 
 	leftLegJoint = new MatrixTransform( leftLegMtx );
 	rightLegJoint = new MatrixTransform( rightLegMtx );
@@ -75,13 +75,11 @@ void Robot::createRobot() {
 	neckJoint->addChild(head);
 
 	// Initialize the animation state
-	rotateDir = -1;
+	rotateDir = rotateArmDir = -1;
 	rotateSpeed = .125;
-	leftLimbAngle = rightLimbAngle = 0;
-	armAxis = Vector3(-3.5,1,0);
-	legAxis = Vector3(-1.1,-2,0);
-	armAxis.normalize(); // The vectors need to be normalized or it gets
-	legAxis.normalize(); // weird REALLY fast
+	leftArmAngle = 90;
+	rightArmAngle = 270;
+	leftLegAngle = rightLegAngle = 0;
 
 }
 
@@ -92,22 +90,29 @@ void Robot::createRobot() {
 void Robot::animate() {
 
 	// spin the entire robot around
-	//mtx->transformLocal(Matrix4::rotY(rotateSpeed));
+	mtx->transformLocal(Matrix4::rotY(rotateSpeed/50));
 
-	//we're walking forward
-	mtx->transformLocal(Matrix4::translate(0,0,rotateSpeed/10));
+	// We're walking forward
+	//mtx->transformLocal(Matrix4::translate(0,0,rotateSpeed/10));
 
-	leftLimbAngle += rotateSpeed * rotateDir;
-	rightLimbAngle += rotateSpeed * -rotateDir;
+	leftArmAngle += rotateSpeed * rotateArmDir;
+	rightArmAngle += rotateSpeed * -rotateArmDir;
+	leftLegAngle += rotateSpeed * -rotateDir;
+	rightLegAngle += rotateSpeed * rotateDir;
 
-	if (fabs(leftLimbAngle) > 60) {
+	if (fabs(leftLegAngle) > 60) {
 		// If we've moved further than our threshold allows, reverse direction
-		leftLimbAngle = 60 * rotateDir;
-		rightLimbAngle = 60 * -rotateDir;
 		rotateDir *= -1;
 	}
 
-	leftArmJoint->getMatrix() = leftArmMtx * Matrix4::rotX(leftLimbAngle); //Matrix4::rotate(leftLimbAngle, armAxis);
-	rightArmJoint->getMatrix() = rightArmMtx * Matrix4::rotX(rightLimbAngle); //Matrix4::rotate(rightLimbAngle, armAxis);
+	if (fabs(leftArmAngle) > 90) {
+		// If we've moved further than our threshold allows, reverse direction
+		rotateArmDir *= -1;
+	}
+
+	leftArmJoint->getMatrix() = Matrix4::rotX(leftArmAngle) * leftArmMtx; //Matrix4::rotate(leftLimbAngle, armAxis);
+	rightArmJoint->getMatrix() = Matrix4::rotX(rightArmAngle) * rightArmMtx; //Matrix4::rotate(rightLimbAngle, armAxis);
+	leftLegJoint->getMatrix() = Matrix4::rotX(rightLegAngle) * leftLegMtx; //Matrix4::rotate(leftLimbAngle, armAxis);
+	rightLegJoint->getMatrix() = Matrix4::rotX(leftLegAngle) * rightLegMtx;
 
 }
