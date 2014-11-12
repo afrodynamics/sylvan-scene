@@ -26,7 +26,6 @@ public:
 	Robot(double, double, double);
 	~Robot();
 	void animate();
-	void showBoundingBox(bool);
 	void draw(Matrix4& C);
 };
 

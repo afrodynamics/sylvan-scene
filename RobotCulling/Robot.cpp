@@ -35,13 +35,6 @@ Robot::~Robot()
 	}
 }
 
-void Robot::showBoundingBox(bool show) {
-	drawBoundingSphere = show;
-	for (auto iter = children.begin(); iter != children.end(); ++iter) {
-		(*iter)->showBoundingBox(show); // toggle
-	}
-}
-
 /**
  * Creates the geometry required for the robot
  * and updates the appropriate pointers.
@@ -104,7 +97,7 @@ void Robot::animate() {
 	//mtx->transformLocal(Matrix4::rotY(rotateSpeed/10));
 	
 	// We're walking forward
-	mtx->transformWorld(Matrix4::translate(0,0,rotateSpeed/100));
+	mtx->transformWorld(Matrix4::translate(rotateSpeed / 100, 0, 0));
 
 	leftArmAngle += rotateSpeed * rotateArmDir;
 	rightArmAngle += rotateSpeed * -rotateArmDir;
@@ -131,56 +124,6 @@ void Robot::animate() {
 void Robot::draw(Matrix4& C) {
 	
 	Matrix4 tmp = (C * *mtx);
-
-	if (drawBoundingSphere) {
-
-		mtx->transpose();
-		glLoadMatrixd(mtx->getPointer());
-		mtx->transpose();
-		//glutWireSphere(boundingRadius, 10, 10);
-		
-		// Left Leg
-		
-		tmp = (C * *mtx * leftLegJoint->getMatrix());
-		tmp.transpose();
-
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(leftLeg->sideLength, 10, 10);
-
-		// Right Leg
-
-		tmp = (C * *mtx * rightLegJoint->getMatrix());
-		tmp.transpose();
-
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(rightLeg->sideLength, 10, 10);
-
-		// Left Arm
-
-		tmp = (C * *mtx * leftArmJoint->getMatrix());
-		tmp.transpose();
-
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(leftArm->sideLength, 10, 10);
-
-		// Right Arm
-
-		tmp = (C * *mtx * rightArmJoint->getMatrix());
-		tmp.transpose();
-
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(rightArm->sideLength, 10, 10);
-
-		// Head
-
-		tmp = (C * *mtx * neckJoint->getMatrix());
-		tmp.transpose();
-
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(head->radius + 1, 10, 10);
-		
-	}
-
 	Group::draw( C * *mtx );
 	
 }

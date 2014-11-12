@@ -54,16 +54,15 @@ namespace Scene
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
-		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
+		/*for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
 				world->addChild(createRobot(Vector3(x, 0, y)));
 			}
-		}
+		}*/
 
 		//    \/ Debug Robot
-		//Robot *ptr = createRobot(Vector3(0, 0, 10));
-		//world->addChild( ptr );
-		//robotList.push_back(ptr);
+		Robot *ptr = createRobot(Vector3(0, 0, 10));
+		world->addChild( ptr );
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
@@ -100,7 +99,6 @@ void Window::reshapeCallback(int w, int h)
                   double(width)/(double)height, 
                   1.0, 
                   1000.0);  // set perspective projection viewing frustum
-  glTranslatef(0, 0, -20);  // move camera back 20 units so that it looks at the origin (or else it's in the origin)
   glMatrixMode(GL_MODELVIEW);
 
   // Recalculate the bounds
@@ -155,9 +153,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   switch (key) {
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
-	  for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); ++iter) {
-		  (*iter)->showBoundingBox(Scene::showBounds);
-	  }
+	  /*for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); ++iter) {
+	  //  (*iter)->showBoundingBox(Scene::showBounds);
+	  }*/
 	  Scene::world->showBoundingBox(Scene::showBounds);
 	  cerr << "showBounds is " << Scene::showBounds << endl;
 	  break;

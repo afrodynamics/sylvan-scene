@@ -10,7 +10,3 @@ Node::Node()
 Node::~Node()
 {
 }
-
-void Node::showBoundingBox(bool show) {
-	drawBoundingSphere = show;
-}
