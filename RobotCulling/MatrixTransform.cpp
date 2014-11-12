@@ -28,28 +28,7 @@ MatrixTransform::~MatrixTransform()
 void MatrixTransform::draw(Matrix4& C) {
 
 	Matrix4 tmp = C * *mtx;
-
-	list<Node*>::iterator iter = children.begin();
-	while (iter != children.end()) {
-		(*iter)->draw(tmp);
-		if (drawBoundingSphere) {
-
-			//Vector3 objPos = (*iter)->centerPos;
-			//Vector4 pos = *mtx * Vector4(objPos.getX(), objPos.getY(), objPos.getZ(), 1);
-			if (boundingRadius < (*iter)->boundingRadius ) {
-				boundingRadius = (*iter)->boundingRadius;
-			}
-
-		}
-		iter++;
-	}
-
-	if (drawBoundingSphere) {
-		tmp.transpose();
-		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(boundingRadius, 10, 10);
-		cerr << "boundingRadius " << boundingRadius << endl;
-	}
+	Group::draw(tmp);
 
 }
 

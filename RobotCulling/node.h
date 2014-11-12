@@ -9,7 +9,7 @@
 class Node
 {
 public:
-	Vector3 centerPos;
+	Vector4 centerPos;
 	double boundingRadius;
 	bool drawBoundingSphere;
 	Node();

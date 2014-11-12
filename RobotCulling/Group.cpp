@@ -20,10 +20,11 @@ void Group::draw(Matrix4& C) {
 		(*iter)->draw(C);
 		if (drawBoundingSphere) {
 
-			Vector3 objPos = (*iter)->centerPos;
-			Vector4 pos = Vector4(objPos.getX(), objPos.getY(), objPos.getZ(), 1);
-			if (pos.length() > boundingRadius) {
-				boundingRadius = objPos.length();
+			Vector4 objPos = (*iter)->centerPos;
+			Vector4 worldPos = C * objPos;
+
+			if (worldPos.length() + (*iter)->boundingRadius > boundingRadius) {
+				boundingRadius = worldPos.length() + (*iter)->boundingRadius;
 			}
 
 		}

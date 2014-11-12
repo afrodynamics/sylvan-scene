@@ -153,11 +153,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   switch (key) {
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
-	  /*for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); ++iter) {
-	  //  (*iter)->showBoundingBox(Scene::showBounds);
-	  }*/
 	  Scene::world->showBoundingBox(Scene::showBounds);
-	  cerr << "showBounds is " << Scene::showBounds << endl;
 	  break;
   default:
       cerr << "Pressed: " << key << endl;
