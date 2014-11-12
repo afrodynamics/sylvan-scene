@@ -1,6 +1,5 @@
 #include "Sphere.h"
 
-
 Sphere::Sphere()
 {
 	boundingRadius = radius = 1;
@@ -17,5 +16,8 @@ Sphere::~Sphere()
 }
 
 void Sphere::render() {
+	if (drawBoundingSphere == true) {
+		glutWireSphere(boundingRadius + .01, 10, 10);
+	}
 	glutSolidSphere(radius, longitude, latitude);
 }

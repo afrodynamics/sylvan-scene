@@ -35,6 +35,13 @@ Robot::~Robot()
 	}
 }
 
+void Robot::showBoundingBox(bool show) {
+	drawBoundingSphere = show;
+	for (auto iter = children.begin(); iter != children.end(); ++iter) {
+		(*iter)->showBoundingBox(show); // toggle
+	}
+}
+
 /**
  * Creates the geometry required for the robot
  * and updates the appropriate pointers.
@@ -57,6 +64,8 @@ void Robot::createRobot() {
 	leftArm = new Cube(2);
 	torso = new Cube(5);
 	head = new Sphere(2.5, 8, 8);
+
+	boundingRadius = 2;
 
 	// Add the joints to the Robot (which is basically just a MatrixTransform)
 	// We're just calling addChild on the top level of the object's local tree,
@@ -81,6 +90,8 @@ void Robot::createRobot() {
 	rightArmAngle = 270;
 	leftLegAngle = rightLegAngle = 0;
 
+
+	//mtx->transformLocal(Matrix4::rotY(45)); // something here is wrong!
 }
 
 /**
@@ -90,10 +101,10 @@ void Robot::createRobot() {
 void Robot::animate() {
 
 	// spin the entire robot around
-	mtx->transformLocal(Matrix4::rotY(rotateSpeed/50));
-
+	//mtx->transformLocal(Matrix4::rotY(rotateSpeed/10));
+	
 	// We're walking forward
-	//mtx->transformLocal(Matrix4::translate(0,0,rotateSpeed/10));
+	mtx->transformWorld(Matrix4::translate(0,0,rotateSpeed/100));
 
 	leftArmAngle += rotateSpeed * rotateArmDir;
 	rightArmAngle += rotateSpeed * -rotateArmDir;
@@ -110,9 +121,66 @@ void Robot::animate() {
 		rotateArmDir *= -1;
 	}
 
-	leftArmJoint->getMatrix() = Matrix4::rotX(leftArmAngle) * leftArmMtx; //Matrix4::rotate(leftLimbAngle, armAxis);
-	rightArmJoint->getMatrix() = Matrix4::rotX(rightArmAngle) * rightArmMtx; //Matrix4::rotate(rightLimbAngle, armAxis);
-	leftLegJoint->getMatrix() = Matrix4::rotX(rightLegAngle) * leftLegMtx; //Matrix4::rotate(leftLimbAngle, armAxis);
+	leftArmJoint->getMatrix() = Matrix4::rotX(leftArmAngle) * leftArmMtx; 
+	rightArmJoint->getMatrix() = Matrix4::rotX(rightArmAngle) * rightArmMtx;
+	leftLegJoint->getMatrix() = Matrix4::rotX(rightLegAngle) * leftLegMtx;
 	rightLegJoint->getMatrix() = Matrix4::rotX(leftLegAngle) * rightLegMtx;
 
+}
+
+void Robot::draw(Matrix4& C) {
+	
+	Matrix4 tmp = (C * *mtx);
+
+	if (drawBoundingSphere) {
+
+		mtx->transpose();
+		glLoadMatrixd(mtx->getPointer());
+		mtx->transpose();
+		//glutWireSphere(boundingRadius, 10, 10);
+		
+		// Left Leg
+		
+		tmp = (C * *mtx * leftLegJoint->getMatrix());
+		tmp.transpose();
+
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(leftLeg->sideLength, 10, 10);
+
+		// Right Leg
+
+		tmp = (C * *mtx * rightLegJoint->getMatrix());
+		tmp.transpose();
+
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(rightLeg->sideLength, 10, 10);
+
+		// Left Arm
+
+		tmp = (C * *mtx * leftArmJoint->getMatrix());
+		tmp.transpose();
+
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(leftArm->sideLength, 10, 10);
+
+		// Right Arm
+
+		tmp = (C * *mtx * rightArmJoint->getMatrix());
+		tmp.transpose();
+
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(rightArm->sideLength, 10, 10);
+
+		// Head
+
+		tmp = (C * *mtx * neckJoint->getMatrix());
+		tmp.transpose();
+
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(head->radius + 1, 10, 10);
+		
+	}
+
+	Group::draw( C * *mtx );
+	
 }

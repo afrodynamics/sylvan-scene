@@ -4,12 +4,14 @@ class MatrixTransform :
 	public Group
 {
 protected:
-	Matrix4 *mtx;
+	
 public:
+	Matrix4 *mtx;
 	MatrixTransform();
 	MatrixTransform(Matrix4&); // Copies the given Matrix4 into this Node
 	~MatrixTransform();
 	void draw(Matrix4& C);
+	void showBoundingBox(bool);
 	Matrix4& getMatrix(); // Returns the matrix stored in this Node
 };
 

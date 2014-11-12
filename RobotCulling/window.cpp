@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 
 #ifndef __APPLE__
 #include <GL/glut.h>
@@ -53,13 +54,16 @@ namespace Scene
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
-		/*for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
+		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
 				world->addChild(createRobot(Vector3(x, 0, y)));
 			}
-		}*/
-		Robot *ptr = createRobot(Vector3(0, 0, 0));
-		world->addChild( ptr );
+		}
+
+		//    \/ Debug Robot
+		//Robot *ptr = createRobot(Vector3(0, 0, 10));
+		//world->addChild( ptr );
+		//robotList.push_back(ptr);
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
@@ -120,6 +124,7 @@ void Window::reshapeCallback(int w, int h)
 // Callback method called by GLUT when window readraw is necessary or when glutPostRedisplay() was called.
 void Window::displayCallback()
 {
+  auto c_start = chrono::high_resolution_clock::now();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
 
@@ -130,6 +135,8 @@ void Window::displayCallback()
 
   glFlush();  
   glutSwapBuffers();
+  auto c_end = chrono::high_resolution_clock::now();
+  cerr << "FPS: " << ( 1.0 / chrono::duration<double, milli>(c_end - c_start).count()) << endl;
 };
 
 //----------------------------------------------------------------------------

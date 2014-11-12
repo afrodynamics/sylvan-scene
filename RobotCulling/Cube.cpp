@@ -1,6 +1,5 @@
 #include "Cube.h"
 
-
 Cube::Cube()
 {
 	sideLength = 1;
@@ -19,5 +18,8 @@ Cube::~Cube()
 }
 
 void Cube::render() {
+	if (drawBoundingSphere == true) {
+		glutWireSphere(boundingRadius, 10, 10);
+	}
 	glutSolidCube(sideLength);
 }

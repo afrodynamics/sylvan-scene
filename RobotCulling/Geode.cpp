@@ -2,6 +2,7 @@
 
 Geode::Geode()
 {
+	drawBoundingSphere = false;
 }
 
 Geode::~Geode()
@@ -13,8 +14,12 @@ void Geode::draw(Matrix4& C) {
 	tmp.transpose();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd( tmp.getPointer() );
-	if (drawBoundingSphere) {
+	if (drawBoundingSphere == true) {
 		glutWireSphere(boundingRadius, 10, 10);
 	}
 	render();
+}
+
+void Geode::showBoundingBox(bool show) {
+	drawBoundingSphere = show;
 }

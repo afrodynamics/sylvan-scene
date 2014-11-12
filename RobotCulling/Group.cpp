@@ -25,7 +25,7 @@ void Group::addChild(Node* node) {
 	if (node == nullptr) {
 		throw "Can't add nullptr to a SceneGraph group.";
 	}
-	children.emplace_front( node );
+	children.push_front( node );
 };
 
 void Group::removeChild(Node* node) {
@@ -34,3 +34,12 @@ void Group::removeChild(Node* node) {
 	}
 	children.remove(node);
 };
+
+void Group::showBoundingBox(bool show) {
+	drawBoundingSphere = show;
+	auto iter = children.begin();
+	while (iter != children.end()) {
+		(*iter)->showBoundingBox(show);
+		iter++;
+	}
+}
