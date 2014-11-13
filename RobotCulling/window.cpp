@@ -21,10 +21,6 @@ using namespace std;
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
-double Window::leftBound = 0;
-double Window::rightBound = 0;
-double Window::topBound = 0;
-double Window::bottomBound = 0;
 
 namespace Scene
 {
@@ -32,8 +28,11 @@ namespace Scene
 	Group *world = nullptr;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
+	vector<Plane> frustumList = vector<Plane>(6);
 	bool showBounds = false;
 	bool frustumCulling = false;
+	double znear = 1.0;
+	double zfar = 1000.0;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -100,24 +99,96 @@ void Window::reshapeCallback(int w, int h)
   glLoadIdentity();
   gluPerspective( Window::fov, 
                   double(width)/(double)height, 
-                  1.0, 
-                  1000.0);  // set perspective projection viewing frustum
+                  Scene::znear, 
+                  Scene::zfar);  // set perspective projection viewing frustum
   glMatrixMode(GL_MODELVIEW);
 
-  // Recalculate the bounds
+  // Do some important calculations
+
   double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
   double aspectRatio = ((double)(width))/(double)height;
 
-  Window::bottomBound = -20 * tan( fovRadians );
-  Window::topBound = -Window::bottomBound;
+  // Calculate the height and width of the near and far clipping planes
 
-  Window::leftBound = Window::bottomBound * aspectRatio;
-  Window::rightBound = Window::topBound * aspectRatio;
+  double hNear = 2 * tan( fovRadians ) * Scene::znear;
+  double wNear = hNear * aspectRatio;
+  double hFar = 2 * tan(fovRadians) * Scene::zfar;
+  double wFar = hNear * aspectRatio;
 
-  /* cerr << "Bottom: " << Window::bottomBound 
-       << " | Top: " << Window::topBound << endl
-       << "Left: " << Window::leftBound 
-       << " | Right: " << Window::rightBound << endl;*/ // Left over from PA 1
+  // Erase everything in the frustum plane list for our Scene and recalculate
+
+  unsigned int originalSize = Scene::frustumList.size();
+  for (unsigned int i = 0; i < originalSize; i++) {
+	  Scene::frustumList.pop_back();
+  }
+
+  // Get camera axes
+  Vector3 d = Scene::camera->getLookDir();
+  Vector3 up = Scene::camera->getUp();
+  Vector3 right = Scene::camera->getRight();
+  Vector3 cam = Scene::camera->getPos();
+
+  /*d.print("Camera look direction: ");
+  up.print("Camera up direction: ");
+  right.print("Camera right direction: ");*/ // these look correct
+
+  Vector3 farCenter, nearCenter;
+  farCenter = cam + (d * Scene::zfar);
+  nearCenter = cam + (d * Scene::znear);
+
+  Plane nearPlane, farPlane, leftPlane, rightPlane, topPlane, bottomPlane;
+
+  // Remember, our normals should point ***inside*** of the view frustum
+
+  nearPlane = Plane(d, nearCenter);
+  farPlane = Plane(d * -1, farCenter);
+
+  // Get the point tmp on the right edge of the near plane
+  // and subtract it from the camera's position so we get a vector
+  // that points in the direction parallel to the right plane
+
+  Vector3 edgePoint = (nearCenter + right * (wNear / 2.0));
+  Vector3 tmp = edgePoint - cam;
+  tmp.normalize();
+  tmp = tmp.cross( up, tmp );
+
+  rightPlane = Plane(tmp, edgePoint);
+
+  // Left Plane (probably wrong)
+
+  edgePoint = (nearCenter + right * (-wNear / 2.0));
+  tmp = edgePoint - cam; 
+  tmp.normalize();
+  tmp.cross(up, tmp);
+
+  leftPlane = Plane(tmp, edgePoint);
+
+  // Top Plane (probably wrong)
+
+  edgePoint = (nearCenter + up * (hNear / 2.0));
+  tmp = edgePoint - cam;
+  tmp.normalize();
+  tmp.cross(up, tmp);
+
+  topPlane = Plane(tmp, edgePoint);
+
+  // Bottom Plane (probably wrong)
+
+  edgePoint = (nearCenter + up * (-hNear / 2.0));
+  tmp = edgePoint - cam;
+  tmp.normalize();
+  tmp.cross(up, tmp);
+
+  bottomPlane = Plane(tmp, edgePoint);
+
+  // Once we've calculated everything, add our planes to the vector
+
+  Scene::frustumList.push_back(nearPlane);
+  Scene::frustumList.push_back(farPlane);
+  Scene::frustumList.push_back(leftPlane);
+  Scene::frustumList.push_back(rightPlane);
+  Scene::frustumList.push_back(topPlane);
+  Scene::frustumList.push_back(bottomPlane);
 
 };
 
@@ -171,6 +242,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'c':
 	  Scene::frustumCulling = !Scene::frustumCulling;
+	  Scene::world->setCulling(Scene::frustumCulling);
 	  cerr << "Culling is " << (Scene::frustumCulling ? "on" : "off" ) << endl;
 	  break;
   default:

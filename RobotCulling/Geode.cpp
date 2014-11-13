@@ -19,17 +19,31 @@ Geode::~Geode()
 // Polymorphic draw method, updates lastC and sets the modelview
 // matrix in OpenGL. Assumes C is a row major matrix
 void Geode::draw(Matrix4& C) {
+	
 	Matrix4 tmp = C;
 	lastC = C;
-	tmp.transpose();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixd( tmp.getPointer() );
-	render();
+
+	if ( !culling ) {
+		// If we aren't culling, just pass in everything to OpenGL
+		tmp.transpose();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixd( tmp.getPointer() );
+		render();
+	}
+	else {
+		// Do intersection testing here
+	}
+
 }
 
 // Toggles showing the bounding sphere around this object
 void Geode::showBoundingBox(bool show) {
 	this->drawBoundingSphere = show;
+}
+
+// Toggles culling of this object
+void Geode::setCulling(bool show) {
+	this->culling = show;
 }
 
 /**

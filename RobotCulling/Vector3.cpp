@@ -45,6 +45,17 @@ Vector3 Vector3::operator-(const Vector3& other) {
 };
 
 /**
+* Scalar Mult. Operator
+*/
+Vector3 Vector3::operator*(double other) {
+	return Vector3(
+		this->x * other,
+		this->y * other,
+		this->z * other
+		);
+};
+
+/**
  * Negates the vector. (Multiplies the vector by -1)
  */
 void Vector3::negate() {

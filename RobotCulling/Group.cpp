@@ -18,16 +18,15 @@ void Group::draw(Matrix4& C) {
 	list<Node*>::iterator iter = children.begin();
 	while (iter != children.end()) {
 		(*iter)->draw(C);
-		if (drawBoundingSphere) {
-
-			C.transpose();
-			glLoadMatrixd(C.getPointer());
-			glutWireSphere(boundingRadius,10,10);
-			C.transpose();
-		}
 		iter++;
 	}
-
+	
+	if (drawBoundingSphere) {
+		C.transpose();
+		glLoadMatrixd(C.getPointer());
+		//glutWireSphere(boundingRadius,10,10);
+		C.transpose();
+	}
 }
 
 // We aren't going to manage the memory in the list anymore
@@ -50,6 +49,15 @@ void Group::showBoundingBox(bool show) {
 	auto iter = children.begin();
 	while (iter != children.end()) {
 		(*iter)->showBoundingBox(show);
+		iter++;
+	}
+}
+
+void Group::setCulling(bool show) {
+	culling = show;
+	auto iter = children.begin();
+	while (iter != children.end()) {
+		(*iter)->setCulling(show);
 		iter++;
 	}
 }

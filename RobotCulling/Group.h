@@ -14,5 +14,6 @@ public:
 	void removeChild(Node*); 
 	void draw(Matrix4& C);
 	void showBoundingBox(bool); // Toggles the showing of the wireframe bounding spheres all the way down the tree
+	void setCulling(bool);
 	void updateBounds(void);
 };

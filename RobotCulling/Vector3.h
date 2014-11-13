@@ -12,6 +12,7 @@ public:
 	Vector3(double x, double y, double z); // Constructor
 	Vector3 operator+ (const Vector3&); // Overload operator + for addition
 	Vector3 operator- (const Vector3&); // Overload operator - for subtraction
+	Vector3 operator* (double); // Overload operator * for scale
 	void negate();         // Implement vector negation (times -1)
 	void scale(double s);  // Multiple the vector by scalar s
 	//double dot(const Vector3&); // Returns the dot product of the calling vector, with parameter

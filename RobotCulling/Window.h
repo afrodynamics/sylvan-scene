@@ -4,6 +4,7 @@
 #include "Matrix4.h"
 #include "Camera.h"
 #include "Robot.h"
+#include "Plane.h"
 
 /**
  * Keeps all our scene data together
@@ -12,6 +13,8 @@ namespace Scene
 {
 	extern Camera *camera;
 	extern std::vector<Node*> nodeList;
+	extern std::vector<Plane> frustumPlanes;
+	extern double znear, zfar;
 	extern Group *world;
 	extern Robot* createRobot(Vector3&);
 	extern void setup();
@@ -24,8 +27,6 @@ class Window	  // OpenGL output window related routines
     static int width, height; 	            // window size
     static int cameraMode;
     static double fov;
-    static double leftBound, rightBound,
-                  topBound, bottomBound;    // invisible bounds for the ball
 
     static void idleCallback(void);
     static void reshapeCallback(int, int);

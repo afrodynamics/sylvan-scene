@@ -29,14 +29,18 @@ Camera::Camera( Vector3 centerOfProjection, Vector3 lookAtPoint, Vector3 upVecto
   Vector3 zero = Vector3(0,0,0);
   Vector3 one = Vector3(1,1,1);
 
-  center = e; // So we can access it later
+  this->center = e; // So we can access it later
 
   z_c = e - d;
   z_c.normalize();
   x_c.cross( up, z_c ); // Crosses up and z_c, placing them in x_c
   x_c.normalize();
   y_c.cross( z_c, x_c );
-  y_c.normalize(); // this vector should already be normal, but who knows
+  y_c.normalize(); // this vector should already be normal, but let's be safe
+
+  this->up = y_c;
+  this->right = x_c;
+  this->lookDir = z_c;
   
   camera2world = Matrix4( x_c, y_c, z_c, e ); // TA left it at x_c, y_c, z_c, zero
   camera2world.transpose();
@@ -75,7 +79,18 @@ Matrix4 Camera::getInverseMatrix() {
 	return world2cameraRowMajor;
 };
 
-
 Vector3 Camera::getPos() {
 	return center;
+};
+
+Vector3 Camera::getUp() {
+	return up;
+};
+
+Vector3 Camera::getRight() {
+	return right;
+};
+
+Vector3 Camera::getLookDir() {
+	return lookDir;
 };

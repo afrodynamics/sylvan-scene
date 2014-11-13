@@ -28,7 +28,9 @@ MatrixTransform::~MatrixTransform()
 void MatrixTransform::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
-	Group::draw( lastC );
+	if (!culling) {
+		Group::draw(lastC);
+	}
 
 }
 
