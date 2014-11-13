@@ -3,8 +3,9 @@
 class Sphere :
 	public Geode
 {
-public:
+private:
 	double radius, longitude, latitude;
+public:
 	Sphere();
 	Sphere(double, double, double); // radius, longitude divisions, latitude divisions
 	~Sphere();

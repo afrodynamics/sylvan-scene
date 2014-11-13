@@ -27,8 +27,8 @@ MatrixTransform::~MatrixTransform()
 // draw on all the children with the resulting matrix
 void MatrixTransform::draw(Matrix4& C) {
 
-	Matrix4 tmp = C * *mtx;
-	Group::draw(tmp);
+	lastC = C * *mtx;
+	Group::draw( lastC );
 
 }
 

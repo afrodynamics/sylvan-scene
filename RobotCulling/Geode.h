@@ -9,5 +9,5 @@ public:
 	virtual void render() = 0; // Written in subclasses, i.e. Cube and Sphere
 	void draw(Matrix4& C);   // Inherited from Node
 	void showBoundingBox(bool);
+	void updateBounds(void);
 };
-

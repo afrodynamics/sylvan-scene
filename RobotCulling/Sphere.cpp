@@ -4,6 +4,7 @@ Sphere::Sphere()
 {
 	boundingRadius = radius = 1;
 	longitude = latitude = 8;
+	lastC.identity();
 }
 
 Sphere::Sphere(double rad, double lon, double lat)

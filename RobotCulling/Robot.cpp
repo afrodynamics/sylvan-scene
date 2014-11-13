@@ -94,10 +94,10 @@ void Robot::createRobot() {
 void Robot::animate() {
 
 	// spin the entire robot around
-	//mtx->transformLocal(Matrix4::rotY(rotateSpeed/10));
+	mtx->transformLocal(Matrix4::rotY(rotateSpeed/10));
 	
 	// We're walking forward
-	mtx->transformWorld(Matrix4::translate(rotateSpeed / 100, 0, 0));
+	//mtx->transformWorld(Matrix4::translate(rotateSpeed / 100, 0, 0));
 
 	leftArmAngle += rotateSpeed * rotateArmDir;
 	rightArmAngle += rotateSpeed * -rotateArmDir;
@@ -123,7 +123,8 @@ void Robot::animate() {
 
 void Robot::draw(Matrix4& C) {
 	
-	Matrix4 tmp = (C * *mtx);
-	Group::draw( C * *mtx );
+	lastC = (C * *mtx);
+	Group::draw( lastC );
+	animate();
 	
 }

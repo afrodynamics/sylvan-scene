@@ -3,8 +3,9 @@
 class Cube :
 	public Geode
 {
-public:
+private:
 	double sideLength;
+public:
 	Cube();
 	Cube(double);
 	~Cube();

@@ -3,13 +3,14 @@
 Cube::Cube()
 {
 	sideLength = 1;
-	boundingRadius = sideLength;
+	boundingRadius = (Vector3(sideLength / 2, sideLength / 2, sideLength / 2)).length();
+	lastC.identity();
 }
 
 Cube::Cube(double l)
 {
 	sideLength = l;
-	boundingRadius = sideLength;
+	boundingRadius = (Vector3(sideLength/2,sideLength/2,sideLength/2)).length();
 }
 
 

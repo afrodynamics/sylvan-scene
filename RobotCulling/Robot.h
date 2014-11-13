@@ -18,14 +18,15 @@ private:
 	double rotateDir, rotateArmDir, rotateSpeed;
 	Matrix4 leftArmMtx, rightArmMtx, leftLegMtx, rightLegMtx;
 
-	// Helper function for constructing the geometry
+	// Helper function for constructing/modifying geometry
 	void createRobot(void);
+	void animate();
+
 public:
 	Robot();
 	Robot(Matrix4&);
 	Robot(double, double, double);
 	~Robot();
-	void animate();
 	void draw(Matrix4& C);
 };
 

@@ -33,6 +33,7 @@ namespace Scene
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	bool showBounds = false;
+	bool frustumCulling = false;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -54,11 +55,11 @@ namespace Scene
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
-		/*for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
+		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
-				world->addChild(createRobot(Vector3(x, 0, y)));
+		//		world->addChild(createRobot(Vector3(x, 0, y)));
 			}
-		}*/
+		}
 
 		//    \/ Debug Robot
 		Robot *ptr = createRobot(Vector3(0, 0, 10));
@@ -78,11 +79,13 @@ namespace Scene
 // Callback method called when system is idle.
 void Window::idleCallback()
 {
-    // Rotate the temporary robot I guess
-	for (auto iter = Scene::robotList.begin(); iter != Scene::robotList.end(); iter++) {
-		(*iter)->animate();
-	}
-	displayCallback();         // call display routine to show the cube
+    // Call draw on the Scene
+	displayCallback(); // call display routine to show the cube
+	
+	// Geometry was drawn, then moved for animations, so recalculate culling bounds
+	// AFTER calling draw
+	Scene::world->updateBounds();
+
 };
 
 //----------------------------------------------------------------------------
@@ -111,10 +114,10 @@ void Window::reshapeCallback(int w, int h)
   Window::leftBound = Window::bottomBound * aspectRatio;
   Window::rightBound = Window::topBound * aspectRatio;
 
-  cerr << "Bottom: " << Window::bottomBound 
+  /* cerr << "Bottom: " << Window::bottomBound 
        << " | Top: " << Window::topBound << endl
        << "Left: " << Window::leftBound 
-       << " | Right: " << Window::rightBound << endl;
+       << " | Right: " << Window::rightBound << endl;*/ // Left over from PA 1
 
 };
 
@@ -122,19 +125,29 @@ void Window::reshapeCallback(int w, int h)
 // Callback method called by GLUT when window readraw is necessary or when glutPostRedisplay() was called.
 void Window::displayCallback()
 {
+
+  // Start the timer for this frame
   auto c_start = chrono::high_resolution_clock::now();
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
 
-  // Draw our scene
+  // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
+
+	// Pass in our inverse camera matrix in row-major order (since our draw function
+	// in our Node classes expects row-major matrices)
 	Scene::world->draw(Scene::camera->getInverseMatrix());
+
   }
 
   glFlush();  
   glutSwapBuffers();
+
+  // Stop the timer for this frame
   auto c_end = chrono::high_resolution_clock::now();
   cerr << "FPS: " << ( 1.0 / chrono::duration<double, milli>(c_end - c_start).count()) << endl;
+
 };
 
 //----------------------------------------------------------------------------
@@ -154,6 +167,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
 	  Scene::world->showBoundingBox(Scene::showBounds);
+	  cerr << "Bounding spheres are " << (Scene::showBounds ? "on" : "off") << endl;
+	  break;
+  case 'c':
+	  Scene::frustumCulling = !Scene::frustumCulling;
+	  cerr << "Culling is " << (Scene::frustumCulling ? "on" : "off" ) << endl;
 	  break;
   default:
       cerr << "Pressed: " << key << endl;

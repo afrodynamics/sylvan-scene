@@ -6,7 +6,4 @@ Node::Node()
 	drawBoundingSphere = false;
 }
 
-
-Node::~Node()
-{
-}
+Node::~Node() {}
