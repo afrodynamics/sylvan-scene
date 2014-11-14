@@ -57,7 +57,7 @@ namespace Scene
 		double platoonWidth = 100;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
-				//world->addChild(createRobot(Vector3(x, 0, y)));
+			//	world->addChild(createRobot(Vector3(x, 0, y)));
 			}
 		}
 

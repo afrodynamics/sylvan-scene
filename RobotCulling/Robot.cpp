@@ -62,39 +62,59 @@ void Robot::createRobot() {
 	rightArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
 
 	neckJoint = new MatrixTransform(Matrix4::translate(0, 5, 0));
-	leftLeg = new Cube(2); // 2
-	rightLeg = new Cube(2); // 2
-	rightArm = new Cube(2); // 2
-	leftArm = new Cube(2); // 2
-	torso = new Cube(5); // 5
-	head = new Sphere(2.5, 8, 8); // 2.5
+	leftLeg = new Cube(); // len 2
+	rightLeg = new Cube(); // len 2
+	rightArm = new Cube(); // len 2
+	leftArm = new Cube(); // len 2
+	torso = new Cube(); // len 5
+	head = new Sphere(); // radius 2.5
 
-	boundingRadius = 2;
+	Matrix4 legScale = Matrix4::scale(2, 2, 2);
+	Matrix4 armScale = Matrix4::scale(2, 2, 2);
+	Matrix4 headScale = Matrix4::scale(2.5, 2.5, 2.5);
+	Matrix4 torsoScale = Matrix4::scale(5, 5, 5);
 
 	// Add the joints to the Robot (which is basically just a MatrixTransform)
 	// We're just calling addChild on the top level of the object's local tree,
 	// which in this case is just the 'this' pointer
 
+	MatrixTransform *legUnifScaleLeft, *legUnifScaleRight, *armUnifScaleLeft, *armUnifScaleRight, *torsoUnifScale, *headUnifScale;
+
+	legUnifScaleLeft = new MatrixTransform(legScale);
+	legUnifScaleRight = new MatrixTransform(legScale);
+	armUnifScaleLeft = new MatrixTransform(armScale);
+	armUnifScaleRight = new MatrixTransform(armScale);
+	torsoUnifScale = new MatrixTransform(torsoScale);
+	headUnifScale = new MatrixTransform(headScale);
+	
 	addChild(leftLegJoint);
 	addChild(leftArmJoint);
 	addChild(rightLegJoint);
 	addChild(rightArmJoint);
 	addChild(neckJoint);
-	addChild(torso);
+	addChild(torsoUnifScale);
+	addChild(headUnifScale);
 
 	leftLegJoint->addChild(leftLegScale);
-	leftLegScale->addChild(leftLeg);
+	leftLegScale->addChild(legUnifScaleLeft);
+	legUnifScaleLeft->addChild(leftLeg);
 
 	leftArmJoint->addChild(leftArmScale);
-	leftArmScale->addChild(leftArm);
+	leftArmScale->addChild(armUnifScaleLeft);
+	armUnifScaleLeft->addChild(leftArm);
 
 	rightArmJoint->addChild(rightArmScale);
-	rightArmScale->addChild(rightArm);
+	rightArmScale->addChild(armUnifScaleRight);
+	armUnifScaleRight->addChild(rightArm);
 
-	rightLegJoint->addChild(rightLegScale);
+	rightLegJoint->addChild(legUnifScaleRight);
+	legUnifScaleRight->addChild(rightLegScale);
 	rightLegScale->addChild(rightLeg);
 
-	neckJoint->addChild(head);
+	torsoUnifScale->addChild(torso);
+
+	neckJoint->addChild(headUnifScale);
+	headUnifScale->addChild(head);
 
 	// Initialize the animation state
 	rotateDir = rotateArmDir = -1;
@@ -103,7 +123,6 @@ void Robot::createRobot() {
 	rightArmAngle = 270;
 	leftLegAngle = rightLegAngle = 0;
 
-	//mtx->transformLocal(Matrix4::rotY(45)); // something here is wrong!
 }
 
 void Robot::showBoundingBox(bool show) {

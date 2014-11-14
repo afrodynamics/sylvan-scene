@@ -7,14 +7,6 @@ Cube::Cube()
 	lastC.identity();
 }
 
-Cube::Cube(double l)
-{
-	sideLength = l;
-	scale = Vector4(sideLength / 2, sideLength / 2, sideLength / 2, 1);
-	boundingRadius = (Vector3(sideLength/2,sideLength/2,sideLength/2)).length();
-}
-
-
 Cube::~Cube()
 {
 }
@@ -22,10 +14,11 @@ Cube::~Cube()
 void Cube::render() {
 	if (drawBoundingSphere == true) {
 		
-		scale = Vector4(sideLength / 2, sideLength / 2, sideLength / 2, 0);
+		scale = lastC * Vector4(.5,.5,.5, 0);
+		boundingRadius = scale.length();
 
 		Matrix4 tmp = Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ()) *
-			Matrix4::scale(boundingRadius,boundingRadius,boundingRadius);
+			Matrix4::scale(boundingRadius, boundingRadius, boundingRadius);
 		tmp.transpose();
 		glPushMatrix();
 		glLoadMatrixd(tmp.getPointer());
@@ -33,5 +26,5 @@ void Cube::render() {
 		glPopMatrix();
 
 	}
-	glutSolidCube(sideLength);
+	glutSolidCube(1);
 }

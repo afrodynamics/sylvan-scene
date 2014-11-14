@@ -95,17 +95,8 @@ void MatrixTransform::updateBounds(void) {
 			maxZ = curr->maxZ;
 		}
 
-		/*if ((center - *iter->centerPos).length() > maxL) {
-			maxL = (center - *iter->centerPos).length();
-			maxSpherePoint = *iter;
-		}*/
-
 	}
 
-	// In world coordinates, which does not play nicely with 
-	// our draw function
-	//boundingRadius = (Vector3(fmax(fabs(minX), fabs(maxX)), fmax(fabs(minY), fabs(maxY)), fmax(fabs(minZ), fabs(maxZ)))).length();
-	//boundingRadius = (center - Vector4( fmax(fabs(minX), fabs(maxX)), fmax(fabs(minY), fabs(maxY)), fmax(fabs(minZ), fabs(maxZ)), 0) ).length();
 	boundingRadius = 0;
 
 };

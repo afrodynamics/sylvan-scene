@@ -7,7 +7,7 @@ private:
 	double sideLength;
 public:
 	Cube();
-	Cube(double);
+	//Cube(double);
 	~Cube();
 	void render();
 };
