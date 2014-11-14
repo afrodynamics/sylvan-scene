@@ -20,7 +20,7 @@ Cube::~Cube()
 
 void Cube::render() {
 	if (drawBoundingSphere == true) {
-		glutWireSphere(boundingRadius, 10, 10);
+		//glutWireSphere(boundingRadius, 10, 10);
 	}
 	glutSolidCube(sideLength);
 }

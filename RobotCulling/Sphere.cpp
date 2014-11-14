@@ -18,7 +18,7 @@ Sphere::~Sphere()
 
 void Sphere::render() {
 	if (drawBoundingSphere == true) {	
-		glutWireSphere(boundingRadius, 10, 10);
+	//	glutWireSphere(boundingRadius, 10, 10);
 	}
 	glutSolidSphere(radius, longitude, latitude);
 }

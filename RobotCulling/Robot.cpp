@@ -11,10 +11,11 @@ Robot::Robot()
 Robot::Robot(Matrix4& copy)
 {
 	mtx = new Matrix4(copy);
-	Vector4 pos = *mtx * Vector4(0, 0, 0, 1);
-	x = pos.getX();
+	centerPos = /* *mtx * */ Vector4(0, 0, 0, 1);
+	/*x = pos.getX();
 	y = pos.getY();
-	z = pos.getZ();
+	z = pos.getZ();*/
+	x = y = z = 0;
 	createRobot();
 }
 
@@ -33,6 +34,11 @@ Robot::~Robot()
 	for (auto iter = children.begin(); iter != children.end(); ++iter) {
 		delete (*iter); // Delete the child nodes
 	}
+	delete leftLegJoint, leftLegScale, rightLegJoint, rightLegScale;
+	delete leftArmJoint, leftArmScale, rightArmJoint, rightArmScale;
+	if (wireHead != nullptr) {
+		delete wireHead, wireLeftArm, wireLeftLeg, wireRightArm, wireRightLeg, wireTorso;
+	}
 }
 
 /**
@@ -41,15 +47,20 @@ Robot::~Robot()
  */
 void Robot::createRobot() {
 
-	leftArmMtx = Matrix4::translate(-3.5, -2, 0)  * Matrix4::scale(1, 3, 1);
-	rightArmMtx = Matrix4::translate(3.5, -2, 0) * Matrix4::scale(1, 3, 1);
-	leftLegMtx = Matrix4::translate(-1.1, -5, 0)  * Matrix4::scale(1, 3, 1);
-	rightLegMtx = Matrix4::translate(1.1, -5, 0) * Matrix4::scale(1, 3, 1);
+	leftArmMtx = Matrix4::translate(-3.5, -2, 0);  //* Matrix4::scale(1, 3, 1);
+	rightArmMtx = Matrix4::translate(3.5, -2, 0); //* Matrix4::scale(1, 3, 1);
+	leftLegMtx = Matrix4::translate(-1.1, -5, 0);  //* Matrix4::scale(1, 3, 1);
+	rightLegMtx = Matrix4::translate(1.1, -5, 0); //* Matrix4::scale(1, 3, 1);
 
 	leftLegJoint = new MatrixTransform( leftLegMtx );
 	rightLegJoint = new MatrixTransform( rightLegMtx );
 	leftArmJoint = new MatrixTransform( leftArmMtx );
 	rightArmJoint = new MatrixTransform( rightArmMtx );
+	leftLegScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
+	rightLegScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
+	leftArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
+	rightArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
+
 	neckJoint = new MatrixTransform(Matrix4::translate(0, 5, 0));
 	leftLeg = new Cube(2);
 	rightLeg = new Cube(2);
@@ -63,6 +74,7 @@ void Robot::createRobot() {
 	// Add the joints to the Robot (which is basically just a MatrixTransform)
 	// We're just calling addChild on the top level of the object's local tree,
 	// which in this case is just the 'this' pointer
+
 	addChild(leftLegJoint);
 	addChild(leftArmJoint);
 	addChild(rightLegJoint);
@@ -70,10 +82,18 @@ void Robot::createRobot() {
 	addChild(neckJoint);
 	addChild(torso);
 
-	leftLegJoint->addChild(leftLeg);
-	leftArmJoint->addChild(leftArm);
-	rightArmJoint->addChild(rightArm);
-	rightLegJoint->addChild(rightLeg);
+	leftLegJoint->addChild(leftLegScale);
+	leftLegScale->addChild(leftLeg);
+
+	leftArmJoint->addChild(leftArmScale);
+	leftArmScale->addChild(leftArm);
+
+	rightArmJoint->addChild(rightArmScale);
+	rightArmScale->addChild(rightArm);
+
+	rightLegJoint->addChild(rightLegScale);
+	rightLegScale->addChild(rightLeg);
+
 	neckJoint->addChild(head);
 
 	// Initialize the animation state
@@ -83,8 +103,56 @@ void Robot::createRobot() {
 	rightArmAngle = 270;
 	leftLegAngle = rightLegAngle = 0;
 
-
 	//mtx->transformLocal(Matrix4::rotY(45)); // something here is wrong!
+}
+
+void Robot::showBoundingBox(bool show) {
+	auto iter = children.begin();
+	while (iter != children.end()) {
+		(*iter)->showBoundingBox(show);
+		iter++;
+	}
+
+	if ( show == true && drawBoundingSphere != show ) {
+
+		// Add wirespheres
+
+		updateBounds();
+
+		wireHead = new Wiresphere(head->boundingRadius, 10, 10 );
+		wireWholeRobot = new Wiresphere(boundingRadius, 10, 10);
+		
+		wireTorso = new Wiresphere(torso->boundingRadius, 10, 10);
+		wireLeftArm = new Wiresphere(leftArm->boundingRadius, 10, 10);
+		wireLeftLeg = new Wiresphere(leftLeg->boundingRadius, 10, 10);
+		wireRightArm = new Wiresphere(rightArm->boundingRadius, 10, 10);
+		wireRightLeg = new Wiresphere(rightLeg->boundingRadius, 10, 10);
+
+		leftLegJoint->addChild(wireLeftLeg);
+		rightLegJoint->addChild(wireRightLeg);
+		leftArmJoint->addChild(wireLeftArm);
+		rightArmJoint->addChild(wireRightArm);
+		neckJoint->addChild(wireHead);
+		addChild(wireTorso);
+		addChild(wireWholeRobot);
+
+	}
+	else if ( show == false && drawBoundingSphere != show ) {
+
+		// Remove wirespheres
+
+		removeChild(wireTorso);
+		removeChild(wireWholeRobot);
+		leftLegJoint->removeChild(wireLeftLeg);
+		rightLegJoint->removeChild(wireRightLeg);
+		leftArmJoint->removeChild(wireLeftArm);
+		rightArmJoint->removeChild(wireRightArm);
+		neckJoint->removeChild(wireHead);
+		delete wireHead, wireLeftArm, wireLeftLeg, wireRightArm, wireRightLeg, wireTorso;
+	}
+
+	drawBoundingSphere = show;
+
 }
 
 /**

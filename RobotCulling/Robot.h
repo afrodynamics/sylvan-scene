@@ -2,6 +2,7 @@
 #include "MatrixTransform.h"
 #include "Cube.h"
 #include "Sphere.h"
+#include "Wiresphere.h"
 
 class Robot :
 	public MatrixTransform
@@ -9,7 +10,9 @@ class Robot :
 private:
 	// Pointers to the relelvant child nodes
 	MatrixTransform *leftLegJoint, *rightLegJoint, *neckJoint, *leftArmJoint, *rightArmJoint;
+	MatrixTransform *leftLegScale, *rightLegScale, *leftArmScale, *rightArmScale;
 	Cube *leftLeg, *rightLeg, *leftArm, *rightArm, *torso;
+	Wiresphere *wireLeftLeg, *wireRightLeg, *wireHead, *wireLeftArm, *wireRightArm, *wireTorso, *wireWholeRobot;
 	Sphere *head;
 
 	// Position/Animation state
@@ -28,5 +31,6 @@ public:
 	Robot(double, double, double);
 	~Robot();
 	void draw(Matrix4& C);
+	void showBoundingBox(bool);
 };
 

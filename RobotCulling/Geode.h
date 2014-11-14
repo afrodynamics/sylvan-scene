@@ -11,4 +11,5 @@ public:
 	void showBoundingBox(bool);
 	void setCulling(bool);
 	void updateBounds(void);
+	void setVector(std::vector<Plane>*);
 };

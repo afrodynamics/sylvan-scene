@@ -7,5 +7,6 @@ public:
 	Plane();
 	Plane(Vector3 n, Vector3 p);
 	~Plane();
+	bool sphereInsideOrOn(Vector3 center, double radius);
 };
 

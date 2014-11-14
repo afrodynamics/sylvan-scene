@@ -15,5 +15,6 @@ public:
 	void draw(Matrix4& C);
 	void showBoundingBox(bool); // Toggles the showing of the wireframe bounding spheres all the way down the tree
 	void setCulling(bool);
-	void updateBounds(void);
+	void setVector(std::vector<Plane>*);
+	virtual void updateBounds(void) = 0;
 };

@@ -50,13 +50,13 @@ namespace Scene
 		camera = new Camera(
 			Vector3(0, 10, 50), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
-		world = new Group();
+		world = new MatrixTransform();
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
-		//		world->addChild(createRobot(Vector3(x, 0, y)));
+				//world->addChild(createRobot(Vector3(x, 0, y)));
 			}
 		}
 
@@ -189,6 +189,9 @@ void Window::reshapeCallback(int w, int h)
   Scene::frustumList.push_back(rightPlane);
   Scene::frustumList.push_back(topPlane);
   Scene::frustumList.push_back(bottomPlane);
+
+  // Tell the world what's up
+  Scene::world->setVector(&Scene::frustumList);
 
 };
 
