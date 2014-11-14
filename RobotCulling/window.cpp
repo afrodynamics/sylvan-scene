@@ -31,6 +31,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6);
 	bool showBounds = false;
 	bool frustumCulling = false;
+	bool showFps = false;
 	double znear = 1.0;
 	double zfar = 1000.0;
 
@@ -83,7 +84,7 @@ void Window::idleCallback()
 	
 	// Geometry was drawn, then moved for animations, so recalculate culling bounds
 	// AFTER calling draw
-	Scene::world->updateBounds();
+	//Scene::world->updateBounds();
 
 };
 
@@ -127,6 +128,9 @@ void Window::reshapeCallback(int w, int h)
   Vector3 up = Scene::camera->getUp();
   Vector3 right = Scene::camera->getRight();
   Vector3 cam = Scene::camera->getPos();
+  d.normalize();
+  up.normalize();
+  right.normalize();
 
   /*d.print("Camera look direction: ");
   up.print("Camera up direction: ");
@@ -143,6 +147,9 @@ void Window::reshapeCallback(int w, int h)
   nearPlane = Plane(d, nearCenter);
   farPlane = Plane(d * -1, farCenter);
 
+  d.print("nearPlane normal");
+  (d * -1).print("farPlane normal");
+
   // Get the point tmp on the right edge of the near plane
   // and subtract it from the camera's position so we get a vector
   // that points in the direction parallel to the right plane
@@ -151,15 +158,18 @@ void Window::reshapeCallback(int w, int h)
   Vector3 tmp = edgePoint - cam;
   tmp.normalize();
   tmp = tmp.cross( up, tmp );
+  tmp.print("rightPlane normal");
 
   rightPlane = Plane(tmp, edgePoint);
+  // rightPlane is straight from the formula
 
-  // Left Plane (probably wrong)
+  // Left Plane
 
   edgePoint = (nearCenter + right * (-wNear / 2.0));
   tmp = edgePoint - cam; 
   tmp.normalize();
-  tmp.cross(up, tmp);
+  tmp.cross(up, tmp * -1);
+  tmp.print("leftPlane normal");
 
   leftPlane = Plane(tmp, edgePoint);
 
@@ -168,7 +178,8 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + up * (hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
-  tmp.cross(up, tmp);
+  tmp.cross(right, tmp);
+  tmp.print("topPlane normal");
 
   topPlane = Plane(tmp, edgePoint);
 
@@ -177,7 +188,8 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + up * (-hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
-  tmp.cross(up, tmp);
+  tmp.cross(right * -1, tmp);
+  tmp.print("botPlane normal");
 
   bottomPlane = Plane(tmp, edgePoint);
 
@@ -220,6 +232,8 @@ void Window::displayCallback()
 
   // Stop the timer for this frame
   auto c_end = chrono::high_resolution_clock::now();
+
+  if ( Scene::showFps )
   cerr << "FPS: " << ( 1.0 / chrono::duration<double, milli>(c_end - c_start).count()) << endl;
 
 };
@@ -247,6 +261,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::frustumCulling = !Scene::frustumCulling;
 	  Scene::world->setCulling(Scene::frustumCulling);
 	  cerr << "Culling is " << (Scene::frustumCulling ? "on" : "off" ) << endl;
+	  break;
+  case 'f':
+	  Scene::showFps = !Scene::showFps;
+	  Scene::world->setCulling(Scene::showFps);
+	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
   default:
       cerr << "Pressed: " << key << endl;

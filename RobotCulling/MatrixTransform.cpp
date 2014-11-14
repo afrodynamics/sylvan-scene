@@ -28,6 +28,7 @@ MatrixTransform::~MatrixTransform()
 void MatrixTransform::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
+	centerPos = lastC * Vector4(0,0,0,1);
 	if (!culling) {
 		Group::draw(lastC);
 	}

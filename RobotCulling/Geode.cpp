@@ -8,7 +8,7 @@ using namespace std;
 Geode::Geode()
 {
 	drawBoundingSphere = false;
-	maxSpherePoint = Vector4(0, 0, 0, 1);
+	scale = Vector4(0, 0, 0, 1);
 	centerPos = Vector4(0, 0, 0, 1);
 }
 
@@ -23,6 +23,7 @@ void Geode::draw(Matrix4& C) {
 	
 	Matrix4 tmp = C;
 	lastC = C;
+	centerPos = C * Vector4(0,0,0,1);
 
 	if ( !culling ) {
 		// If we aren't culling, just pass in everything to OpenGL
@@ -76,10 +77,8 @@ void Geode::updateBounds(void) {
 	// boundingRadius is kept in object coordinates, and is
 	// calculated in the constructor of Sphere/Cube etc.
 	Vector4 center = lastC * Vector4(0, 0, 0, 1); // Get our origin in world coordinates
-	Vector4 scale = lastC * Vector4(0.5, 0.5, 0.5, 1);
-
-	//boundingRadius = scale.length();
-
+	boundingRadius = scale.length();
+	/*
 	// Create a list of 6 vertices around the extremes of the bounding
 	// sphere, and convert them to camera/world coordinates
 	
@@ -126,12 +125,13 @@ void Geode::updateBounds(void) {
 		// Center in local coords is always 0,0,0
 		if ( (center - *iter).length() > maxL ) {
 			maxL = (center - *iter).length();
-			maxSpherePoint = *iter;
+			scale = *iter;
 		}
 
 	}
-
-	boundingRadius = Vector3(fmax(fabs(minX), fabs(maxX)), fmax(fabs(minY), fabs(maxY)), fmax(fabs(minZ), fabs(maxZ))).length();
+	*/
+	//boundingRadius = Vector3(fmax(fabs(minX), fabs(maxX)), fmax(fabs(minY), fabs(maxY)), fmax(fabs(minZ), fabs(maxZ))).length();
 	//boundingRadius = Vector4(0.5,0.5,0.5,0).length();
+	//boundingRadius = Vector4(maxX,maxY,maxZ,0).length();
 
 }

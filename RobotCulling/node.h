@@ -17,7 +17,7 @@ protected:
 	bool culling;
 	std::vector<Plane> *frustumPlanes;
 public:
-	Vector4 centerPos, maxSpherePoint; // These points are in camera coordinates
+	Vector4 centerPos, scale; // These points are in camera coordinates
 	double boundingRadius; // This distance is in camera space, and is calculated at runtime
 	double minX, maxX, minY, maxY, minZ, maxZ;
 	bool drawBoundingSphere;

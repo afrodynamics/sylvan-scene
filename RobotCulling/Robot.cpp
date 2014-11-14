@@ -62,12 +62,12 @@ void Robot::createRobot() {
 	rightArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
 
 	neckJoint = new MatrixTransform(Matrix4::translate(0, 5, 0));
-	leftLeg = new Cube(2);
-	rightLeg = new Cube(2);
-	rightArm = new Cube(2);
-	leftArm = new Cube(2);
-	torso = new Cube(5);
-	head = new Sphere(2.5, 8, 8);
+	leftLeg = new Cube(2); // 2
+	rightLeg = new Cube(2); // 2
+	rightArm = new Cube(2); // 2
+	leftArm = new Cube(2); // 2
+	torso = new Cube(5); // 5
+	head = new Sphere(2.5, 8, 8); // 2.5
 
 	boundingRadius = 2;
 
@@ -112,7 +112,7 @@ void Robot::showBoundingBox(bool show) {
 		(*iter)->showBoundingBox(show);
 		iter++;
 	}
-
+	/*
 	if ( show == true && drawBoundingSphere != show ) {
 
 		// Add wirespheres
@@ -150,7 +150,7 @@ void Robot::showBoundingBox(bool show) {
 		neckJoint->removeChild(wireHead);
 		delete wireHead, wireLeftArm, wireLeftLeg, wireRightArm, wireRightLeg, wireTorso;
 	}
-
+	*/
 	drawBoundingSphere = show;
 
 }
