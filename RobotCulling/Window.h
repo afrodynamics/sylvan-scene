@@ -15,7 +15,7 @@ namespace Scene
 	extern std::vector<Node*> nodeList;
 	extern std::vector<Plane> frustumPlanes;
 	extern double znear, zfar;
-	extern Group *world;
+	extern MatrixTransform *world;
 	extern Robot* createRobot(Vector3&);
 	extern void setup();
 	extern void dealloc();

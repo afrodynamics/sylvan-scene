@@ -1,4 +1,7 @@
+#include <iostream>
 #include "Robot.h"
+
+using namespace std;
 
 Robot::Robot()
 {
@@ -11,8 +14,11 @@ Robot::Robot()
 Robot::Robot(Matrix4& copy)
 {
 	mtx = new Matrix4(copy);
-	centerPos = Vector4(0, 0, 0, 1);
+	centerPos = *mtx * Vector4(0, 0, 0, 1);
 	x = y = z = 0;
+	x = centerPos.getX();
+	y = centerPos.getY();
+	z = centerPos.getZ();
 	createRobot();
 }
 
@@ -163,7 +169,28 @@ void Robot::draw(Matrix4& C) {
 	
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0, 0, 0, 1);
-    MatrixTransform::draw(lastC);
+
+	if (culling == false) {
+		Group::draw(lastC);
+	}
+	else {
+		// Do intersection testing here
+		if (frustumPlanes != nullptr) {
+			bool inside = false;
+			bool intersects = false;
+			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
+				inside = inside || (*iter).sphereInsideOrOn(Vector3(x, y, z), boundingRadius);
+			}
+			if (inside == true || intersects == true) {
+				// If we are inside the frustum, draw
+				Group::draw(lastC);
+			}
+			else {
+				cerr << "culled bitch!" << endl;
+			}
+		}
+	}
+
 	animate();
 	
 }

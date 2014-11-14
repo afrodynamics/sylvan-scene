@@ -48,7 +48,7 @@ void Geode::draw(Matrix4& C) {
 				glLoadMatrixd(tmp.getPointer());
 				render();
 			}
-		}
+		} 
 	}
 
 }

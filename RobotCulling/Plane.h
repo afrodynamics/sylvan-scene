@@ -6,9 +6,8 @@
 
 class Plane
 {
-private:
-	double precomputed;
 public:
+	double precomputed;
 	Vector3 normal, point;
 	Plane();
 	Plane(Vector3 n, Vector3 p);

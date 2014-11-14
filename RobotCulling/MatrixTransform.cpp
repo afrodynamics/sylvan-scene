@@ -30,24 +30,51 @@ void MatrixTransform::draw(Matrix4& C) {
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
 
-	if (culling == false) {
-		Group::draw(lastC);
-	}
-	else {
+	Group::draw(lastC);
+
+}
+
+void MatrixTransform::cdraw(Matrix4& C) {
+
+	lastC = C * *mtx;
+	centerPos = lastC * Vector4(0, 0, 0, 1);
+
+	{
 		// Do intersection testing here
 		if (frustumPlanes != nullptr) {
 			bool inside = false;
 			bool intersects = false;
+			Vector3 center = Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
-				inside = inside || (*iter).sphereInsideOrOn(Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ()), boundingRadius);
+
+				Vector3 center = Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+				double distance = center.dot(center, (*iter).normal) - (*iter).precomputed;
+				if (distance > boundingRadius) {
+					// The distance will be positive if the sphere is on the side of the plane
+					// facing the normal, or 0 if it is on the plane
+					inside = true;
+				}
+				else if ( distance >= -boundingRadius ) {
+					intersects = true;
+				}
+				else {
+					intersects = false;
+					inside = false;
+				}
+
 			}
-			if (inside == true || intersects == true ) {
-				// If we are inside the frustum, draw
+			
+			if (intersects == true) {
+				Group::draw(lastC);
+			}
+			else if (inside == true) {
 				Group::draw(lastC);
 			}
 			else {
-				//cerr << "culled bitch!" << endl;
+				return;
 			}
+
 		}
 	}
 

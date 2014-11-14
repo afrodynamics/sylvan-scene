@@ -24,7 +24,7 @@ double Window::fov = 60.0;  // perspective frustum vertical field of view in deg
 namespace Scene
 {
 	Camera *camera = nullptr;
-	Group *world = nullptr;
+	MatrixTransform *world = nullptr;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6);
@@ -48,7 +48,7 @@ namespace Scene
 	// Initialize pointers with defaults
 	void setup() {
 		camera = new Camera(
-			Vector3(0, 15, 50), Vector3(0, 10, 0), Vector3(0, 1, 0)
+			Vector3(0, 15, 50), Vector3(0, 15, 0), Vector3(0, 1, 0)
 		);
 		world = new MatrixTransform();
 
@@ -218,7 +218,7 @@ void Window::reshapeCallback(int w, int h)
 
   // Once we've calculated everything, add our planes to the vector
 
-  Scene::frustumList.push_back(nearPlane); // wrong
+  Scene::frustumList.push_back(nearPlane); // wrong?
   Scene::frustumList.push_back(farPlane); // correct
   Scene::frustumList.push_back(leftPlane); // correct (when we flip the T/F return in Plane, the army disappears)
   Scene::frustumList.push_back(rightPlane); // correct
@@ -243,7 +243,12 @@ void Window::displayCallback()
 
 	// Pass in our inverse camera matrix in row-major order (since our draw function
 	// in our Node classes expects row-major matrices)
-	Scene::world->draw(Scene::camera->getInverseMatrix());
+	  if (Scene::frustumCulling) {
+		  Scene::world->cdraw(Scene::camera->getInverseMatrix());
+	  }
+	  else {
+		  Scene::world->draw(Scene::camera->getInverseMatrix());
+	  }
 
   }
 
@@ -279,6 +284,32 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'f':
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
+	  break;
+
+  case 'x':
+	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'X':
+	  transformation = Matrix4::translate(1.0, 0.0, 0.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'y':
+	  transformation = Matrix4::translate(0.0, -1.0, 0.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'Y':
+	  transformation = Matrix4::translate(0.0, +1.0, 0.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'z':
+	  transformation = Matrix4::translate(0.0, 0.0, -1.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'Z':
+	  transformation = Matrix4::translate(0.0, 0.0, +1.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+
 	  break;
   default:
       cerr << "Pressed: " << key << endl;
