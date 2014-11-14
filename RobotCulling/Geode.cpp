@@ -38,6 +38,7 @@ void Geode::draw(Matrix4& C) {
 			bool inside = false;
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
 				inside = inside || (*iter).sphereInsideOrOn( Vector3( centerPos.getX(), centerPos.getY(), centerPos.getZ() ), boundingRadius );
+				if (inside == true) break;
 			}
 			if (inside == true) {
 				// If we are inside the frustum, draw

@@ -20,6 +20,21 @@ void Group::draw(Matrix4& C) {
 		(*iter)->draw(C);
 		iter++;
 	}
+
+	if (drawBoundingSphere == true) {
+
+		centerPos = lastC * Vector4(0, 0, 0, 1);
+		scale = lastC * Vector4(.5, .5, .5, 0);
+		boundingRadius = scale.length();
+		Matrix4 tmp = Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ()) *
+			Matrix4::scale(boundingRadius, boundingRadius, boundingRadius);
+		tmp.transpose();
+		glPushMatrix();
+		glLoadMatrixd(tmp.getPointer());
+		glutWireSphere(1, 16, 16);
+		glPopMatrix();
+
+	}
 }
 
 // We aren't going to manage the memory in the list anymore

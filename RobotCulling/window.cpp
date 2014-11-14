@@ -57,13 +57,13 @@ namespace Scene
 		double platoonWidth = 100;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
-			//	world->addChild(createRobot(Vector3(x, 0, y)));
+				world->addChild(createRobot(Vector3(x, 0, y)));
 			}
 		}
 
 		//    \/ Debug Robot
-		Robot *ptr = createRobot(Vector3(0, 0, 10));
-		world->addChild( ptr );
+		//Robot *ptr = createRobot(Vector3(0, 0, 10));
+		//world->addChild( ptr );
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
@@ -79,12 +79,25 @@ namespace Scene
 // Callback method called when system is idle.
 void Window::idleCallback()
 {
+
+	static int frame = 0, time, timebase = 0;
+
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
-	
-	// Geometry was drawn, then moved for animations, so recalculate culling bounds
-	// AFTER calling draw
-	//Scene::world->updateBounds();
+
+	/* FPS Counter courtesy of Lighthouse3D */
+
+	frame++; // Increment the number of frames we've drawn
+	time = glutGet(GLUT_ELAPSED_TIME);
+
+	// Reset the counter and print the FPS if our timer has lasted longer than a 
+	// second.
+	if (time - timebase > 1000 && Scene::showFps) {
+
+		cerr << "FPS: " << frame * 1000 / (time - timebase) << endl;
+		timebase = time; // Set timebase to the current time
+		frame = 0; // Reset frame counter
+	}
 
 };
 
@@ -212,9 +225,6 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
-  // Start the timer for this frame
-  auto c_start = chrono::high_resolution_clock::now();
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
 
@@ -232,9 +242,6 @@ void Window::displayCallback()
 
   // Stop the timer for this frame
   auto c_end = chrono::high_resolution_clock::now();
-
-  if ( Scene::showFps )
-  cerr << "FPS: " << ( 1.0 / chrono::duration<double, milli>(c_end - c_start).count()) << endl;
 
 };
 
