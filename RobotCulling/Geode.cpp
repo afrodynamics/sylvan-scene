@@ -1,5 +1,6 @@
 #include <vector>
 #include <cmath>
+#include <iostream>
 #include "Geode.h"
 
 using namespace std;
@@ -25,7 +26,7 @@ void Geode::draw(Matrix4& C) {
 	lastC = C;
 	centerPos = C * Vector4(0,0,0,1);
 
-	if ( !culling ) {
+	if ( culling == false ) {
 		// If we aren't culling, just pass in everything to OpenGL
 		tmp.transpose();
 		glMatrixMode(GL_MODELVIEW);
@@ -36,11 +37,11 @@ void Geode::draw(Matrix4& C) {
 		// Do intersection testing here
 		if (frustumPlanes != nullptr) {
 			bool inside = false;
+			bool intersects = false;
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
-				inside = inside || (*iter).sphereInsideOrOn( Vector3( centerPos.getX(), centerPos.getY(), centerPos.getZ() ), boundingRadius );
-				if (inside == true) break;
+				inside = inside || (*iter).sphereInsideOrOn(Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ()), boundingRadius);
 			}
-			if (inside == true) {
+			if (inside == true || intersects == true) {
 				// If we are inside the frustum, draw
 				tmp.transpose();
 				glMatrixMode(GL_MODELVIEW);

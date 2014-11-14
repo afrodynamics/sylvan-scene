@@ -29,23 +29,29 @@ void MatrixTransform::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
-	if (!culling) {
+
+	if (culling == false) {
 		Group::draw(lastC);
 	}
 	else {
 		// Do intersection testing here
 		if (frustumPlanes != nullptr) {
 			bool inside = false;
+			bool intersects = false;
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
 				inside = inside || (*iter).sphereInsideOrOn(Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ()), boundingRadius);
-				if (inside == true) break;
 			}
-			if (inside == true) {
+			if (inside == true || intersects == true ) {
 				// If we are inside the frustum, draw
 				Group::draw(lastC);
 			}
+			else {
+				//cerr << "culled bitch!" << endl;
+			}
 		}
 	}
+
+	updateBounds();
 
 }
 
@@ -98,7 +104,7 @@ void MatrixTransform::updateBounds(void) {
 
 	}
 
-	boundingRadius = 0;
+	boundingRadius = (Vector3(maxX,maxY,maxZ)).length();
 
 };
 

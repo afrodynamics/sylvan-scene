@@ -1,5 +1,4 @@
 #include <iostream>
-#include <chrono>
 
 #ifndef __APPLE__
 #include <GL/glut.h>
@@ -31,9 +30,9 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6);
 	bool showBounds = false;
 	bool frustumCulling = false;
-	bool showFps = false;
+	bool showFps = true;
 	double znear = 1.0;
-	double zfar = 1000.0;
+	double zfar = 1000; //1000.0;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -49,15 +48,16 @@ namespace Scene
 	// Initialize pointers with defaults
 	void setup() {
 		camera = new Camera(
-			Vector3(0, 10, 50), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 15, 50), Vector3(0, 10, 0), Vector3(0, 1, 0)
 		);
 		world = new MatrixTransform();
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
+		double platoonDepth = 200;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
-			for (double y = -platoonWidth; y < platoonWidth; y += robotSpacing) {
-				world->addChild(createRobot(Vector3(x, 0, y)));
+			for (double z = -platoonDepth; z < platoonDepth; z += robotSpacing) {
+				world->addChild(createRobot(Vector3(x, 0, z)));
 			}
 		}
 
@@ -82,6 +82,8 @@ void Window::idleCallback()
 
 	static int frame = 0, time, timebase = 0;
 
+	Scene::world->setCulling(Scene::frustumCulling);
+
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
 
@@ -93,7 +95,6 @@ void Window::idleCallback()
 	// Reset the counter and print the FPS if our timer has lasted longer than a 
 	// second.
 	if (time - timebase > 1000 && Scene::showFps) {
-
 		cerr << "FPS: " << frame * 1000 / (time - timebase) << endl;
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
@@ -145,23 +146,30 @@ void Window::reshapeCallback(int w, int h)
   up.normalize();
   right.normalize();
 
-  /*d.print("Camera look direction: ");
+  d.print("Camera look direction: ");
   up.print("Camera up direction: ");
-  right.print("Camera right direction: ");*/ // these look correct
+  right.print("Camera right direction: "); // these look correct
 
-  Vector3 farCenter, nearCenter;
+  Vector3 farCenter, nearCenter, nearNormal;
   farCenter = cam + (d * Scene::zfar);
   nearCenter = cam + (d * Scene::znear);
+  nearNormal = Scene::camera->getLookDir();
 
   Plane nearPlane, farPlane, leftPlane, rightPlane, topPlane, bottomPlane;
 
   // Remember, our normals should point ***inside*** of the view frustum
 
-  nearPlane = Plane(d, nearCenter);
-  farPlane = Plane(d * -1, farCenter);
+  nearNormal.negate();
 
-  d.print("nearPlane normal");
-  (d * -1).print("farPlane normal");
+  nearPlane = Plane(nearNormal, nearCenter);  // WRONG ?
+
+  nearNormal.print("nearPlane normal");nearCenter.print("nearCenter");
+  nearNormal.negate();
+
+  farPlane = Plane(nearNormal, farCenter);
+
+  farCenter.print("farCenter");
+  nearNormal.print("farPlane normal");
 
   // Get the point tmp on the right edge of the near plane
   // and subtract it from the camera's position so we get a vector
@@ -181,39 +189,41 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + right * (-wNear / 2.0));
   tmp = edgePoint - cam; 
   tmp.normalize();
-  tmp.cross(up, tmp * -1);
+  tmp.negate();
+  tmp.cross(up, tmp);
   tmp.print("leftPlane normal");
 
   leftPlane = Plane(tmp, edgePoint);
 
-  // Top Plane (probably wrong)
+  // Top Plane
 
   edgePoint = (nearCenter + up * (hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
+  tmp.negate();
   tmp.cross(right, tmp);
   tmp.print("topPlane normal");
 
   topPlane = Plane(tmp, edgePoint);
 
-  // Bottom Plane (probably wrong)
+  // Bottom Plane
 
   edgePoint = (nearCenter + up * (-hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
-  tmp.cross(right * -1, tmp);
+  tmp.cross(right, tmp);
   tmp.print("botPlane normal");
 
   bottomPlane = Plane(tmp, edgePoint);
 
   // Once we've calculated everything, add our planes to the vector
 
-  Scene::frustumList.push_back(nearPlane);
-  Scene::frustumList.push_back(farPlane);
-  Scene::frustumList.push_back(leftPlane);
-  Scene::frustumList.push_back(rightPlane);
-  Scene::frustumList.push_back(topPlane);
-  Scene::frustumList.push_back(bottomPlane);
+  Scene::frustumList.push_back(nearPlane); // wrong
+  Scene::frustumList.push_back(farPlane); // correct
+  Scene::frustumList.push_back(leftPlane); // correct (when we flip the T/F return in Plane, the army disappears)
+  Scene::frustumList.push_back(rightPlane); // correct
+  Scene::frustumList.push_back(topPlane); // correct
+  Scene::frustumList.push_back(bottomPlane); // correct
 
   // Tell the world what's up
   Scene::world->setVector(&Scene::frustumList);
@@ -240,9 +250,6 @@ void Window::displayCallback()
   glFlush();  
   glutSwapBuffers();
 
-  // Stop the timer for this frame
-  auto c_end = chrono::high_resolution_clock::now();
-
 };
 
 //----------------------------------------------------------------------------
@@ -267,11 +274,10 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'c':
 	  Scene::frustumCulling = !Scene::frustumCulling;
 	  Scene::world->setCulling(Scene::frustumCulling);
-	  cerr << "Culling is " << (Scene::frustumCulling ? "on" : "off" ) << endl;
+	  cerr << "Culling is " << (Scene::frustumCulling == true ? "on" : "off" ) << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
-	  Scene::world->setCulling(Scene::showFps);
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
   default:

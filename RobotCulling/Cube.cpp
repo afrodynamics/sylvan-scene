@@ -18,7 +18,7 @@ void Cube::render() {
 		boundingRadius = scale.length();
 
 		Matrix4 tmp = Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ()) *
-			Matrix4::scale(boundingRadius, boundingRadius, boundingRadius);
+			          Matrix4::scale(boundingRadius, boundingRadius, boundingRadius);
 		tmp.transpose();
 		glPushMatrix();
 		glLoadMatrixd(tmp.getPointer());

@@ -1,6 +1,5 @@
 #include "Plane.h"
 
-
 Plane::Plane()
 {
 	normal = point = Vector3(0, 0, 0);
@@ -9,7 +8,9 @@ Plane::Plane()
 Plane::Plane(Vector3 n, Vector3 p)
 {
 	normal = n;
+	normal.normalize(); // Don't trust the user
 	point = p;
+	precomputed = p.dot(p, n);
 }
 
 Plane::~Plane()
@@ -17,13 +18,13 @@ Plane::~Plane()
 }
 
 bool Plane::sphereInsideOrOn(Vector3 center, double rad) {
-	double distance = normal.dot(center - point, normal);
+	double distance = center.dot(center, normal) - precomputed;
 	if (distance >= -rad) {
 		// The distance will be positive if the sphere is on the side of the plane
-		// facing the normal, or 0 if it is on the 
-		return true;
+		// facing the normal, or 0 if it is on the plane
+		return true; // correct implementation is true
 	}
 	else {
-		return false;
+		return false; // correct implementation is false
 	}
 }

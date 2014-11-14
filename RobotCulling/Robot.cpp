@@ -11,10 +11,7 @@ Robot::Robot()
 Robot::Robot(Matrix4& copy)
 {
 	mtx = new Matrix4(copy);
-	centerPos = /* *mtx * */ Vector4(0, 0, 0, 1);
-	/*x = pos.getX();
-	y = pos.getY();
-	z = pos.getZ();*/
+	centerPos = Vector4(0, 0, 0, 1);
 	x = y = z = 0;
 	createRobot();
 }
@@ -118,7 +115,7 @@ void Robot::createRobot() {
 
 	// Initialize the animation state
 	rotateDir = rotateArmDir = -1;
-	rotateSpeed = .125;
+	rotateSpeed = .3;
 	leftArmAngle = 90;
 	rightArmAngle = 270;
 	leftLegAngle = rightLegAngle = 0;
@@ -131,47 +128,7 @@ void Robot::showBoundingBox(bool show) {
 		(*iter)->showBoundingBox(show);
 		iter++;
 	}
-	/*
-	if ( show == true && drawBoundingSphere != show ) {
-
-		// Add wirespheres
-
-		updateBounds();
-
-		wireHead = new Wiresphere(head->boundingRadius, 10, 10 );
-		wireWholeRobot = new Wiresphere(boundingRadius, 10, 10);
-		
-		wireTorso = new Wiresphere(torso->boundingRadius, 10, 10);
-		wireLeftArm = new Wiresphere(leftArm->boundingRadius, 10, 10);
-		wireLeftLeg = new Wiresphere(leftLeg->boundingRadius, 10, 10);
-		wireRightArm = new Wiresphere(rightArm->boundingRadius, 10, 10);
-		wireRightLeg = new Wiresphere(rightLeg->boundingRadius, 10, 10);
-
-		leftLegJoint->addChild(wireLeftLeg);
-		rightLegJoint->addChild(wireRightLeg);
-		leftArmJoint->addChild(wireLeftArm);
-		rightArmJoint->addChild(wireRightArm);
-		neckJoint->addChild(wireHead);
-		addChild(wireTorso);
-		addChild(wireWholeRobot);
-
-	}
-	else if ( show == false && drawBoundingSphere != show ) {
-
-		// Remove wirespheres
-
-		removeChild(wireTorso);
-		removeChild(wireWholeRobot);
-		leftLegJoint->removeChild(wireLeftLeg);
-		rightLegJoint->removeChild(wireRightLeg);
-		leftArmJoint->removeChild(wireLeftArm);
-		rightArmJoint->removeChild(wireRightArm);
-		neckJoint->removeChild(wireHead);
-		delete wireHead, wireLeftArm, wireLeftLeg, wireRightArm, wireRightLeg, wireTorso;
-	}
-	*/
 	drawBoundingSphere = show;
-
 }
 
 /**
@@ -179,12 +136,6 @@ void Robot::showBoundingBox(bool show) {
  * position of this robot's limbs, etc.
  */
 void Robot::animate() {
-
-	// spin the entire robot around
-	mtx->transformLocal(Matrix4::rotY(rotateSpeed/10));
-	
-	// We're walking forward
-	//mtx->transformWorld(Matrix4::translate(rotateSpeed / 100, 0, 0));
 
 	leftArmAngle += rotateSpeed * rotateArmDir;
 	rightArmAngle += rotateSpeed * -rotateArmDir;
@@ -210,8 +161,9 @@ void Robot::animate() {
 
 void Robot::draw(Matrix4& C) {
 	
-	lastC = (C * *mtx);
-	Group::draw( lastC );
+	lastC = C * *mtx;
+	centerPos = lastC * Vector4(0, 0, 0, 1);
+    MatrixTransform::draw(lastC);
 	animate();
 	
 }
