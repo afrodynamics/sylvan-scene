@@ -61,6 +61,7 @@ void MatrixTransform::cdraw(Matrix4& C) {
 				else {
 					intersects = false;
 					inside = false;
+					break;
 				}
 
 			}

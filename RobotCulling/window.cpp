@@ -54,12 +54,17 @@ namespace Scene
 
 		double robotSpacing = 10;
 		double platoonWidth = 100;
-		double platoonDepth = 200;
+		double platoonDepth = 100;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double z = -platoonDepth; z < platoonDepth; z += robotSpacing) {
 				world->addChild(createRobot(Vector3(x, 0, z)));
 			}
 		}
+
+		// Add a floor (memory leak, don't care)
+		MatrixTransform *floor = new MatrixTransform(Matrix4::scale(platoonWidth * robotSpacing, 1, platoonDepth * robotSpacing) * Matrix4::translate(0, -8, 0));
+		floor->addChild(new Cube());
+		world->addChild( floor ); 
 
 		//    \/ Debug Robot
 		//Robot *ptr = createRobot(Vector3(0, 0, 10));
@@ -303,12 +308,21 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'z':
-	  transformation = Matrix4::translate(0.0, 0.0, -1.0);
+	  transformation = Matrix4::scale(0.9, 0.9, .9);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'Z':
-	  transformation = Matrix4::translate(0.0, 0.0, +1.0);
+	  transformation = Matrix4::scale(1.1, 1.1, +1.1);
 	  Scene::world->getMatrix().transformWorld(transformation);
+  case 'o':
+	  transformation = Matrix4::rotY(-1.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
+  case 'O':
+	  transformation = Matrix4::rotY(+1.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+  case 'r':
+	  Scene::world->getMatrix().identity();
 
 	  break;
   default:

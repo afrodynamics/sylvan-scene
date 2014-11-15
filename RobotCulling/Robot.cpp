@@ -185,9 +185,6 @@ void Robot::draw(Matrix4& C) {
 				// If we are inside the frustum, draw
 				Group::draw(lastC);
 			}
-			else {
-				cerr << "culled bitch!" << endl;
-			}
 		}
 	}
 
