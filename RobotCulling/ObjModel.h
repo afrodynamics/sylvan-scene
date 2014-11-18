@@ -2,13 +2,18 @@
 #include "MatrixTransform.h"
 #include <string>
 
+enum FaceDefinition {
+	VERTEX_ONLY, VERTEX_SS_NORMAL, VERTEX_TEXTURE_NORMAL, QUAD
+};
+
 class ObjModel :
 	public MatrixTransform
 {
 private:
-	bool fileLoaded;
+	bool fileLoaded, printWarn;
 	unsigned long faces;
 	std::string filename;
+	FaceDefinition faceType;
 
 	// Parse variables, because memory?
 	int c1, c2;

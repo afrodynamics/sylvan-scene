@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 
 #ifndef __APPLE__
 #include <GL/glut.h>
@@ -25,11 +26,12 @@ namespace Scene
 {
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr;
+	ObjModel *bunny, *dragon, *bear = nullptr;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	bool showBounds = false;
-	bool frustumCulling = true;
+	bool frustumCulling = false;
 	bool showFps = true;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
@@ -47,32 +49,34 @@ namespace Scene
 
 	// Initialize pointers with defaults
 	void setup() {
+
 		camera = new Camera(
 			Vector3(0, 15, 50), Vector3(0, 15, 0), Vector3(0, 1, 0)
 		);
+
 		world = new MatrixTransform();
+		bunny = new ObjModel();
+		dragon = new ObjModel();
+		bear = new ObjModel();
 
-		double robotSpacing = 10;
-		double platoonWidth = 100;
-		double platoonDepth = 100;
-		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
-			for (double z = -platoonDepth; z < platoonDepth; z += robotSpacing) {
-			//	world->addChild(createRobot(Vector3(x, 0, z)));
-			}
-		}
+		string file;
+		//cerr << "choose a .obj file to load: ";
+		//cin >> file;
 
-		// Add a floor (memory leak, don't care)
-		MatrixTransform *floor = new MatrixTransform(Matrix4::scale(platoonWidth * robotSpacing, 1, platoonDepth * robotSpacing) * Matrix4::translate(0, -8, 0));
-		floor->addChild(new Cube());
-		world->addChild( floor ); 
+		std::thread bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj");
+		std::thread dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj");
+		std::thread bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj");
 
-		//    \/ Debug Robot
-		//Robot *ptr = createRobot(Vector3(0, 0, 10));
-		ObjModel *ptr = new ObjModel();
-		if (ptr->parseFile("bunny.obj") == false ) {
-			cerr << ">>> Bunny parsing failed! <<<" << endl;
-		}
-		world->addChild( ptr );
+		bunnyThread.join();
+		dragonThread.join();
+		bearThread.join();
+
+		//if (bunny->parseFile("bunny.obj") == false ) {
+		//	cerr << ">>> Bunny parsing failed! <<<" << endl;
+		//}
+
+		world->addChild( bunny );
+
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
