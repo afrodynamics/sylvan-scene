@@ -27,9 +27,9 @@ namespace Scene
 	MatrixTransform *world = nullptr;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
-	vector<Plane> frustumList = vector<Plane>(6);
+	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	bool showBounds = false;
-	bool frustumCulling = false;
+	bool frustumCulling = true;
 	bool showFps = true;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
@@ -164,13 +164,12 @@ void Window::reshapeCallback(int w, int h)
 
   // Remember, our normals should point ***inside*** of the view frustum
 
-  nearNormal.negate();
-
   nearPlane = Plane(nearNormal, nearCenter);  // WRONG ?
 
-  nearNormal.print("nearPlane normal");nearCenter.print("nearCenter");
+  nearNormal.print("nearPlane normal");
+  nearCenter.print("nearCenter");
+  
   nearNormal.negate();
-
   farPlane = Plane(nearNormal, farCenter);
 
   farCenter.print("farCenter");
@@ -187,6 +186,7 @@ void Window::reshapeCallback(int w, int h)
   tmp.print("rightPlane normal");
 
   rightPlane = Plane(tmp, edgePoint);
+
   // rightPlane is straight from the formula
 
   // Left Plane
@@ -248,12 +248,12 @@ void Window::displayCallback()
 
 	// Pass in our inverse camera matrix in row-major order (since our draw function
 	// in our Node classes expects row-major matrices)
-	  if (Scene::frustumCulling) {
-		  Scene::world->cdraw(Scene::camera->getInverseMatrix());
-	  }
-	  else {
-		  Scene::world->draw(Scene::camera->getInverseMatrix());
-	  }
+	if (Scene::frustumCulling) {
+		Scene::world->cdraw(Scene::camera->getInverseMatrix());
+	}
+	else {
+		Scene::world->draw(Scene::camera->getInverseMatrix());
+	}
 
   }
 

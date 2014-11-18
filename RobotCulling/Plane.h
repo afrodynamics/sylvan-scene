@@ -1,13 +1,11 @@
 #pragma once
 #include "Vector3.h"
-#define INSIDE 0
-#define INTERSECTS 1
-#define OUTSIDE 2
 
 class Plane
 {
 public:
 	double precomputed;
+	static int INSIDE, OUTSIDE, INTERSECTS;
 	Vector3 normal, point;
 	Plane();
 	Plane(Vector3 n, Vector3 p);

@@ -178,12 +178,31 @@ void Robot::draw(Matrix4& C) {
 		if (frustumPlanes != nullptr) {
 			bool inside = false;
 			bool intersects = false;
+			Vector3 center = Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
-				inside = inside || (*iter).sphereInsideOrOn(Vector3(x, y, z), boundingRadius);
+
+				int ret = (*iter).sphereInsideOrOn(center, boundingRadius);
+				if (ret == Plane::OUTSIDE) {
+					inside = false;
+					intersects = false; break;
+				}
+				else if (ret == Plane::INTERSECTS) {
+					intersects = true;
+				}
+				else {
+					inside = true;
+				}
 			}
-			if (inside == true || intersects == true) {
-				// If we are inside the frustum, draw
+
+			if (intersects == true) {
 				Group::draw(lastC);
+			}
+			else if (inside == true) {
+				Group::draw(lastC);
+			}
+			else {
+				return;
 			}
 		}
 	}

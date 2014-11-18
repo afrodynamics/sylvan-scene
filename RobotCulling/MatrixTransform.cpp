@@ -48,20 +48,16 @@ void MatrixTransform::cdraw(Matrix4& C) {
 
 			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
 
-				Vector3 center = Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ());
-				double distance = center.dot(center, (*iter).normal) - (*iter).precomputed;
-				if (distance > boundingRadius) {
-					// The distance will be positive if the sphere is on the side of the plane
-					// facing the normal, or 0 if it is on the plane
-					inside = true;
+				int ret = (*iter).sphereInsideOrOn(center, boundingRadius);
+				if ( ret == Plane::OUTSIDE ) {
+					inside = false;
+					intersects = false; break;
 				}
-				else if ( distance >= -boundingRadius ) {
+				else if (ret == Plane::INTERSECTS) {
 					intersects = true;
 				}
 				else {
-					intersects = false;
-					inside = false;
-					break;
+					inside = true;
 				}
 
 			}
