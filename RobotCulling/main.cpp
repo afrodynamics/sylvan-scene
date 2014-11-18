@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_POINT_SMOOTH);
+  glEnable(GL_NORMALIZE);
   glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
   // Generate material properties:

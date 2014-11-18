@@ -1,5 +1,6 @@
 #include "ObjModel.h"
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 
 using namespace std;
@@ -25,7 +26,7 @@ void ObjModel::printInfo(string comment)
 {
 	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
-		<< "\tTriangles: " << faces << endl;
+		<< "\tFaces: " << faces << endl;
 }
 
 /**
@@ -40,39 +41,52 @@ bool ObjModel::parseFile(string fname) {
 		return false;
 	}
 
-	/*** BEGIN PARSING ***/
-
-	FILE *fp = nullptr;
-	fp = fopen(fname.c_str(), "r");
-
-	if (fp == nullptr) {
-		cerr << "Error opening file " << fname << " for reading." << endl; return false;
-	}
-
 	// All the things we could parse (could use fewer variables, but it's for semantics)
 
 	// Vertex Coords x, y, z, [w: default = 1]   
 	// Texture coords vtx, vty, vtz (usually 0)      
 	// Normals x, y, z (might not be normalized)
-	double vx, vy, vz, vw, vtx, vty, vtz, vnx, vny, vnz; 
+	/*double vx, vy, vz, vw, vtx, vty, vtz, vnx, vny, vnz;
 	double r, g, b;
-
-	// First two characters on the line
-	int c1, c2;
-	int symbolsRead = 0;
-	unsigned long lineNumber = 1;
+	*/
+	symbolsRead = 0;
+	lineNumber = 1;
 
 	// Support a LOT of vertices
-	unsigned long t1, t2, t3, n1, n2, n3;
+	//int t1, t2, t3, n1, n2, n3;
+
+	/*** BEGIN PARSING ***/
+
+	ifstream ifs;
+
+	while (!ifs.bad() && !ifs.eof()) {
+		
+		ifs.ignore();
+		lineNumber++;
+
+	}
+
+	if (ifs.fail()) {
+		cerr << "Something went wrong and set the failbit while reading!" << endl;
+		return false;
+	}
+
+//	FILE *fp = nullptr;
+//	fp = fopen(fname.c_str(), "r");
+
+/*	if (fp == nullptr) {
+		cerr << "Error opening file " << fname << " for reading." << endl; return false;
+	}
 
 	// Loop until we hit EOF (this is not a good way to do this, but oh well)
 	while (!feof(fp)) {
+		
 		symbolsRead = 0;
 		c1 = fgetc(fp); // Valid: 'v' 'f' '#'
 		c2 = fgetc(fp); // Valid: ' ' 'n' 't' 
 
 		if (c1 == 'f') {
-			symbolsRead = fscanf(fp, "%d//%d %d//%d %d//%d",
+			symbolsRead = fscanf(fp, "%d %d %d %d %d %d",
 				&t1, &n1, &t2, &n2, &t3, &n3); // Vertex/Normal
 
 			// Push a triangle corner index, then
@@ -86,8 +100,7 @@ bool ObjModel::parseFile(string fname) {
 			faces++; // Inc face counter
 		}
 		else if (c1 == 'v') {
-			switch (c2) {
-			case ' ': // Standard Vertex (with and without w)
+			if (c2 == ' ') { // Standard Vertex (with and without w)
 				symbolsRead = fscanf(fp, "%lf %lf %lf %lf %lf %lf", &vx, &vy, &vz, &r, &g, &b);
 				if (symbolsRead == 6) {
 					vertexList.push_back(Vector4(vx, vy, vz, 1));
@@ -96,16 +109,16 @@ bool ObjModel::parseFile(string fname) {
 				else if (symbolsRead == 3) {
 					vertexList.push_back(Vector4(vx, vy, vz, 1.0));
 				}
-				break;
-			case 'n': // Normal (have only one form)
+			}
+			else if (c2 == 'n') { // Normal (have only one form)
 				symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
 				if (symbolsRead == 3) {
 					Vector4 norm = Vector4(vnx, vny, vnz, 0);
 					norm.normalize();
 					normalList.push_back(norm);
 				}
-				break;
-			case 't': // Texture Coords (u, w, [0])
+			}
+			else if (c2 == 't') { // Texture Coords (u, w, [0])
 				symbolsRead = fscanf(fp, "%lf %lf %lf", &vtx, &vty, &vtz);
 				if (symbolsRead == 3) {
 					normalList.push_back(Vector4(vtx, vty, vtz, 0));
@@ -113,8 +126,8 @@ bool ObjModel::parseFile(string fname) {
 				else if (symbolsRead == 2) {
 					normalList.push_back(Vector4(vtx, vty, 0, 0));
 				}
-				break;
-			case 'p': // Parametric surfaces vertices (u, [w], [v])
+			}
+			else if (c2 == 'p') { // Parametric surfaces vertices (u, [w], [v])
 				symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
 				if (symbolsRead == 3) {
 					normalList.push_back(Vector4(vnx, vny, vnz, 0));
@@ -125,7 +138,6 @@ bool ObjModel::parseFile(string fname) {
 				else if (symbolsRead == 1) {
 					normalList.push_back(Vector4(vnx, 0, 0, 0));
 				}
-				break;
 			}
 		}
 
@@ -133,13 +145,14 @@ bool ObjModel::parseFile(string fname) {
 		
 	}
 
-	fclose(fp);
+	fclose(fp); */
 
 	/*** END PARSING ***/
 
 	cerr << "Read " << lineNumber << " lines" << endl;
-	printInfo("Loaded! ");
+	filename = fname;
 	fileLoaded = true;
+	printInfo("Loaded! ");
 
 	return true; // Successfully parsed a .obj model file
 }
@@ -171,21 +184,15 @@ void ObjModel::draw(Matrix4& C) {
 	glLoadMatrixd(tmp.getPointer());
 	glBegin(GL_TRIANGLES);
 
-	for ( auto iter = triangleList.begin(); iter != triangleList.end(); ) {
+	for (int i = 1; i <= faces; ++i) {
 
 		// Grab the normal and vertex indices in their respective arrays
 
-		unsigned int corner1 = (*iter); ++iter;
-		unsigned int normal1 = (*iter); ++iter;
-		unsigned int corner2 = (*iter); ++iter;
-		unsigned int normal2 = (*iter); ++iter;
-		unsigned int corner3 = (*iter); ++iter;
-		unsigned int normal3 = (*iter); ++iter;
 		bool lookupColor = false;
 
-		if (corner1 >= vertSize || corner2 >= vertSize || corner3 >= vertSize ) break;
-		if (normal1 >= normSize || normal2 >= normSize || normal3 >= normSize) break;
-		if (corner1 >= colorSize || corner2 >= colorSize || corner3 >= colorSize) {
+		if (i + 2 >= vertSize) break;
+		if (i + 2 >= normSize) break;
+		if (i + 2 >= colorSize) {
 			glColor3f(1.0, 1.0, 1.0); // Default to color white
 		}
 		else {
@@ -193,40 +200,42 @@ void ObjModel::draw(Matrix4& C) {
 		}
 
 		// Grab the information we need from our std::vectors (in Vector4 format)
-
-		vtx = vertexList[corner1];
-		nrm = normalList[normal1];
+		/* Vertex 1 */
+		vtx = vertexList[i-1];
+		nrm = normalList[i-1];
 		clr;
 		if (lookupColor) {
-			clr = colorList[corner1];
+			clr = colorList[i-1];
 			glColor3f(clr.getX(), clr.getY(), clr.getZ());
 		}
 
-		/* First Corner */
+		
+		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());	
+		
+		/* Vertex 2 */
+		++i;
+		vtx = vertexList[i - 1];
+		nrm = normalList[i - 1];
+		clr;
+		if (lookupColor) {
+			clr = colorList[i - 1];
+			glColor3f(clr.getX(), clr.getY(), clr.getZ());
+		}
+		
 		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
 		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
 
-		vtx = vertexList[corner2];
-		nrm = normalList[normal2];
+		/* Vertex 3 */
+		++i;
+		vtx = vertexList[i - 1];
+		nrm = normalList[i - 1];
 		clr;
 		if (lookupColor) {
-			clr = colorList[corner2];
+			clr = colorList[i - 1];
 			glColor3f(clr.getX(), clr.getY(), clr.getZ());
 		}
 
-		/* Second Corner */
-		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
-		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
-
-		vtx = vertexList[corner3];
-		nrm = normalList[normal3];
-		clr;
-		if (lookupColor) {
-			clr = colorList[corner3];
-			glColor3f(clr.getX(), clr.getY(), clr.getZ());
-		}
-
-		/* Third Corner */
 		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
 		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
 
