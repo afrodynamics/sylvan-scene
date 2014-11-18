@@ -70,7 +70,7 @@ namespace Scene
 		//Robot *ptr = createRobot(Vector3(0, 0, 10));
 		ObjModel *ptr = new ObjModel();
 		if (ptr->parseFile("bunny.obj") == false ) {
-			cerr << "Parsing fucked up" << endl;
+			cerr << ">>> Bunny parsing failed! <<<" << endl;
 		}
 		world->addChild( ptr );
 	};
@@ -168,13 +168,8 @@ void Window::reshapeCallback(int w, int h)
 
   // Remember, our normals should point ***OUTSIDE*** of the view frustum
 
-  nearNormal.print("nearPlane normal");
-  nearCenter.print("nearCenter");
   nearPlane = Plane(nearNormal, nearCenter); 
-
   nearNormal.negate();
-  farCenter.print("farCenter");
-  nearNormal.print("farPlane normal");
   farPlane = Plane(nearNormal, farCenter);
   
   // Get the point tmp on the right edge of the near plane
@@ -185,7 +180,6 @@ void Window::reshapeCallback(int w, int h)
   Vector3 tmp = edgePoint - cam;
   tmp.normalize();
   tmp = tmp.cross( tmp, up );
-  tmp.print("rightPlane normal");
 
   rightPlane = Plane(tmp, edgePoint);
 
@@ -197,7 +191,6 @@ void Window::reshapeCallback(int w, int h)
   tmp = edgePoint - cam; 
   tmp.normalize();
   tmp.cross(up, tmp);
-  tmp.print("leftPlane normal");
 
   leftPlane = Plane(tmp, edgePoint);
 
@@ -207,7 +200,6 @@ void Window::reshapeCallback(int w, int h)
   tmp = edgePoint - cam;
   tmp.normalize();
   tmp.cross(right, tmp);
-  tmp.print("topPlane normal");
 
   topPlane = Plane(tmp, edgePoint);
 
@@ -218,7 +210,6 @@ void Window::reshapeCallback(int w, int h)
   tmp.normalize();
   tmp.negate();
   tmp.cross(right, tmp);
-  tmp.print("botPlane normal");
 
   bottomPlane = Plane(tmp, edgePoint);
 

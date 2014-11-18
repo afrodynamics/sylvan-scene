@@ -1,7 +1,8 @@
 #include "ObjModel.h"
-#include <iostream>
+#include <string>
+#include <sstream>
 #include <fstream>
-#include <cstdlib>
+#include <iostream>
 
 using namespace std;
 
@@ -14,13 +15,34 @@ ObjModel::ObjModel()
 	mtx->identity();
 }
 
-
 ObjModel::~ObjModel()
 {
 	if (mtx != nullptr) {
 		delete mtx;
 	}
 }
+
+/**
+ * Utility Functions (static, visible to this file only)
+ */
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems)
+{
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim))
+	{
+		elems.push_back(item);
+	}
+	return elems;
+}
+
+std::vector<std::string> split(const std::string &s, char delim)
+{
+	std::vector<std::string> elems;
+	split(s, delim, elems);
+	return elems;
+}
+// --- end util
 
 void ObjModel::printInfo(string comment)
 {
@@ -37,7 +59,7 @@ bool ObjModel::parseFile(string fname) {
 
 	// Don't load a second time
 	if (fileLoaded) {
-		cerr << "Cannot load " << fname << " because this ObjModel has already loaded " << filename << endl;
+		std::cerr << "Cannot load " << fname << " because this ObjModel has already loaded " << filename << endl;
 		return false;
 	}
 
@@ -58,18 +80,108 @@ bool ObjModel::parseFile(string fname) {
 	/*** BEGIN PARSING ***/
 
 	ifstream ifs;
+	string line;
+	vector<string> tokens;
+	string tok;  // first token in the string
 
-	while (!ifs.bad() && !ifs.eof()) {
+	ifs.open(fname); /// NO MATTER WHAT I DO IT WON'T WORK
+	
+
+	while (ifs.good()) {
 		
-		ifs.ignore();
+		// Grabs a line from ifs and drops it
+		// into string line
+		getline(ifs, line, '\n');
+
+		// OBJ files are space-delimited
+		tokens = split(line, ' ');	
+
+		if (tokens.size() <= 0) {
+			continue; // We're probably done reading the file
+		}
+
+		tok = tokens.at(0).front();
+
+		/*  '#' --- Skip Comments --- */
+		if ( tok.compare("#") == 0) {
+			lineNumber++; continue;
+		}
+		/*  'f' --- Read in a face --- */
+		if ( tok.compare("f") == 0 ) {
+			
+			// Push a triangle corner index, then
+			triangleList.push_back(t1);
+			triangleList.push_back(n1);
+			triangleList.push_back(t2);
+			triangleList.push_back(n2);
+			triangleList.push_back(t3);
+			triangleList.push_back(n3);
+
+			faces++; // Inc face counter
+		}
+		/*  'v' --- Read in a vertex --- */
+		else if (tok.compare("v") == 0) {
+
+			/* This is a vertex line */
+
+			if (tokens.size() == 6) {
+				vertexList.push_back(Vector4(vx, vy, vz, 1));
+				colorList.push_back(Vector4(r, g, b, 0));
+			}
+			else if (tokens.size() == 3) {
+				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
+			}
+
+		}
+		else if ( tok.compare("vn") ) { 
+				
+			// Normal (have only one form)
+
+			if (tokens.size() == 3) {
+				Vector4 norm = Vector4(vnx, vny, vnz, 0);
+				norm.normalize();
+				normalList.push_back(norm);
+			}
+
+		}
+		else if (tok.compare("vt")) { 
+				
+			// Texture Coords (u, w, [0])
+				
+			if (tokens.size() == 3) {
+				normalList.push_back(Vector4(vtx, vty, vtz, 0));
+			}
+			else if (tokens.size() == 2) {
+				normalList.push_back(Vector4(vtx, vty, 0, 0));
+			}
+
+		}
+		else if (tok.compare("vp")) { 
+				
+			// Parametric surfaces vertices (u, [w], [v])
+				
+			if (tokens.size() == 3) {
+				normalList.push_back(Vector4(vnx, vny, vnz, 0));
+			}
+			else if (tokens.size() == 2) {
+				normalList.push_back(Vector4(vnx, vny, 0, 0));
+			}
+			else if (symbolsRead == 1) {
+				normalList.push_back(Vector4(vnx, 0, 0, 0));
+			}
+		}
+
 		lineNumber++;
 
 	}
 
 	if (ifs.fail()) {
-		cerr << "Something went wrong and set the failbit while reading!" << endl;
+		std::cerr << "Parsing failed: " << strerror(errno) << endl;
+		ifs.close();
 		return false;
 	}
+
+	ifs.close();
 
 //	FILE *fp = nullptr;
 //	fp = fopen(fname.c_str(), "r");
@@ -149,7 +261,7 @@ bool ObjModel::parseFile(string fname) {
 
 	/*** END PARSING ***/
 
-	cerr << "Read " << lineNumber << " lines" << endl;
+	std::cerr << "Read " << lineNumber << " lines" << endl;
 	filename = fname;
 	fileLoaded = true;
 	printInfo("Loaded! ");
@@ -162,12 +274,14 @@ bool ObjModel::parseFile(string fname) {
  */
 void ObjModel::draw(Matrix4& C) {
 
+	static bool printWarn = false;
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
 
-	if (!fileLoaded) {
+	if (!fileLoaded * !printWarn) {
 		// Print a warning letting the user know what's up
-		cerr << "Warning, attempting to draw an ObjModel which has not yet been parsed..." << endl;
+		std::cerr << "Warning, attempting to draw an ObjModel which has not yet been parsed..." << endl;
+		printWarn = true;
 	}
 
 	// Draw *this* object, then the children
