@@ -9,7 +9,7 @@ private:
 	bool fileLoaded;
 	std::string filename;
 public:
-	std::vector<Vector3> faceList, vertexList, normalList, colorList;
+	std::vector<Vector4> faceList, vertexList, normalList, colorList, uvwCoords;
 	ObjModel();
 	~ObjModel();
 	bool parseFile(std::string fname);
