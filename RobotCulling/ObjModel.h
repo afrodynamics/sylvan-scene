@@ -7,9 +7,11 @@ class ObjModel :
 {
 private:
 	bool fileLoaded;
+	unsigned long faces;
 	std::string filename;
 public:
-	std::vector<Vector4> faceList, vertexList, normalList, colorList, uvwCoords;
+	std::vector<Vector4> vertexList, normalList, colorList, uvwCoords;
+	std::vector<int> triangleList;
 	ObjModel();
 	~ObjModel();
 	bool parseFile(std::string fname);

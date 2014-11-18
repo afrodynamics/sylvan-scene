@@ -8,6 +8,7 @@ ObjModel::ObjModel()
 {
 	fileLoaded = false;
 	filename = "";
+	faces = 0;
 	mtx = new Matrix4();
 	mtx->identity();
 }
@@ -22,9 +23,9 @@ ObjModel::~ObjModel()
 
 void ObjModel::printInfo(string comment)
 {
-	cout<< comment << " (" << filename << ")" << endl
+	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
-		<< "\tFaces: " << faceList.size() << endl;
+		<< "\tTriangles: " << faces << endl;
 }
 
 /**
@@ -54,71 +55,91 @@ bool ObjModel::parseFile(string fname) {
 	// Texture coords vtx, vty, vtz (usually 0)      
 	// Normals x, y, z (might not be normalized)
 	double vx, vy, vz, vw, vtx, vty, vtz, vnx, vny, vnz; 
-	
+	double r, g, b;
+
 	// First two characters on the line
 	int c1, c2;
+	int symbolsRead = 0;
 	unsigned long lineNumber = 1;
+
+	// Support a LOT of vertices
+	unsigned long t1, t2, t3, n1, n2, n3;
 
 	// Loop until we hit EOF (this is not a good way to do this, but oh well)
 	while (!feof(fp)) {
+		symbolsRead = 0;
 		c1 = fgetc(fp); // Valid: 'v' 'f' '#'
 		c2 = fgetc(fp); // Valid: ' ' 'n' 't' 
-		switch (c1) {
-		case 'v': /* Vertices */
+
+		if (c1 == 'f') {
+			symbolsRead = fscanf(fp, "%d//%d %d//%d %d//%d",
+				&t1, &n1, &t2, &n2, &t3, &n3); // Vertex/Normal
+
+			// Push a triangle corner index, then
+			triangleList.push_back(t1);
+			triangleList.push_back(n1);
+			triangleList.push_back(t2);
+			triangleList.push_back(n2);
+			triangleList.push_back(t3);
+			triangleList.push_back(n3);
+
+			faces++; // Inc face counter
+		}
+		else if (c1 == 'v') {
 			switch (c2) {
-			case '#': /* Ignore Comments First */
-				break;
 			case ' ': // Standard Vertex (with and without w)
-				if (fscanf(fp, "%lf %lf %lf %lf", &vx, &vy, &vz, &vw) == 4) {
-					vertexList.push_back(Vector4(vx, vy, vz, vw));
+				symbolsRead = fscanf(fp, "%lf %lf %lf %lf %lf %lf", &vx, &vy, &vz, &r, &g, &b);
+				if (symbolsRead == 6) {
+					vertexList.push_back(Vector4(vx, vy, vz, 1));
+					colorList.push_back(Vector4(r, g, b, 0));
 				}
-				else if (fscanf(fp, "%lf %lf %lf", &vx, &vy, &vz) == 3) {
+				else if (symbolsRead == 3) {
 					vertexList.push_back(Vector4(vx, vy, vz, 1.0));
 				}
 				break;
 			case 'n': // Normal (have only one form)
-				if (fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz) == 3) {
+				symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
+				if (symbolsRead == 3) {
 					Vector4 norm = Vector4(vnx, vny, vnz, 0);
 					norm.normalize();
 					normalList.push_back(norm);
 				}
 				break;
 			case 't': // Texture Coords (u, w, [0])
-				if (fscanf(fp, "%lf %lf %lf", &vtx, &vty, &vtz) == 3) {
+				symbolsRead = fscanf(fp, "%lf %lf %lf", &vtx, &vty, &vtz);
+				if (symbolsRead == 3) {
 					normalList.push_back(Vector4(vtx, vty, vtz, 0));
 				}
-				else if (fscanf(fp, "%lf %lf", &vtx, &vty) == 2) {
+				else if (symbolsRead == 2) {
 					normalList.push_back(Vector4(vtx, vty, 0, 0));
 				}
 				break;
 			case 'p': // Parametric surfaces vertices (u, [w], [v])
-				if (fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz) == 3) {
+				symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
+				if (symbolsRead == 3) {
 					normalList.push_back(Vector4(vnx, vny, vnz, 0));
 				}
-				else if (fscanf(fp, "%lf %lf", &vnx, &vny) == 2) {
+				else if (symbolsRead == 2) {
 					normalList.push_back(Vector4(vnx, vny, 0, 0));
 				}
-				else if (fscanf(fp, "%lf", &vnx) == 1) {
+				else if (symbolsRead == 1) {
 					normalList.push_back(Vector4(vnx, 0, 0, 0));
 				}
 				break;
 			}
-			break;
-		case 'f': /* Faces */
-			break;
-		default:
-			// Something went wrong
-			cerr << "Unable to parse symbol in " << fname << " at " << lineNumber << endl;
-			break;
 		}
-		lineNumber++; // inc. line number for error print out
+
+		lineNumber++;
+		
 	}
 
 	fclose(fp);
 
 	/*** END PARSING ***/
 
+	cerr << "Read " << lineNumber << " lines" << endl;
 	printInfo("Loaded! ");
+	fileLoaded = true;
 
 	return true; // Successfully parsed a .obj model file
 }
@@ -138,7 +159,79 @@ void ObjModel::draw(Matrix4& C) {
 
 	// Draw *this* object, then the children
 
+	Vector4 vtx, nrm, clr;
+	unsigned int normSize = normalList.size();
+	unsigned int vertSize = vertexList.size();
+	unsigned int colorSize = vertexList.size();
+
+	Matrix4 tmp = lastC;
+	tmp.transpose();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixd(tmp.getPointer());
 	glBegin(GL_TRIANGLES);
+
+	for ( auto iter = triangleList.begin(); iter != triangleList.end(); ) {
+
+		// Grab the normal and vertex indices in their respective arrays
+
+		unsigned int corner1 = (*iter); ++iter;
+		unsigned int normal1 = (*iter); ++iter;
+		unsigned int corner2 = (*iter); ++iter;
+		unsigned int normal2 = (*iter); ++iter;
+		unsigned int corner3 = (*iter); ++iter;
+		unsigned int normal3 = (*iter); ++iter;
+		bool lookupColor = false;
+
+		if (corner1 >= vertSize || corner2 >= vertSize || corner3 >= vertSize ) break;
+		if (normal1 >= normSize || normal2 >= normSize || normal3 >= normSize) break;
+		if (corner1 >= colorSize || corner2 >= colorSize || corner3 >= colorSize) {
+			glColor3f(1.0, 1.0, 1.0); // Default to color white
+		}
+		else {
+			lookupColor = true;
+		}
+
+		// Grab the information we need from our std::vectors (in Vector4 format)
+
+		vtx = vertexList[corner1];
+		nrm = normalList[normal1];
+		clr;
+		if (lookupColor) {
+			clr = colorList[corner1];
+			glColor3f(clr.getX(), clr.getY(), clr.getZ());
+		}
+
+		/* First Corner */
+		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+
+		vtx = vertexList[corner2];
+		nrm = normalList[normal2];
+		clr;
+		if (lookupColor) {
+			clr = colorList[corner2];
+			glColor3f(clr.getX(), clr.getY(), clr.getZ());
+		}
+
+		/* Second Corner */
+		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+
+		vtx = vertexList[corner3];
+		nrm = normalList[normal3];
+		clr;
+		if (lookupColor) {
+			clr = colorList[corner3];
+			glColor3f(clr.getX(), clr.getY(), clr.getZ());
+		}
+
+		/* Third Corner */
+		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+
+	}
+
 	glEnd();
 
 	// Call draw on the children, if we have any

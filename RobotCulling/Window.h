@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Robot.h"
 #include "Plane.h"
+#include "ObjModel.h"
 
 /**
  * Keeps all our scene data together

@@ -67,7 +67,11 @@ namespace Scene
 		world->addChild( floor ); 
 
 		//    \/ Debug Robot
-		Robot *ptr = createRobot(Vector3(0, 0, 10));
+		//Robot *ptr = createRobot(Vector3(0, 0, 10));
+		ObjModel *ptr = new ObjModel();
+		if (ptr->parseFile("bunny.obj") == false ) {
+			cerr << "Parsing fucked up" << endl;
+		}
 		world->addChild( ptr );
 	};
 	void dealloc() {
@@ -338,6 +342,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 //    See main.cpp line 56
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
+  case GLUT_KEY_F1:
+	  cerr << "Pressed F1, currently no functionality, just suppressing compiler warnings in VS" << endl;
+	  break;
   default:
 	  cerr << "Pressed a function key or trigged glutSpecialFunc" << endl;
 	  break;
