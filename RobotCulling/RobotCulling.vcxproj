@@ -75,6 +75,7 @@
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="MatrixTransform.h" />
     <ClInclude Include="node.h" />
+    <ClInclude Include="ObjModel.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Robot.h" />
     <ClInclude Include="Sphere.h" />
@@ -92,6 +93,7 @@
     <ClCompile Include="Matrix4.cpp" />
     <ClCompile Include="MatrixTransform.cpp" />
     <ClCompile Include="node.cpp" />
+    <ClCompile Include="ObjModel.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Robot.cpp" />
     <ClCompile Include="Sphere.cpp" />

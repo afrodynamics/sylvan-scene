@@ -39,6 +39,7 @@ void MatrixTransform::cdraw(Matrix4& C) {
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0, 0, 0, 1);
 
+
 	{
 		// Do intersection testing here
 		if (frustumPlanes != nullptr) {
@@ -59,7 +60,6 @@ void MatrixTransform::cdraw(Matrix4& C) {
 				else {
 					inside = true;
 				}
-
 			}
 			
 			if (intersects == true) {

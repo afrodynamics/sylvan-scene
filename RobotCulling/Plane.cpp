@@ -11,9 +11,9 @@ Plane::Plane()
 
 Plane::Plane(Vector3 n, Vector3 p)
 {
-	normal = n;
+	normal = Vector3( n ); // Copy ctor
 	normal.normalize(); // Don't trust the user
-	point = p;
+	point = Vector3( p ); // Copy ctor
 	precomputed = p.dot(p, n);
 }
 
@@ -23,15 +23,13 @@ Plane::~Plane()
 
 bool Plane::sphereInsideOrOn(Vector3 center, double rad) {
 	double distance = center.dot(center, normal) + precomputed;
-	if (distance > -rad) {
-		// The distance will be positive if the sphere is on the side of the plane
-		// facing the normal, or 0 if it is on the plane
-		return Plane::INSIDE;
+	if (distance < -rad) {
+		return Plane::OUTSIDE;
 	}
-	else if (distance >= -rad) {
+	else if (distance < rad) {
 		return Plane::INTERSECTS;
 	}
 	else {
-		return Plane::OUTSIDE;
+		return Plane::INSIDE;
 	}
 }

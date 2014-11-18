@@ -57,7 +57,7 @@ namespace Scene
 		double platoonDepth = 100;
 		for (double x = -platoonWidth; x < platoonWidth; x += robotSpacing) {
 			for (double z = -platoonDepth; z < platoonDepth; z += robotSpacing) {
-				world->addChild(createRobot(Vector3(x, 0, z)));
+			//	world->addChild(createRobot(Vector3(x, 0, z)));
 			}
 		}
 
@@ -67,8 +67,8 @@ namespace Scene
 		world->addChild( floor ); 
 
 		//    \/ Debug Robot
-		//Robot *ptr = createRobot(Vector3(0, 0, 10));
-		//world->addChild( ptr );
+		Robot *ptr = createRobot(Vector3(0, 0, 10));
+		world->addChild( ptr );
 	};
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
@@ -162,19 +162,17 @@ void Window::reshapeCallback(int w, int h)
 
   Plane nearPlane, farPlane, leftPlane, rightPlane, topPlane, bottomPlane;
 
-  // Remember, our normals should point ***inside*** of the view frustum
-
-  nearPlane = Plane(nearNormal, nearCenter);  // WRONG ?
+  // Remember, our normals should point ***OUTSIDE*** of the view frustum
 
   nearNormal.print("nearPlane normal");
   nearCenter.print("nearCenter");
-  
-  nearNormal.negate();
-  farPlane = Plane(nearNormal, farCenter);
+  nearPlane = Plane(nearNormal, nearCenter); 
 
+  nearNormal.negate();
   farCenter.print("farCenter");
   nearNormal.print("farPlane normal");
-
+  farPlane = Plane(nearNormal, farCenter);
+  
   // Get the point tmp on the right edge of the near plane
   // and subtract it from the camera's position so we get a vector
   // that points in the direction parallel to the right plane
@@ -182,7 +180,7 @@ void Window::reshapeCallback(int w, int h)
   Vector3 edgePoint = (nearCenter + right * (wNear / 2.0));
   Vector3 tmp = edgePoint - cam;
   tmp.normalize();
-  tmp = tmp.cross( up, tmp );
+  tmp = tmp.cross( tmp, up );
   tmp.print("rightPlane normal");
 
   rightPlane = Plane(tmp, edgePoint);
@@ -194,7 +192,6 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + right * (-wNear / 2.0));
   tmp = edgePoint - cam; 
   tmp.normalize();
-  tmp.negate();
   tmp.cross(up, tmp);
   tmp.print("leftPlane normal");
 
@@ -205,7 +202,6 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + up * (hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
-  tmp.negate();
   tmp.cross(right, tmp);
   tmp.print("topPlane normal");
 
@@ -216,6 +212,7 @@ void Window::reshapeCallback(int w, int h)
   edgePoint = (nearCenter + up * (-hNear / 2.0));
   tmp = edgePoint - cam;
   tmp.normalize();
+  tmp.negate();
   tmp.cross(right, tmp);
   tmp.print("botPlane normal");
 
@@ -254,7 +251,6 @@ void Window::displayCallback()
 	else {
 		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
-
   }
 
   glFlush();  
@@ -290,7 +286,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
-
   case 'x':
 	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -308,12 +303,13 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'z':
-	  transformation = Matrix4::scale(0.9, 0.9, .9);
+	  transformation = Matrix4::scale(0.9, 0.9, 0.9);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'Z':
-	  transformation = Matrix4::scale(1.1, 1.1, +1.1);
+	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
 	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
   case 'o':
 	  transformation = Matrix4::rotY(-1.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -321,9 +317,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'O':
 	  transformation = Matrix4::rotY(+1.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-
 	  break;
   default:
       cerr << "Pressed: " << key << endl;

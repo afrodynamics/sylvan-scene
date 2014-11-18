@@ -6,6 +6,7 @@
 class Camera {
 private:
 	Vector3 center, up, right, lookDir;
+	void updateInverseCameraMtx();
 public:
 	// Vector3 e, d, up; // Where e is the center of projection, d is the point we are looking toward
 	                  // and up is a vector pointing up (in world coordinates)
@@ -25,8 +26,7 @@ public:
 	Vector3 getRight();
 	Vector3 getLookDir();
 
-    // TODO: Define camera transformation operations, which will wrap the Matrix4 methods
-    //       so that we can change the glCamera2world matrix whenever we modify the camera matrix
+    // Transform the camera position
 
 };
 
