@@ -24,6 +24,7 @@ ObjModel::~ObjModel()
 
 /**
  * Utility Functions (static, visible to this file only)
+ *   Avoid allocating and reallocating a tokens vector every line
  */
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems)
 {
@@ -36,12 +37,6 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 	return elems;
 }
 
-std::vector<std::string> split(const std::string &s, char delim)
-{
-	std::vector<std::string> elems;
-	split(s, delim, elems);
-	return elems;
-}
 // --- end util
 
 void ObjModel::printInfo(string comment)
@@ -51,11 +46,83 @@ void ObjModel::printInfo(string comment)
 		<< "\tFaces: " << faces << endl;
 }
 
+/* What the outside can use */
+bool ObjModel::parseFile(string fname) {
+	return cppParseFile(fname);
+};
+
+bool ObjModel::cParseFile(string fname) {
+
+	/* BROKEN (but maybe faster one day) */
+
+	// Don't load a second time
+	if (fileLoaded) {
+		std::cerr << "Cannot load " << fname << " because this ObjModel has already loaded " << filename << endl;
+		return false;
+	}
+
+	lineNumber = 0;
+
+	/*** BEGIN PARSING ***/
+
+	FILE *fp = fopen(fname.c_str(), "r");
+	char buf[256];
+	int t1, n1, t2, n2, t3, n3;
+	string s1, s2, s3;
+	while (fscanf(fp, "%s", buf) != 0 ) {
+
+		if (strncmp(buf, "#", 1) == 0) {
+			fscanf(fp, " %[^\n]", buf); // Discard line
+			continue;
+		}
+		else if (strncmp(buf, "vn", 2) == 0) {
+			symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
+			if (symbolsRead == 3) {
+				Vector4 norm = Vector4(vnx, vny, vnz, 0);
+				norm.normalize();
+				normalList.push_back(norm);
+			}
+		}
+		else if (strncmp(buf, "v", 2) == 0) {
+			symbolsRead = fscanf(fp, "%lf %lf %lf %lf %lf %lf", &vx, &vy, &vz, &r, &g, &b);
+			if (symbolsRead == 6) {
+				vertexList.push_back(Vector4(vx, vy, vz, 1));
+				colorList.push_back(Vector4(r, g, b, 0));
+			}
+			else if (symbolsRead == 3) {
+				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
+			}
+		}
+		else if (strncmp(buf, "f", 2) == 0) {
+			fscanf(fp, "%d %[/] %d %d %[/] %d %d %[/] %d",
+				&t1, &s1, &n1, &t2, &s2, &n2, &t3, &s3, &n3);
+			triangleList.push_back(t1);
+			triangleList.push_back(n1);
+			triangleList.push_back(t2);
+			triangleList.push_back(n2);
+			triangleList.push_back(t3);
+			triangleList.push_back(n3);
+		}
+
+	};
+
+	fclose(fp);
+
+	/*** END PARSING ***/
+
+	std::cout << endl;
+	filename = fname;
+	fileLoaded = true;
+	printInfo("Done! ");
+
+	return true; // Successfully parsed a .obj model file
+}
+
 /**
  * Wavefront .OBJ file parser. 
  * Reference: http://en.wikipedia.org/wiki/Wavefront_.obj_file
  */
-bool ObjModel::parseFile(string fname) {
+bool ObjModel::cppParseFile(string fname) {
 
 	// Don't load a second time
 	if (fileLoaded) {
@@ -70,9 +137,11 @@ bool ObjModel::parseFile(string fname) {
 	ifstream ifs(fname, ios::in | ios::ate);
 	string line;
 	vector<string> tokens;
+	vector<string> vertexLine;
 	string tok;  // first token in the string
 	unsigned int fileSize = ifs.tellg();
 	unsigned int filePos = 0;
+	symbolsRead = 0;
 	stringstream s;
 	s << "Opened " << fname << " (" << fileSize << " bytes)" << endl;;
 
@@ -84,7 +153,7 @@ bool ObjModel::parseFile(string fname) {
 		
 		// Grabs a line from ifs and drops it
 		// into string line
-		getline(ifs, line, '\n');
+		getline(ifs, line);
 		lineNumber++; 
 		
 		// Don't waste time splitting the string if we don't have to
@@ -105,7 +174,9 @@ bool ObjModel::parseFile(string fname) {
 		}
 
 		// OBJ files are space-delimited
-		tokens = split(line, ' ');
+		tokens.clear();
+		tokens = split(line, ' ', tokens);
+		symbolsRead = tokens.size();
 		
 		if (tokens.size() <= 0) {
 			continue; // We're probably done reading the file
@@ -118,17 +189,19 @@ bool ObjModel::parseFile(string fname) {
 			
 			/* f v1//n1 v2//n2 v3//n3 */
 
-			for (int i = 1; i < tokens.size(); ++i) {
+			vertexLine.clear();
+
+			for (int i = 1; i < symbolsRead; ++i) {
 				
-				vector<string> v = split(tokens.at(i), '/');
-				unsigned int sz = v.size();
+				split(tokens.at(i), '/', vertexLine);
+				unsigned int sz = vertexLine.size();
 				unsigned int verticesPushed = 0;
 				for (int j = 0; j < sz; ++j) {
-					if ( v.at(j).compare("") == 0) {
+					if (vertexLine.at(j).compare("") == 0) {
 						continue; // An empty string between slashes can be ignored
 					}
 					else {
-						triangleList.push_back( std::stoi( v.at(j) ) );
+						triangleList.push_back(std::stoi(vertexLine.at(j)));
 						verticesPushed++;
 					}
 					
@@ -146,7 +219,7 @@ bool ObjModel::parseFile(string fname) {
 
 			/* This is a vertex line */
 
-			if (tokens.size() == 7) {
+			if (symbolsRead == 7) {
 				/*  v (x) (y) (z) (r) (g) (b)  */
 				vx = std::stod( tokens.at(1) );
 				vy = std::stod(tokens.at(2));
@@ -157,7 +230,7 @@ bool ObjModel::parseFile(string fname) {
 				vertexList.push_back(Vector4(vx, vy, vz, 1));
 				colorList.push_back(Vector4(r, g, b, 0));
 			}
-			else if (tokens.size() == 5) {
+			else if (symbolsRead == 5) {
 				/*  v (x) (y) (z) [w] */
 				vx = std::stod(tokens.at(1));
 				vy = std::stod(tokens.at(2));
@@ -165,7 +238,7 @@ bool ObjModel::parseFile(string fname) {
 				vw = std::stod(tokens.at(4));
 				vertexList.push_back(Vector4(vx, vy, vz, vw));
 			}
-			else if (tokens.size() == 4) {
+			else if (symbolsRead == 4) {
 				/*  v (x) (y) (z) */
 				vx = std::stod(tokens.at(1));
 				vy = std::stod(tokens.at(2));
@@ -178,7 +251,7 @@ bool ObjModel::parseFile(string fname) {
 				
 			// Normal (have only one form)
 
-			if (tokens.size() == 4) {
+			if (symbolsRead == 4) {
 				/*  vn (x) (y) (z) */
 				vnx = std::stod(tokens.at(1));
 				vny = std::stod(tokens.at(2));
@@ -193,14 +266,14 @@ bool ObjModel::parseFile(string fname) {
 				
 			// Texture Coords (u, w, [0])
 				
-			if (tokens.size() == 4) {
+			if (symbolsRead == 4) {
 				/*  vt u v [w = 0] */
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
 				vtz = std::stod(tokens.at(3));
 				//normalList.push_back(Vector4(vtx, vty, vtz, 0));
 			}
-			else if (tokens.size() == 3) {
+			else if (symbolsRead == 3) {
 				/*  vt u v */
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
@@ -212,20 +285,20 @@ bool ObjModel::parseFile(string fname) {
 				
 			// Parametric surfaces vertices (u, [w], [v])
 				
-			if (tokens.size() == 4) {
+			if (symbolsRead == 4) {
 				/*  vp (u) (v) (w) */
 				vnx = std::stod(tokens.at(1));
 				vny = std::stod(tokens.at(2));
 				vnz = std::stod(tokens.at(3));
 				normalList.push_back(Vector4(vnx, vny, vnz, 0));
 			}
-			else if (tokens.size() == 3) {
+			else if (symbolsRead == 3) {
 				/*  vp (u) (v) */
 				vnx = std::stod(tokens.at(1));
 				vny = std::stod(tokens.at(2));
 				normalList.push_back(Vector4(vnx, vny, 0, 0));
 			}
-			else if (tokens.size() == 2) {
+			else if (symbolsRead == 2) {
 				/*  vp (u) */
 				vnx = std::stod(tokens.at(1));
 				normalList.push_back(Vector4(vnx, 0, 0, 0));
@@ -251,6 +324,9 @@ bool ObjModel::parseFile(string fname) {
 	return true; // Successfully parsed a .obj model file
 }
 
+// Returns where this model has been laoded or not
+bool ObjModel::isLoaded() { return fileLoaded; }
+
 /**
  * Draws the model if it has been loaded into memory
  */
@@ -265,6 +341,7 @@ void ObjModel::draw(Matrix4& C) {
 		s << "/!\\ ObjModel Warning: \"" << filename << "\" has not been parsed yet" << endl;
 		std::cout << s.str();
 		printWarn = true;
+		return;
 	}
 
 	// Draw *this* object, then the children

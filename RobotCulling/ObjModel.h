@@ -16,12 +16,13 @@ private:
 	FaceDefinition faceType;
 
 	// Parse variables, because memory?
-	int c1, c2;
 	int symbolsRead;
 	unsigned long lineNumber;
 	double vx, vy, vz, vw, vtx, vty, vtz, vnx, vny, vnz;
 	double r, g, b;
-	int t1, t2, t3, n1, n2, n3;
+
+	// Calculate min/max
+	double minX, maxX, minY, maxY, minZ, maxZ;
 
 public:
 	std::vector<Vector4> vertexList, normalList, colorList, uvwCoords;
@@ -29,6 +30,9 @@ public:
 	ObjModel();
 	~ObjModel();
 	bool parseFile(std::string fname);
+	bool cParseFile(std::string fname);
+	bool cppParseFile(std::string fname);
+	bool isLoaded();
 	void printInfo(std::string comment);
 	void draw(Matrix4& C);
 };

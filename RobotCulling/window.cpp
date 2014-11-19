@@ -14,19 +14,24 @@
 #include <math.h>
 #include "main.h"
 #include "Window.h"
-#include "node.h"
+#include "SpotLight.h"
 
 using namespace std;
 
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
+int Window::mouseStartX = 0;
+int Window::mouseStartY = 0;
+bool Window::rotating = false;
+bool Window::zooming = false;
 
 namespace Scene
 {
 	Camera *camera = nullptr;
-	MatrixTransform *world = nullptr;
+	MatrixTransform *world = nullptr; // Top level of the scene graph
 	ObjModel *bunny, *dragon, *bear = nullptr;
+	PointLight *ptLight;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
@@ -35,6 +40,7 @@ namespace Scene
 	bool showFps = true;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
+	std::thread bunnyThread, bearThread, dragonThread;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -51,7 +57,7 @@ namespace Scene
 	void setup() {
 
 		camera = new Camera(
-			Vector3(0, 15, 50), Vector3(0, 15, 0), Vector3(0, 1, 0)
+			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
 		world = new MatrixTransform();
@@ -59,31 +65,40 @@ namespace Scene
 		dragon = new ObjModel();
 		bear = new ObjModel();
 
-		string file;
-		//cerr << "choose a .obj file to load: ";
-		//cin >> file;
+		// Begin parsing the files
 
-		std::thread bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj");
-		std::thread dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj");
-		std::thread bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj");
+		bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj");
+		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj");
+		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj");
+
+		// Bunny will load first, then detach the remaining threads until they complete
 
 		bunnyThread.join();
-		dragonThread.join();
-		bearThread.join();
+		dragonThread.detach();
+		bearThread.detach();
 
-		//if (bunny->parseFile("bunny.obj") == false ) {
-		//	cerr << ">>> Bunny parsing failed! <<<" << endl;
-		//}
+		// Define the lighting and nodes in the scene
+
+		ptLight = new SpotLight( -10.0, 50.0, 0.0, 15.0 );
+		//ptLight->setAmbient(.1, .2, .5, 1);
+		//ptLight->setSpecular(.5, .2, .1, 1);
+		ptLight->setAmbient(0, 0, 0, 1);
+		ptLight->setSpecular(0, 0, 0, 1);
+		ptLight->setDiffuse(1, 0, 0, 0);
 
 		world->addChild( bunny );
+		world->addChild( ptLight );
 
 	};
+	// Deallocate all kinds of stuff
 	void dealloc() {
 		for (auto iter = nodeList.begin(); iter != nodeList.end(); iter++) {
 			delete *iter;
 			*iter = nullptr;
 		}
 		delete world; world = nullptr;
+		delete bunny, dragon, bear;
+		bunny = dragon = bear = nullptr;
 	};
 };
 
@@ -337,11 +352,69 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 //    See main.cpp line 56
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
-  case GLUT_KEY_F1:
-	  cerr << "Pressed F1, currently no functionality, just suppressing compiler warnings in VS" << endl;
+  case GLUT_KEY_F1: // Load Bunny
+	  if (Scene::bunny->isLoaded()) {
+		  Scene::world->removeChild(Scene::bunny);
+		  Scene::world->removeChild(Scene::bear);
+		  Scene::world->removeChild(Scene::dragon);
+		  Scene::world->addChild(Scene::bunny);
+		  cout << "Displaying Bunny" << endl;
+	  }
+	  else
+		  cout << "Please wait, this model hasn't been loaded yet" << endl;
+	  break;
+  case GLUT_KEY_F2: // Load Dragon
+	  if (Scene::dragon->isLoaded()) {
+		  Scene::world->removeChild(Scene::bunny);
+		  Scene::world->removeChild(Scene::bear);
+		  Scene::world->removeChild(Scene::dragon);
+		  Scene::world->addChild(Scene::dragon);
+		  cout << "Displaying Dragon" << endl;
+	  }
+	  else
+		  cout << "Please wait, this model hasn't been loaded yet" << endl;
+	  break;
+  case GLUT_KEY_F3: // Load Bear
+	  if (Scene::bear->isLoaded()) {
+		  Scene::world->removeChild(Scene::bunny);
+		  Scene::world->removeChild(Scene::bear);
+		  Scene::world->removeChild(Scene::dragon);
+		  Scene::world->addChild(Scene::bear);
+		  cout << "Displaying Bear" << endl;
+	  }
+	  else
+		  cout << "Please wait, this model hasn't been loaded yet" << endl;
 	  break;
   default:
-	  cerr << "Pressed a function key or trigged glutSpecialFunc" << endl;
+	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
 	  break;
   }
 };
+
+// Callback triggered if we've pressed or released a mouse button
+void Window::mousePressCallback(int button, int state, int x, int y) {
+	Window::mouseStartX = x;
+	Window::mouseStartY = y;
+	switch (state) {
+	case GLUT_DOWN:
+		if (button == GLUT_LEFT_BUTTON && !Window::zooming ) {
+			Window::rotating = true;
+		}
+		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating) {
+			Window::rotating = false;
+		}
+	case GLUT_UP:
+		Window::mouseStartX = Window::mouseStartY = 0;
+		if (button == GLUT_LEFT_BUTTON && !Window::zooming) {
+			Window::rotating = false;
+		}
+		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating) {
+			Window::rotating = true;
+		}
+		break;
+	}
+}
+
+void Window::mouseMotionCallback(int currX, int currY) {
+
+}

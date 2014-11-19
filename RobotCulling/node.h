@@ -16,7 +16,13 @@ protected:
 	               // or by the matrix stored in this node (if it is a MatrixTransform)
 	bool culling;
 	std::vector<Plane> *frustumPlanes;
-public:
+
+	// Light Index (for *Light instances)
+	int lightIndex;
+
+public:	
+	static int lightCounter; // Light subclasses will inc/dec this counter when they are allocated/deallocated
+
 	Vector4 centerPos, scale; // These points are in camera coordinates
 	double boundingRadius; // This distance is in camera space, and is calculated at runtime
 	double minX, maxX, minY, maxY, minZ, maxZ;

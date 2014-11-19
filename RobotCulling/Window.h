@@ -27,12 +27,16 @@ class Window	  // OpenGL output window related routines
   public:
     static int width, height; 	            // window size
     static int cameraMode;
+	static int mouseStartX, mouseStartY;
     static double fov;
+	static bool rotating, zooming;
 
     static void idleCallback(void);
     static void reshapeCallback(int, int);
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
+	static void mousePressCallback(int, int, int, int);
+	static void mouseMotionCallback(int, int);
 
     // Draw Methods
     static void displayCallback(void);
