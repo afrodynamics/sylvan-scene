@@ -13,6 +13,7 @@ protected:
 	float spotAngle;
 	float spotExponent;
 	int lightIndex;
+	bool enabled;
 public:
 	PointLight();
 	PointLight(double,double,double);
@@ -22,5 +23,6 @@ public:
 	void setDiffuse(float, float, float, float);
 	void setSpecular(float, float, float, float);
 	void setPosition(float, float, float, float);
+	void toggleLight();
 };
 

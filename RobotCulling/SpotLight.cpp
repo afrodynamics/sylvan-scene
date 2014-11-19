@@ -32,10 +32,11 @@ SpotLight::SpotLight(double x, double y, double z, double angle)
 	setSpecular(1, 1, 1, 1);
 	setCutoff(angle);
 	setSpotExponent(2.0);
-	setSpotDir(Vector3(0,0,-1));
+	setSpotDir(Vector3(0,-1,0));
 
 	lightIndex = Node::lightCounter;
 	Node::lightCounter++;
+	enabled = true;
 }
 
 SpotLight::~SpotLight()

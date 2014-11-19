@@ -18,6 +18,7 @@ PointLight::PointLight()
 	setAmbient(0, 0, 0, 1);
 	setDiffuse(1, 1, 1, 1);
 	setSpecular(1, 1, 1, 1);
+	enabled = true;
 
 	Node::lightCounter++;
 }
@@ -41,6 +42,8 @@ PointLight::PointLight(double x, double y, double z)
 	spotDir[0] = 0.0;
 	spotDir[1] = 0.0;
 	spotDir[2] = -1.0;
+
+	enabled = true;
 
 	lightIndex = Node::lightCounter;
 	Node::lightCounter++;
@@ -97,21 +100,17 @@ void PointLight::render() {
 		break; // Too many lights
 	}
 
-	centerPos = Vector4(position[0], position[1], position[2], position[3]);
-	Matrix4 mtx = Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
-	centerPos = mtx * centerPos;
-	mtx.transpose();
-
-	//float transformPos[] = { centerPos.getX(), centerPos.getY(), centerPos.getZ(), centerPos.getW() };
-
-	glEnable(lightId); // Enable this light, duh!
 	glPushMatrix();    // Ignore the last state
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixd( mtx.getPointer() );  // Load the identity, since lights aren't relative to the camera
+	glLoadIdentity();  // Load the identity, since lights aren't relative to the camera
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
 	if (spotAngle != 180.0) {
 		glGetLightfv(lightId, GL_SPOT_CUTOFF, &spotAngle);
 		glGetLightfv(lightId, GL_SPOT_DIRECTION, spotDir );
 		glGetLightfv(lightId, GL_SPOT_EXPONENT, &spotExponent );
+		glLightfv(lightId, GL_AMBIENT, ambient);
+		glLightfv(lightId, GL_DIFFUSE, diffuse);
+		glLightfv(lightId, GL_SPECULAR, specular);
 	}
 	else {
 		glLightfv(lightId, GL_AMBIENT, ambient);
@@ -119,9 +118,17 @@ void PointLight::render() {
 		glLightfv(lightId, GL_SPECULAR, specular);
 	}
 	glLightfv( lightId, GL_POSITION, position );
-	
+	if (enabled)
+		glEnable(lightId); // Enable this light, duh!
+	else
+		glDisable(lightId);
+
 	positionSphere->render();
 	
 	glPopMatrix();
 
+};
+
+void PointLight::toggleLight() {
+	enabled = !enabled;
 };

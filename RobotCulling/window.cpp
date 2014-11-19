@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include "shader.h"
 
 #ifndef __APPLE__
 #include <GL/glut.h>
@@ -39,6 +40,7 @@ namespace Scene
 	bool showBounds = false;
 	bool frustumCulling = false;
 	bool showFps = false;
+	bool shaderOn = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	std::thread bunnyThread, bearThread, dragonThread;
@@ -85,13 +87,11 @@ namespace Scene
 		// Define the lighting and nodes in the scene
 
 		ptLight = new PointLight( -10.0, 25.0, 0.0 );
-		//ptLight->setAmbient(.1, .2, .5, 1);
-		//ptLight->setSpecular(.5, .2, .1, 1);
 		ptLight->setAmbient(0, 0, 0, 1);
 		ptLight->setSpecular(0, 0, 0, 1);
 		ptLight->setDiffuse(1, 0, 0, 0);
 
-		spotLight = new SpotLight();
+		spotLight = new SpotLight( 0, 20, 0,10);
 		spotLight->setCutoff(0.0);
 		spotLight->setDiffuse(0, 1, 0, 1); // green as fuck
 
@@ -280,7 +280,8 @@ void Window::displayCallback()
 		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
 	else {
-		Scene::world->draw(Window::tmpMatrix);
+		Scene::world->getMatrix() = Window::tmpMatrix;
+		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
   }
 
@@ -312,6 +313,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::frustumCulling = !Scene::frustumCulling;
 	  Scene::world->setCulling(Scene::frustumCulling);
 	  cerr << "Culling is " << (Scene::frustumCulling == true ? "on" : "off" ) << endl;
+	  break;
+  case 'p':
+	  Scene::shaderOn = !Scene::shaderOn;
+	  // ** TODO ** enable/disable the shader
+	  cerr << "Shaders are " << (Scene::shaderOn == true ? "on" : "off") << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
@@ -351,6 +357,12 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
+	  break;
+  case 'l':
+	  Scene::ptLight->toggleLight();
+	  break;
+  case ';':
+	  Scene::spotLight->toggleLight();
 	  break;
   default:
       cerr << "Pressed: " << key << endl;
@@ -419,13 +431,13 @@ void Window::mousePressCallback(int button, int state, int x, int y) {
 		if (button == GLUT_LEFT_BUTTON && !Window::zooming ) {
 			Window::rotating = true;
 			Window::zooming = false;
-			Window::preScrollMtx = Scene::camera->getInverseMatrix();
+			Window::preScrollMtx = Scene::world->getMatrix();
 			break;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating ) {
 			Window::rotating = false;
 			Window::zooming = true;
-			Window::preScrollMtx = Scene::camera->getInverseMatrix();
+			Window::preScrollMtx = Scene::world->getMatrix();
 			break;
 		}
 		break;
@@ -434,11 +446,13 @@ void Window::mousePressCallback(int button, int state, int x, int y) {
 		if (button == GLUT_LEFT_BUTTON && !Window::zooming) {
 			Window::rotating = false;
 			Window::zooming = false;
+			Scene::world->getMatrix() = Window::tmpMatrix;
 			break;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating) {
 			Window::rotating = false;
 			Window::zooming = false;
+			Scene::world->getMatrix() = Window::tmpMatrix;
 			break;
 		}
 		break;
@@ -451,8 +465,8 @@ void Window::mousePressCallback(int button, int state, int x, int y) {
 Vector3 Window::CSierpinskiSolidsView(int x, int y) {
 
 	double mouseDepth = 0.0;
-	Vector3 trackBallPos3D(2.0 * x - Window::width,
-		2.0 * y - Window::height, mouseDepth);
+	Vector3 trackBallPos3D(2.0 * (double)x - (double)Window::width,
+		2.0 * (double)y - (double)Window::height, mouseDepth);
 
 	// This is the distance from the trackball's origin to the mouse 
 	// location, without considering depth (in the plane of the trackball's
