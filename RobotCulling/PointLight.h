@@ -9,7 +9,9 @@ protected:
 	float diffuse[4];
 	float specular[4];
 	float position[4];
+	float spotDir[3];
 	float spotAngle;
+	float spotExponent;
 	int lightIndex;
 public:
 	PointLight();

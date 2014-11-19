@@ -5,7 +5,12 @@ PointLight::PointLight()
 {
 	positionSphere = new Wiresphere();
 	lightIndex = Node::lightCounter;
+
 	spotAngle = 180.0;
+	spotExponent = 0.0;
+	spotDir[0] = 0.0;
+	spotDir[1] = 0.0;
+	spotDir[2] = -1.0;
 
 	// Set light properties to OpenGL default
 
@@ -30,7 +35,12 @@ PointLight::PointLight(double x, double y, double z)
 	setAmbient(0, 0, 0, 1);
 	setDiffuse(1, 1, 1, 1);
 	setSpecular(1, 1, 1, 1);
+
 	spotAngle = 180.0;
+	spotExponent = 0.0;
+	spotDir[0] = 0.0;
+	spotDir[1] = 0.0;
+	spotDir[2] = -1.0;
 
 	lightIndex = Node::lightCounter;
 	Node::lightCounter++;
@@ -100,10 +110,14 @@ void PointLight::render() {
 	glLoadMatrixd( mtx.getPointer() );  // Load the identity, since lights aren't relative to the camera
 	if (spotAngle != 180.0) {
 		glGetLightfv(lightId, GL_SPOT_CUTOFF, &spotAngle);
+		glGetLightfv(lightId, GL_SPOT_DIRECTION, spotDir );
+		glGetLightfv(lightId, GL_SPOT_EXPONENT, &spotExponent );
 	}
-	glLightfv( lightId, GL_AMBIENT, ambient );
-	glLightfv( lightId, GL_DIFFUSE, diffuse );
-	glLightfv( lightId, GL_SPECULAR, specular);
+	else {
+		glLightfv(lightId, GL_AMBIENT, ambient);
+		glLightfv(lightId, GL_DIFFUSE, diffuse);
+		glLightfv(lightId, GL_SPECULAR, specular);
+	}
 	glLightfv( lightId, GL_POSITION, position );
 	
 	positionSphere->render();

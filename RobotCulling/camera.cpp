@@ -93,8 +93,31 @@ Matrix4 Camera::getGlMatrix() {
   return world2camera;
 };
 
+void Camera::changeMtx(Matrix4& newMtx) {
+
+	/*      CAMERA MATRIX
+	 *
+	 *   [ x_c  y_c  z_c  e ]
+	 *   [  0    0    0   1 ]
+	 */
+
+	world2camera = newMtx;
+	right = camera2world.getColumn3(0);
+	up = camera2world.getColumn3(1);
+	lookDir = camera2world.getColumn3(2);
+	center = camera2world.getColumn3(3);
+	updateInverseCameraMtx();
+};
+
 /**
-* Returns a reference to the row major inverse camera matrix
+* Returns the row major inverse camera matrix
+*/
+Matrix4 Camera::getCameraMatrix() {
+	return camera2world;
+};
+
+/**
+* Returns the row major inverse camera matrix
 */
 Matrix4 Camera::getInverseMatrix() {
 	return world2cameraRowMajor;

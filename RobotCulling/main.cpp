@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
   glutIdleFunc(Window::idleCallback);
   glutKeyboardFunc(Window::keyboardCallback);
   glutSpecialFunc(Window::functionKeysCallback);
+  glutMouseFunc(Window::mousePressCallback);
+  glutMotionFunc(Window::mouseMotionCallback);
     
   // Start the main loop
   glutMainLoop();

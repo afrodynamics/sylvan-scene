@@ -113,6 +113,21 @@ double* Matrix4::getPointer()
   return &m[0][0];
 }
 
+// get column as vec4
+Vector4 Matrix4::getColumn4(int col) {
+	if (col < 0 | col > 4) {
+		throw new std::exception("out of bounds call to get column");
+	}
+	return Vector4( m[0][col], m[1][col], m[2][col], m[3][col] );
+}
+// get column as vec3
+Vector3 Matrix4::getColumn3(int col) {
+	if (col < 0 | col > 4) {
+		throw new std::exception("out of bounds call to get column");
+	}
+	return Vector3(m[0][col], m[1][col], m[2][col]);
+}
+
 // set matrix to identity matrix
 void Matrix4::identity()
 {

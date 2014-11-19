@@ -31,6 +31,8 @@ SpotLight::SpotLight(double x, double y, double z, double angle)
 	setDiffuse(1, 1, 1, 1);
 	setSpecular(1, 1, 1, 1);
 	setCutoff(angle);
+	setSpotExponent(2.0);
+	setSpotDir(Vector3(0,0,-1));
 
 	lightIndex = Node::lightCounter;
 	Node::lightCounter++;
@@ -45,4 +47,14 @@ SpotLight::~SpotLight()
 void SpotLight::setCutoff(double d) {
 	if (d > 90 || d < 0) return; // Invalid values
 	spotAngle = d;
+}
+
+void SpotLight::setSpotExponent(double e) {
+	spotExponent = e;
+}
+
+void SpotLight::setSpotDir(Vector3 v) {
+	spotDir[0] = v.getX();
+	spotDir[1] = v.getY();
+	spotDir[2] = v.getZ();
 }

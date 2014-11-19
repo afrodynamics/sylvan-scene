@@ -3,12 +3,8 @@
 
 #ifndef __APPLE__
 #include <GL/glut.h>
-#define BALL_DEFAULT_VELOCITY_X .0047
-#define BALL_DEFAULT_VELOCITY_Y -.0068
 #else
 #include <GLUT/glut.h>
-#define BALL_DEFAULT_VELOCITY_X .47
-#define BALL_DEFAULT_VELOCITY_Y -.68
 #endif
 
 #include <math.h>
@@ -21,10 +17,14 @@ using namespace std;
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
+double Window::ROTSCALE = 1;
+double Window::ZOOMSCALE = 1;
 int Window::mouseStartX = 0;
 int Window::mouseStartY = 0;
 bool Window::rotating = false;
 bool Window::zooming = false;
+Matrix4 Window::preScrollMtx = Matrix4::translate(1,1,1); // Identity
+Matrix4 Window::tmpMatrix = Matrix4::translate(1, 1, 1);
 
 namespace Scene
 {
@@ -32,12 +32,13 @@ namespace Scene
 	MatrixTransform *world = nullptr; // Top level of the scene graph
 	ObjModel *bunny, *dragon, *bear = nullptr;
 	PointLight *ptLight;
+	SpotLight *spotLight;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	bool showBounds = false;
 	bool frustumCulling = false;
-	bool showFps = true;
+	bool showFps = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	std::thread bunnyThread, bearThread, dragonThread;
@@ -65,11 +66,15 @@ namespace Scene
 		dragon = new ObjModel();
 		bear = new ObjModel();
 
+		double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
+		double aspectRatio = ((double)(Window::width)) / (double)Window::height;
+		double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
+
 		// Begin parsing the files
 
-		bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj");
-		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj");
-		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj");
+		bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj", windowWidth );
+		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj", windowWidth );
+		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj", windowWidth );
 
 		// Bunny will load first, then detach the remaining threads until they complete
 
@@ -79,15 +84,20 @@ namespace Scene
 
 		// Define the lighting and nodes in the scene
 
-		ptLight = new SpotLight( -10.0, 50.0, 0.0, 15.0 );
+		ptLight = new PointLight( -10.0, 25.0, 0.0 );
 		//ptLight->setAmbient(.1, .2, .5, 1);
 		//ptLight->setSpecular(.5, .2, .1, 1);
 		ptLight->setAmbient(0, 0, 0, 1);
 		ptLight->setSpecular(0, 0, 0, 1);
 		ptLight->setDiffuse(1, 0, 0, 0);
 
+		spotLight = new SpotLight();
+		spotLight->setCutoff(0.0);
+		spotLight->setDiffuse(0, 1, 0, 1); // green as fuck
+
 		world->addChild( bunny );
 		world->addChild( ptLight );
+		world->addChild( spotLight );
 
 	};
 	// Deallocate all kinds of stuff
@@ -98,7 +108,9 @@ namespace Scene
 		}
 		delete world; world = nullptr;
 		delete bunny, dragon, bear;
+		delete ptLight; delete spotLight;
 		bunny = dragon = bear = nullptr;
+		ptLight = nullptr; spotLight = nullptr;
 	};
 };
 
@@ -146,10 +158,15 @@ void Window::reshapeCallback(int w, int h)
                   Scene::zfar);  // set perspective projection viewing frustum
   glMatrixMode(GL_MODELVIEW);
 
+  // Update Window::...
+  Window::width = w;
+  Window::height = h;
+
   // Do some important calculations
 
   double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
   double aspectRatio = ((double)(width))/(double)height;
+  double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
 
   // Calculate the height and width of the near and far clipping planes
 
@@ -257,13 +274,13 @@ void Window::displayCallback()
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 
-	// Pass in our inverse camera matrix in row-major order (since our draw function
-	// in our Node classes expects row-major matrices)
-	if (Scene::frustumCulling) {
-		Scene::world->cdraw(Scene::camera->getInverseMatrix());
+	// No more culling crap
+	// But we only want to draw when we aren't doing mouse crap
+	if ( !Window::rotating && !Window::zooming ) {
+		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
 	else {
-		Scene::world->draw(Scene::camera->getInverseMatrix());
+		Scene::world->draw(Window::tmpMatrix);
 	}
   }
 
@@ -393,28 +410,106 @@ void Window::functionKeysCallback(int key, int x, int y) {
 
 // Callback triggered if we've pressed or released a mouse button
 void Window::mousePressCallback(int button, int state, int x, int y) {
+	
 	Window::mouseStartX = x;
 	Window::mouseStartY = y;
+	
 	switch (state) {
 	case GLUT_DOWN:
 		if (button == GLUT_LEFT_BUTTON && !Window::zooming ) {
 			Window::rotating = true;
+			Window::zooming = false;
+			Window::preScrollMtx = Scene::camera->getInverseMatrix();
+			break;
 		}
-		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating) {
+		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating ) {
 			Window::rotating = false;
+			Window::zooming = true;
+			Window::preScrollMtx = Scene::camera->getInverseMatrix();
+			break;
 		}
+		break;
 	case GLUT_UP:
 		Window::mouseStartX = Window::mouseStartY = 0;
 		if (button == GLUT_LEFT_BUTTON && !Window::zooming) {
 			Window::rotating = false;
+			Window::zooming = false;
+			break;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating) {
-			Window::rotating = true;
+			Window::rotating = false;
+			Window::zooming = false;
+			break;
 		}
 		break;
 	}
+
+}
+
+/* Courtesy: http://web.cse.ohio-state.edu/~crawfis/Graphics/VirtualTrackball.html */
+
+Vector3 Window::CSierpinskiSolidsView(int x, int y) {
+
+	double mouseDepth = 0.0;
+	Vector3 trackBallPos3D(2.0 * x - Window::width,
+		2.0 * y - Window::height, mouseDepth);
+
+	// This is the distance from the trackball's origin to the mouse 
+	// location, without considering depth (in the plane of the trackball's
+	// origin)
+	mouseDepth = trackBallPos3D.length();
+
+	// Clamp the mouseDepth to a maximum of 1, to avoid negative sqr roots 
+	mouseDepth = (mouseDepth < 1.0) ? mouseDepth : 1.0;
+	trackBallPos3D = Vector3(trackBallPos3D.getX(),
+		trackBallPos3D.getY(),
+		sqrtf(1.001 - mouseDepth * mouseDepth));
+	trackBallPos3D.normalize(); // Normals are love, normals are life
+
+	// Example code returned here, now we need to apply the rotation
+	return trackBallPos3D;
+
 }
 
 void Window::mouseMotionCallback(int currX, int currY) {
+	
+	Vector3 direction(currX - Window::mouseStartX, currY - Window::mouseStartY, 0.0);
+	double pixelDiff;
+	double rotAngle, zoomFactor;
+	Vector3 currPoint(currX, currY, 0);
+
+	if (Window::rotating == true) {
+		/* ROTATION CASE */
+		/* Rotate about the axis that is perpendicular to the great 
+		   circle connecting the mouse movements */
+		
+		currPoint = CSierpinskiSolidsView(currX, currY);
+		direction = currPoint - direction; // TODO: (maybe this is wrong?)
+		double velocity = direction.length();
+
+		if (velocity > 0.0001) { // If we don't have significant movement do nothing
+
+			Vector3 rotAxis;
+			rotAxis.cross(direction, currPoint);
+			rotAngle = velocity * Window::ROTSCALE;
+			rotAxis.normalize();
+
+			/*glMatrixMode(GL_MATRIX_MODE);
+			glLoadIdentity();
+			glRotatef(rotAngle, rotAxis.getX(), rotAxis.getY(), rotAxis.getZ());*/
+
+			Matrix4 tmp = Window::preScrollMtx;
+			tmp.transformWorld(Matrix4::rotate(rotAngle, rotAxis));
+			//Scene::camera->changeMtx(tmp);
+	
+			Window::tmpMatrix = tmp;
+			//Scene::world->draw( tmp ); // Because while we're doing mouse stuff, displayCallback won't run
+		}
+
+	}
+	else if (Window::zooming == true) {
+		/* ZOOMING CASE */
+	}
+
 
 }

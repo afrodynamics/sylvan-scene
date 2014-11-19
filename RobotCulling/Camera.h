@@ -20,7 +20,9 @@ public:
 	// The constructor constructs the camera matrix according to the math. definition
 	Camera( Vector3 centerOfProjection, Vector3 lookAtPoint, Vector3 upVector ); 
 	Matrix4 getGlMatrix();  // returns the camera matrix to OpenGL in col-major order
+	Matrix4 getCameraMatrix();  // returns the camera matrix in row-major order
 	Matrix4 getInverseMatrix(); // returns the inverse camera matrix in row-major order
+	void changeMtx(Matrix4&);
 	Vector3 getPos();
 	Vector3 getUp();
 	Vector3 getRight();

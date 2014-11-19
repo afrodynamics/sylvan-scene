@@ -21,15 +21,17 @@ private:
 	double vx, vy, vz, vw, vtx, vty, vtz, vnx, vny, vnz;
 	double r, g, b;
 
-	// Calculate min/max
-	double minX, maxX, minY, maxY, minZ, maxZ;
+	// Calculate min/max and centering
+	Vector3 minimum, maximum;
+	double xMin, yMin, zMin, xMax, yMax, zMax;
+	double windowWidth;
 
 public:
 	std::vector<Vector4> vertexList, normalList, colorList, uvwCoords;
 	std::vector<int> triangleList;
 	ObjModel();
 	~ObjModel();
-	bool parseFile(std::string fname);
+	bool parseFile(std::string fname, double);
 	bool cParseFile(std::string fname);
 	bool cppParseFile(std::string fname);
 	bool isLoaded();

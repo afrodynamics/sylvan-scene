@@ -13,6 +13,7 @@ ObjModel::ObjModel()
 	faces = 0;
 	mtx = new Matrix4();
 	mtx->identity();
+	windowWidth = 20.0;
 }
 
 ObjModel::~ObjModel()
@@ -46,14 +47,18 @@ void ObjModel::printInfo(string comment)
 		<< "\tFaces: " << faces << endl;
 }
 
-/* What the outside can use */
-bool ObjModel::parseFile(string fname) {
+/* What the outside can use to parse a .obj file
+   takes the width of the field of view at the origin */
+bool ObjModel::parseFile(string fname, double winWidth) {
+	windowWidth = winWidth;
 	return cppParseFile(fname);
 };
 
 bool ObjModel::cParseFile(string fname) {
 
-	/* BROKEN (but maybe faster one day) */
+	/* BROKEN (but maybe faster one day) 
+	 * ALSO DOESN'T COMPUTE CENTER POINT
+	*/
 
 	// Don't load a second time
 	if (fileLoaded) {
@@ -143,11 +148,16 @@ bool ObjModel::cppParseFile(string fname) {
 	unsigned int filePos = 0;
 	symbolsRead = 0;
 	stringstream s;
-	s << "Opened " << fname << " (" << fileSize << " bytes)" << endl;;
 
+	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;;
 	cout << s.str();;
 
-	ifs.seekg(0);
+	ifs.seekg(0); // Seek to start of file
+
+	// Prepare centering code
+
+	xMin = yMin = zMin = DBL_MAX;
+	xMax = yMax = zMax = -DBL_MAX;
 
 	while (ifs.good()) {
 		
@@ -246,6 +256,29 @@ bool ObjModel::cppParseFile(string fname) {
 				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
 			}
 
+			// Check min/max
+
+			if (vx > xMax) {
+				xMax = vx;
+			}
+			if (vx < xMin) {
+				xMin = vx;
+			}
+
+			if (vy > yMax) {
+				yMax = vy;
+			}
+			if (vy < yMin) {
+				yMin = vy;
+			}
+
+			if (vz > zMax) {
+				zMax = vz;
+			}
+			if (vz < zMin) {
+				zMin = vz;
+			}
+
 		}
 		else if ( tok.compare("vn") == 0 ) { 
 				
@@ -316,6 +349,42 @@ bool ObjModel::cppParseFile(string fname) {
 
 	/*** END PARSING ***/
 
+	minimum = Vector3(xMin, yMin, zMin );
+	maximum = Vector3(xMax, yMax, zMax );
+
+	// Whichever is further from the origin is our center
+	Vector3 diff = maximum - minimum;
+
+	// Now we need to interpolate between the x, y, and z to get
+	// the translation we need to do
+	double xMiddle = (xMin + xMax) / 2.0;
+	double yMiddle = (yMin + yMax) / 2.0;
+	double zMiddle = (zMin + zMax) / 2.0;
+
+	double scaleX = windowWidth / fabs(fabs(xMax) + fabs(xMin));
+	double scaleY = windowWidth / fabs(fabs(yMax) + fabs(yMin));
+	double scaleZ = windowWidth / fabs(fabs(zMax) + fabs(zMin));
+
+	double scaleFactor = fmin( fmin(scaleX, scaleY), fmin(scaleY, scaleZ) );
+
+	Vector3 centerVector = Vector3(-xMiddle, -yMiddle, -zMiddle);	
+	boundingRadius = fmax( (centerVector - minimum).length(), (centerVector - maximum).length()); 
+
+	// Translate the model's vertices from its center to *THE* center
+	Matrix4 translationMtx = Matrix4::translate(-xMiddle, -yMiddle, -zMiddle);
+	mtx->transformWorld(translationMtx);
+
+	for (int v = 0; v < vertexList.size(); ++v) {
+		vertexList[v] = *mtx * vertexList[v]; // Translate vertices
+	}
+
+	// Finally, reset our matrix to the identity & scale
+
+	mtx->identity();
+	mtx->transformWorld(Matrix4::scale(scaleFactor, scaleFactor, scaleFactor));
+
+	/** End of Centering **/
+	
 	cout << endl;
 	filename = fname;
 	fileLoaded = true;

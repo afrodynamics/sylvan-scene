@@ -28,8 +28,9 @@ class Window	  // OpenGL output window related routines
     static int width, height; 	            // window size
     static int cameraMode;
 	static int mouseStartX, mouseStartY;
-    static double fov;
+    static double fov, ROTSCALE, ZOOMSCALE;
 	static bool rotating, zooming;
+	static Matrix4 preScrollMtx, tmpMatrix;
 
     static void idleCallback(void);
     static void reshapeCallback(int, int);
@@ -37,6 +38,7 @@ class Window	  // OpenGL output window related routines
     static void functionKeysCallback(int,int,int);
 	static void mousePressCallback(int, int, int, int);
 	static void mouseMotionCallback(int, int);
+	static Vector3 CSierpinskiSolidsView(int x, int y);
 
     // Draw Methods
     static void displayCallback(void);

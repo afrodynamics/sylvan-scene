@@ -8,5 +8,7 @@ public:
 	SpotLight(double, double, double, double);
 	~SpotLight();
 	void setCutoff(double);
+	void setSpotExponent(double);
+	void setSpotDir(Vector3);
 };
 

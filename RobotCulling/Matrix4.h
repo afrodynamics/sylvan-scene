@@ -60,6 +60,8 @@ class Matrix4
     void transformLocal(Matrix4 & transform); // multiplies transform matrix on right hand side (local coords)
     void transpose();         // transposes the matrix
     void identity();          // make this matrix the identity matrix
+	Vector3 getColumn3(int);
+	Vector4 getColumn4(int);
 
     /**
      * Debug printing functions/utilities
