@@ -18,12 +18,13 @@ using namespace std;
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
-double Window::ROTSCALE = 1;
-double Window::ZOOMSCALE = 1;
+double Window::ROTSCALE = 0.125; // tutorial says to use 90.0
+double Window::ZOOMSCALE = 0.008;
 int Window::mouseStartX = 0;
 int Window::mouseStartY = 0;
 bool Window::rotating = false;
 bool Window::zooming = false;
+Vector3 Window::lastPoint = Vector3();;
 Matrix4 Window::preScrollMtx = Matrix4::translate(1,1,1); // Identity
 Matrix4 Window::tmpMatrix = Matrix4::translate(1, 1, 1);
 
@@ -37,6 +38,7 @@ namespace Scene
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
+	Shader *shader;
 	bool showBounds = false;
 	bool frustumCulling = false;
 	bool showFps = false;
@@ -78,22 +80,29 @@ namespace Scene
 		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj", windowWidth );
 		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj", windowWidth );
 
+		shader = new Shader("simple.vert", "simple.frag", true);
+		shader->printLog("LOADING SHADER: ");
+
+		// Define the lighting and nodes in the scene
+
+		spotLight = new SpotLight(0, -1, 10, 5);
+		spotLight->setCutoff(0.0);
+		spotLight->setSpecular(0, 0, 1, 1); // blue as fuck
+		spotLight->setDiffuse(0, 0, 1, 1);
+		spotLight->setAmbient(0, 0, 0.1, 0);
+		spotLight->setSpotExponent(0);
+		spotLight->setSpotDir(Vector3(0, 0, -1));
+
+		ptLight = new PointLight(10, 8, -5);
+		ptLight->setAmbient(0, 0.1, 0, 1);
+		ptLight->setSpecular(0, 1, 0, 1);
+		ptLight->setDiffuse(0, 1, 0, 0); // green 
+		
 		// Bunny will load first, then detach the remaining threads until they complete
 
 		bunnyThread.join();
 		dragonThread.detach();
 		bearThread.detach();
-
-		// Define the lighting and nodes in the scene
-
-		ptLight = new PointLight( -10.0, 25.0, 0.0 );
-		ptLight->setAmbient(0, 0, 0, 1);
-		ptLight->setSpecular(0, 0, 0, 1);
-		ptLight->setDiffuse(1, 0, 0, 0);
-
-		spotLight = new SpotLight( 0, 20, 0,10);
-		spotLight->setCutoff(0.0);
-		spotLight->setDiffuse(0, 1, 0, 1); // green as fuck
 
 		world->addChild( bunny );
 		world->addChild( ptLight );
@@ -270,6 +279,8 @@ void Window::displayCallback()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
+  Matrix4 ident = Matrix4();
+  ident.identity();
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -277,9 +288,25 @@ void Window::displayCallback()
 	// No more culling crap
 	// But we only want to draw when we aren't doing mouse crap
 	if ( !Window::rotating && !Window::zooming ) {
+		if (Scene::shaderOn) {
+			Scene::shader->bind();
+		}
+		else {
+			Scene::shader->unbind();
+		}
+		Scene::ptLight->draw(ident);
+		Scene::spotLight->draw(ident);
 		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
 	else {
+		if (Scene::shaderOn) {
+			Scene::shader->bind();
+		}
+		else {
+			Scene::shader->unbind();
+		}
+		Scene::ptLight->draw(ident);
+		Scene::spotLight->draw(ident);
 		Scene::world->getMatrix() = Window::tmpMatrix;
 		Scene::world->draw(Scene::camera->getInverseMatrix());
 	}
@@ -414,6 +441,14 @@ void Window::functionKeysCallback(int key, int x, int y) {
 	  else
 		  cout << "Please wait, this model hasn't been loaded yet" << endl;
 	  break;
+  case GLUT_KEY_F4: // Load Nothing
+	  {
+		  Scene::world->removeChild(Scene::bunny);
+		  Scene::world->removeChild(Scene::bear);
+		  Scene::world->removeChild(Scene::dragon);
+		  cout << "No model for this key, just showing lights" << endl;
+	  }
+	  break;
   default:
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
 	  break;
@@ -432,12 +467,17 @@ void Window::mousePressCallback(int button, int state, int x, int y) {
 			Window::rotating = true;
 			Window::zooming = false;
 			Window::preScrollMtx = Scene::world->getMatrix();
+			Window::tmpMatrix = Scene::world->getMatrix();
+			Window::lastPoint = Window::trackBallMapping(x, y);
+			Window::mouseStartX = Window::lastPoint.getX();
+			Window::mouseStartY = Window::lastPoint.getY();
 			break;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && !Window::rotating ) {
 			Window::rotating = false;
 			Window::zooming = true;
 			Window::preScrollMtx = Scene::world->getMatrix();
+			Window::tmpMatrix = Scene::world->getMatrix();
 			break;
 		}
 		break;
@@ -462,11 +502,13 @@ void Window::mousePressCallback(int button, int state, int x, int y) {
 
 /* Courtesy: http://web.cse.ohio-state.edu/~crawfis/Graphics/VirtualTrackball.html */
 
-Vector3 Window::CSierpinskiSolidsView(int x, int y) {
+Vector3 Window::trackBallMapping(int x, int y) {
 
 	double mouseDepth = 0.0;
-	Vector3 trackBallPos3D(2.0 * (double)x - (double)Window::width,
-		2.0 * (double)y - (double)Window::height, mouseDepth);
+	Vector3 trackBallPos3D(
+		(2.0 * x - Window::width) / (double)Window::width,
+		(Window::height - 2.0 * y) / (double)Window::height, 
+		mouseDepth );
 
 	// This is the distance from the trackball's origin to the mouse 
 	// location, without considering depth (in the plane of the trackball's
@@ -475,9 +517,11 @@ Vector3 Window::CSierpinskiSolidsView(int x, int y) {
 
 	// Clamp the mouseDepth to a maximum of 1, to avoid negative sqr roots 
 	mouseDepth = (mouseDepth < 1.0) ? mouseDepth : 1.0;
-	trackBallPos3D = Vector3(trackBallPos3D.getX(),
+	trackBallPos3D = Vector3(
+		trackBallPos3D.getX(),
 		trackBallPos3D.getY(),
-		sqrtf(1.001 - mouseDepth * mouseDepth));
+		sqrtf(1.001 - mouseDepth * mouseDepth)
+	);
 	trackBallPos3D.normalize(); // Normals are love, normals are life
 
 	// Example code returned here, now we need to apply the rotation
@@ -487,43 +531,50 @@ Vector3 Window::CSierpinskiSolidsView(int x, int y) {
 
 void Window::mouseMotionCallback(int currX, int currY) {
 	
-	Vector3 direction(currX - Window::mouseStartX, currY - Window::mouseStartY, 0.0);
+	Vector3 direction;
 	double pixelDiff;
 	double rotAngle, zoomFactor;
-	Vector3 currPoint(currX, currY, 0);
+	Vector3 currPoint;
 
-	if (Window::rotating == true) {
+	if ( Window::rotating == true ) {
+
 		/* ROTATION CASE */
 		/* Rotate about the axis that is perpendicular to the great 
 		   circle connecting the mouse movements */
 		
-		currPoint = CSierpinskiSolidsView(currX, currY);
-		direction = currPoint - direction; // TODO: (maybe this is wrong?)
+		Vector3 mousePos = Vector3(currX, currY, 0);
+		currPoint = trackBallMapping(currX, currY);
+		direction = currPoint - mousePos; // TODO: (maybe this is wrong?)
 		double velocity = direction.length();
 
 		if (velocity > 0.0001) { // If we don't have significant movement do nothing
 
 			Vector3 rotAxis;
-			rotAxis.cross(direction, currPoint);
+			rotAxis = rotAxis.cross( Window::lastPoint, currPoint );
 			rotAngle = velocity * Window::ROTSCALE;
 			rotAxis.normalize();
 
-			/*glMatrixMode(GL_MATRIX_MODE);
-			glLoadIdentity();
-			glRotatef(rotAngle, rotAxis.getX(), rotAxis.getY(), rotAxis.getZ());*/
+			Matrix4 rotMat = Matrix4::rotate(rotAngle, rotAxis) * Window::preScrollMtx;
 
-			Matrix4 tmp = Window::preScrollMtx;
-			tmp.transformWorld(Matrix4::rotate(rotAngle, rotAxis));
-			//Scene::camera->changeMtx(tmp);
+			Window::tmpMatrix = rotMat;
 	
-			Window::tmpMatrix = tmp;
-			//Scene::world->draw( tmp ); // Because while we're doing mouse stuff, displayCallback won't run
 		}
 
 	}
 	else if (Window::zooming == true) {
+
 		/* ZOOMING CASE */
+
+		currPoint = Vector3(currX, currY, 0.0);
+		pixelDiff = currPoint.getY() - Window::mouseStartY;
+		zoomFactor = 1.0 + pixelDiff * Window::ZOOMSCALE;
+		Window::tmpMatrix.transformWorld(Matrix4::scale(zoomFactor,zoomFactor,zoomFactor));
+
 	}
 
+	// lastPoint = currPoint
+	Window::mouseStartX = currPoint.getX();
+	Window::mouseStartY = currPoint.getY();
+	Window::lastPoint = currPoint;
 
 }

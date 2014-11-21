@@ -93,18 +93,18 @@ Vector3 Vector3::cross(const Vector3& a, const Vector3& b) {
 
 double Vector3::length() {
 	double magnitude = sqrt(pow(this->x, 2.0) + pow(this->y, 2.0) + pow(this->z, 2.0));
-	return magnitude;
+	return fabs(magnitude);
 };
 
 /**
  * Normalizes the calling vector
  */
 void Vector3::normalize() {
-	double l = this->length();
-	if ( l == 1 || l == 0 ) return;
-	this->x /= l;
-	this->y /= l;
-	this->z /= l;
+	double len = this->length();
+	if ( len == 1 || len == 0 ) return;
+	this->x /= len;
+	this->y /= len;
+	this->z /= len;
 };
 
 void Vector3::print(std::string comment) {

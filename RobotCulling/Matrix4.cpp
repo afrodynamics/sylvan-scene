@@ -205,24 +205,35 @@ void Matrix4::makeScale(double sx, double sy, double sz) {
 // that is passed in
 // angle is expected in degrees
 void Matrix4::makeRotate(double angle, Vector3& axis) {
+	
 	angle = angle / 180.0 * M_PI; // convert from degrees to radians
 	double ax = axis.x;
 	double ay = axis.y;
 	double az = axis.z;
 
+	// http://ivl.calit2.net/wiki/images/3/3a/02_TransformationsF13.pdf
+
     identity();
 	
-	m[0][0] = cos(angle) + (ax*ax) * (1 - cos(angle));
-	m[0][1] = (ax*ay) * (1 - cos(angle)) - (az*sin(angle));
-	m[0][2] = (ax*az) * (1 - cos(angle)) + (ay*sin(angle));
+	// Row 1 (updated)
 
-	m[1][0] = (ay*ax) * (1 - cos(angle)) + (az*sin(angle));
-	m[1][1] = cos(angle) + (ay*ay) * (1 - cos(angle));
-	m[1][2] = (ay*az) * (1 - cos(angle)) - (ax*sin(angle));
+	m[0][0] = 1.0 + (1.0 - cos(angle)) * (ax * ax - 1);
+	m[0][1] = -az * sin(angle) + (1 - cos(angle)) * ax * ay;
+	m[0][2] = ay * sin(angle) + (1 - cos(angle)) * ax * az;
 
-	m[2][0] = (az*ax) * (1 - cos(angle)) - (ay*sin(angle));
-	m[2][1] = (az*ay) * (1 - cos(angle)) + (ax*sin(angle));
-	m[2][2] = cos(angle) + (az*az) * (1 - cos(angle));
+	// Row 2 (updated)
+
+	m[1][0] = az * sin(angle) + (1 - cos(angle)) * ay * ax;
+	m[1][1] = 1 + (1 - cos(angle)) * (ay*ay - 1);
+	m[1][2] = -ax * sin(angle) + (1 - cos(angle)) * ay * az;
+
+	// Row 3
+
+	m[2][0] = -ay * sin(angle) + (1 - cos(angle)) * az * ax;
+	m[2][1] = ax * sin(angle) + (1 - cos(angle)) * az * ay;
+	m[2][2] = 1 + (1 - cos(angle)) * (az * az - 1);
+
+	// Bottom Row (4)
 
 }
 

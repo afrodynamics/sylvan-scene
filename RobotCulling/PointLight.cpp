@@ -1,9 +1,9 @@
 #include "PointLight.h"
-#include "Wiresphere.h"
+#include "Sphere.h"
 
 PointLight::PointLight()
 {
-	positionSphere = new Wiresphere();
+	positionSphere = new Sphere();
 	lightIndex = Node::lightCounter;
 
 	spotAngle = 180.0;
@@ -30,7 +30,7 @@ PointLight::PointLight()
  */
 PointLight::PointLight(double x, double y, double z)
 {
-	positionSphere = new Wiresphere();
+	positionSphere = new Sphere();
 	centerPos = Vector4( x, y, z, 1 );
 	setPosition(x, y, z, 1 );
 	setAmbient(0, 0, 0, 1);
@@ -100,31 +100,46 @@ void PointLight::render() {
 		break; // Too many lights
 	}
 
-	glPushMatrix();    // Ignore the last state
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();  // Load the identity, since lights aren't relative to the camera
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+	if (enabled)
+		glEnable(lightId); // Enable this light, duh!
+	else
+		glDisable(lightId);
+
+	// Determine translation matrix and multiply by our camera matrix to position light
+	// in the scene
+	centerPos = Vector4( position[0], position[1], position[2], position[3] );
+	Matrix4 tmp = lastC * Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+
 	if (spotAngle != 180.0) {
-		glGetLightfv(lightId, GL_SPOT_CUTOFF, &spotAngle);
-		glGetLightfv(lightId, GL_SPOT_DIRECTION, spotDir );
-		glGetLightfv(lightId, GL_SPOT_EXPONENT, &spotExponent );
+		// We want to rotate the cone
+		Vector3 sptDir = Vector3( spotDir[0], spotDir[1], spotDir[2] );
+		//tmp = tmp * Matrix4::rotate( 0, sptDir );
+	}
+
+	tmp.transpose();
+	tmp.identity();
+
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();	
+	glEnable(lightId);
+	positionSphere->render(); // Geode would've loaded the appropriate matrix
+	
+	if (spotAngle != 180.0) {
 		glLightfv(lightId, GL_AMBIENT, ambient);
 		glLightfv(lightId, GL_DIFFUSE, diffuse);
 		glLightfv(lightId, GL_SPECULAR, specular);
+		glLightfv(lightId, GL_SPOT_DIRECTION, spotDir);
+		glLightfv(lightId, GL_SPOT_EXPONENT, &spotExponent);
+		glLightfv(lightId, GL_SPOT_CUTOFF, &spotAngle);
 	}
 	else {
 		glLightfv(lightId, GL_AMBIENT, ambient);
 		glLightfv(lightId, GL_DIFFUSE, diffuse);
 		glLightfv(lightId, GL_SPECULAR, specular);
 	}
-	glLightfv( lightId, GL_POSITION, position );
-	if (enabled)
-		glEnable(lightId); // Enable this light, duh!
-	else
-		glDisable(lightId);
 
-	positionSphere->render();
-	
+	glLightfv( lightId, GL_POSITION, position );
 	glPopMatrix();
 
 };

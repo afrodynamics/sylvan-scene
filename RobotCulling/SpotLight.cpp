@@ -1,9 +1,9 @@
 #include "SpotLight.h"
-#include "Wiresphere.h"
+#include "Cone.h"
 
 SpotLight::SpotLight()
 {
-	positionSphere = new Wiresphere();
+	positionSphere = new Cone();
 	lightIndex = Node::lightCounter;
 
 	// Set light properties to OpenGL default
@@ -24,7 +24,7 @@ SpotLight::SpotLight()
 */
 SpotLight::SpotLight(double x, double y, double z, double angle)
 {
-	positionSphere = new Wiresphere();
+	positionSphere = new Cone();
 	centerPos = Vector4(x, y, z, 1);
 	setPosition(x, y, z, 1);
 	setAmbient(0, 0, 0, 1);
@@ -32,7 +32,7 @@ SpotLight::SpotLight(double x, double y, double z, double angle)
 	setSpecular(1, 1, 1, 1);
 	setCutoff(angle);
 	setSpotExponent(2.0);
-	setSpotDir(Vector3(0,-1,0));
+	setSpotDir(Vector3(0,0,-1.0));
 
 	lightIndex = Node::lightCounter;
 	Node::lightCounter++;
