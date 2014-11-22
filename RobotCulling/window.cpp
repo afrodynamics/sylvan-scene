@@ -85,18 +85,22 @@ namespace Scene
 
 		// Define the lighting and nodes in the scene
 
-		spotLight = new SpotLight(0, 0, -10, 5);
-		spotLight->setCutoff(0.0);
+		spotLight = new SpotLight(0, -3, -10, 0.0);
+		spotLight->setCutoff(25.0);
 		spotLight->setSpecular(0, 0, 1, 1); // blue as fuck
 		spotLight->setDiffuse(0, 0, 1, 1);
-		spotLight->setAmbient(0, 0, 0.1, 0);
+		spotLight->setAmbient(0, 0, 1, 0);
 		spotLight->setSpotExponent(0);
 		spotLight->setSpotDir(Vector3(0, 0, -1));
 
-		ptLight = new PointLight(10, 8, -5);
-		ptLight->setAmbient(0, 0.1, 0, 1);
+		ptLight = new PointLight(0, 4, -10);
+		ptLight->setAmbient(0, 0.25, 0, 1);
 		ptLight->setSpecular(0, 1, 0, 1);
 		ptLight->setDiffuse(0, 1, 0, 0); // green 
+
+		bunny->setMaterial(Vector4(.5, .5, .5, 1), Vector4(1.0, 0.75, 0.75, 1), Vector4(25.0, 0, 0, 1), Vector4(1,1,1,1));
+		dragon->setMaterial(Vector4(.75, 1, .2, 1), Vector4(1.0, 0.75, 0.75, 1), Vector4(50.0, 0, 0, 1), Vector4(1, 1, 1, 1));
+		bear->setMaterial(Vector4(.1, .1, .1, 1), Vector4(1.0, 1.0, 1.0, 1), Vector4(100.0, 0, 0, 1), Vector4(1, 1, 1, 1));
 		
 		// Bunny will load first, then detach the remaining threads until they complete
 

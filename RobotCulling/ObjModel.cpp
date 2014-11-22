@@ -404,6 +404,13 @@ void ObjModel::draw(Matrix4& C) {
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
 
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+
 	if (!fileLoaded * !printWarn) {
 		// Print a warning letting the user know what's up, use stringstreams so it's thread safe
 		stringstream s;
@@ -468,4 +475,26 @@ void ObjModel::draw(Matrix4& C) {
 	// Call draw on the children, if we have any
 	Group::draw(lastC);
 
+}
+
+void ObjModel::setMaterial(Vector4 amb, Vector4 spec, Vector4 shiny, Vector4 diff) {
+	ambient[0] = amb.getX();
+	ambient[1] = amb.getY();
+	ambient[2] = amb.getZ();
+	ambient[3] = amb.getW();
+	
+	shininess[0] = shiny.getX();
+	shininess[1] = shiny.getY();
+	shininess[2] = shiny.getZ();
+	shininess[3] = shiny.getW();
+
+	specular[0] = spec.getX();
+	specular[1] = spec.getY();
+	specular[2] = spec.getZ();
+	specular[3] = spec.getW();
+
+	diffuse[0] = diff.getX();
+	diffuse[1] = diff.getY();
+	diffuse[2] = diff.getZ();
+	diffuse[3] = diff.getW();
 }

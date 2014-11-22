@@ -25,6 +25,12 @@ private:
 	Vector3 minimum, maximum;
 	double xMin, yMin, zMin, xMax, yMax, zMax;
 	double windowWidth;
+	
+	// Material
+	float diffuse[4];
+	float ambient[4];
+	float specular[4];
+	float shininess[4];
 
 public:
 	std::vector<Vector4> vertexList, normalList, colorList, uvwCoords;
@@ -37,5 +43,6 @@ public:
 	bool isLoaded();
 	void printInfo(std::string comment);
 	void draw(Matrix4& C);
+	void setMaterial(Vector4 amb, Vector4 spec, Vector4 shiny, Vector4 diff);
 };
 
