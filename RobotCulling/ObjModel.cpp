@@ -408,7 +408,7 @@ void ObjModel::draw(Matrix4& C) {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
 	glEnable(GL_COLOR_MATERIAL);
 
 	if (!fileLoaded * !printWarn) {

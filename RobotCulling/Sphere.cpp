@@ -3,7 +3,7 @@
 Sphere::Sphere()
 {
 	boundingRadius = radius = 1;
-	longitude = latitude = 6;
+	longitude = latitude = 16;
 	lastC.identity();
 	scale = Vector4(radius, radius, radius, 1);
 }
@@ -22,7 +22,7 @@ void Sphere::render() {
 		tmp.transpose();
 		glPushMatrix();
 		glLoadMatrixd(tmp.getPointer());
-		glutWireSphere(1, 16, 16);
+		glutWireSphere(1, 12, 12);
 		glPopMatrix();
 
 	}

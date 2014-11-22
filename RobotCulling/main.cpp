@@ -17,13 +17,14 @@ int main(int argc, char *argv[])
   float shininess[] = {100.0};
   float position[]  = {0.0, 10.0, 1.0, 0.0};	// lightsource position
 
-  // Initialize the scene
-  Scene::setup();
-  
+    
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(Window::width, Window::height);      // set initial window size
   glutCreateWindow("CSE 167 Project 5");    	      // open window and set window title
+
+  // Initialize the scene
+  Scene::setup();
 
   glEnable(GL_DEPTH_TEST);            	      // enable depth buffering
   glClear(GL_DEPTH_BUFFER_BIT);       	      // clear depth buffer
