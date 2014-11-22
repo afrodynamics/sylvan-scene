@@ -14,7 +14,7 @@ PointLight::PointLight()
 
 	// Set light properties to OpenGL default
 
-	setPosition(0, 0, 0, 1);
+	setPosition(0, 0, 0, 0);
 	setAmbient(0, 0, 0, 1);
 	setDiffuse(1, 1, 1, 1);
 	setSpecular(1, 1, 1, 1);
@@ -31,8 +31,8 @@ PointLight::PointLight()
 PointLight::PointLight(double x, double y, double z)
 {
 	positionSphere = new Sphere();
-	centerPos = Vector4( x, y, z, 1 );
-	setPosition(x, y, z, 1 );
+	centerPos = Vector4( x, y, z, 0 );
+	setPosition(x, y, z, 0 );
 	setAmbient(0, 0, 0, 1);
 	setDiffuse(1, 1, 1, 1);
 	setSpecular(1, 1, 1, 1);
@@ -108,22 +108,28 @@ void PointLight::render() {
 	// Determine translation matrix and multiply by our camera matrix to position light
 	// in the scene
 	centerPos = Vector4( position[0], position[1], position[2], position[3] );
-	Matrix4 tmp = lastC * Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+	Matrix4 tmp = /* lastC */ Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
 
 	if (spotAngle != 180.0) {
 		// We want to rotate the cone
 		Vector3 sptDir = Vector3( spotDir[0], spotDir[1], spotDir[2] );
-		//tmp = tmp * Matrix4::rotate( 0, sptDir );
+		sptDir.normalize();
+		spotDir[0] = sptDir.getX();
+		spotDir[1] = sptDir.getY();
+		spotDir[2] = sptDir.getZ();
+		tmp = tmp * Matrix4::rotate( 0, sptDir );
 	}
 
 	tmp.transpose();
-	tmp.identity();
 
 	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();	
-	glEnable(lightId);
+	
+	//glLoadIdentity();	
+	glLoadMatrixd(tmp.getPointer());	
 	positionSphere->render(); // Geode would've loaded the appropriate matrix
+
+	glEnable(lightId);
 	
 	if (spotAngle != 180.0) {
 		glLightfv(lightId, GL_AMBIENT, ambient);

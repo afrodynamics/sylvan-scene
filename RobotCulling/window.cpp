@@ -80,12 +80,12 @@ namespace Scene
 		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj", windowWidth );
 		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj", windowWidth );
 
-		shader = new Shader("simple.vert", "simple.frag", true);
+		shader = new Shader("diffuse_shading.vert", "diffuse_shading.frag", true);
 		shader->printLog("LOADING SHADER: ");
 
 		// Define the lighting and nodes in the scene
 
-		spotLight = new SpotLight(0, -1, 10, 5);
+		spotLight = new SpotLight(0, 0, -10, 5);
 		spotLight->setCutoff(0.0);
 		spotLight->setSpecular(0, 0, 1, 1); // blue as fuck
 		spotLight->setDiffuse(0, 0, 1, 1);
