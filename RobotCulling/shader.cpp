@@ -19,7 +19,9 @@ GNU General Public License for more details.
 
 Shader::Shader(const char *vert, const char *frag, bool isFile)
 {
+#ifdef _WIN32
 	GLeeInit();
+#endif
 	if(isFile)
 	{
 		char* vv = read(vert);

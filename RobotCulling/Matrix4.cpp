@@ -6,9 +6,20 @@
 
 #include <iostream>
 #include <sstream>
-#include <math.h>
+#include <cmath>
 #include <string>
+#include <exception>
 #include "Matrix4.h"
+
+/* Sick of Compiler Errors */
+double ABS(double d) {
+  if ( d >= 0 ) {
+    return d;
+  }
+  else {
+    return -d;
+  }
+}
 
 /**
  * Matrix4 standard constructor
@@ -116,14 +127,14 @@ double* Matrix4::getPointer()
 // get column as vec4
 Vector4 Matrix4::getColumn4(int col) {
 	if (col < 0 | col > 4) {
-		throw new std::exception("out of bounds call to get column");
+		throw new std::runtime_error("Matrix4: out of bounds call to get column");
 	}
 	return Vector4( m[0][col], m[1][col], m[2][col], m[3][col] );
 }
 // get column as vec3
 Vector3 Matrix4::getColumn3(int col) {
 	if (col < 0 | col > 4) {
-		throw new std::exception("out of bounds call to get column");
+		throw new std::runtime_error("Matrix4: out of bounds call to get column");
 	}
 	return Vector3(m[0][col], m[1][col], m[2][col]);
 }

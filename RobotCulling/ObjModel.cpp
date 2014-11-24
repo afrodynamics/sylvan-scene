@@ -361,14 +361,14 @@ bool ObjModel::cppParseFile(string fname) {
 	double yMiddle = (yMin + yMax) / 2.0;
 	double zMiddle = (zMin + zMax) / 2.0;
 
-	double scaleX = windowWidth / fabs(fabs(xMax) + fabs(xMin));
-	double scaleY = windowWidth / fabs(fabs(yMax) + fabs(yMin));
-	double scaleZ = windowWidth / fabs(fabs(zMax) + fabs(zMin));
+	double scaleX = windowWidth / ABS(ABS(xMax) + ABS(xMin));
+	double scaleY = windowWidth / ABS(ABS(yMax) + ABS(yMin));
+	double scaleZ = windowWidth / ABS(ABS(zMax) + ABS(zMin));
 
-	double scaleFactor = fmin( fmin(scaleX, scaleY), fmin(scaleY, scaleZ) );
+	double scaleFactor = std::min( std::min(scaleX, scaleY), std::min(scaleY, scaleZ) );
 
 	Vector3 centerVector = Vector3(-xMiddle, -yMiddle, -zMiddle);	
-	boundingRadius = fmax( (centerVector - minimum).length(), (centerVector - maximum).length()); 
+	boundingRadius = std::max( (centerVector - minimum).length(), (centerVector - maximum).length()); 
 
 	// Translate the model's vertices from its center to *THE* center
 	Matrix4 translationMtx = Matrix4::translate(-xMiddle, -yMiddle, -zMiddle);
@@ -380,8 +380,9 @@ bool ObjModel::cppParseFile(string fname) {
 
 	// Finally, reset our matrix to the identity & scale
 
+	Matrix4 scale = Matrix4::scale(scaleFactor, scaleFactor, scaleFactor);
 	mtx->identity();
-	mtx->transformWorld(Matrix4::scale(scaleFactor, scaleFactor, scaleFactor));
+	mtx->transformWorld(scale);
 
 	/** End of Centering **/
 	

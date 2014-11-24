@@ -76,9 +76,9 @@ namespace Scene
 
 		// Begin parsing the files
 
-		bunnyThread = std::thread(&ObjModel::parseFile, bunny, "bunny.obj", windowWidth );
-		dragonThread = std::thread(&ObjModel::parseFile, dragon, "dragon.obj", windowWidth );
-		bearThread = std::thread(&ObjModel::parseFile, bear, "bear.obj", windowWidth );
+		bunnyThread = std::thread( &ObjModel::parseFile, bunny, "bunny.obj", windowWidth );
+		dragonThread = std::thread( &ObjModel::parseFile, dragon, "dragon.obj", windowWidth );
+		bearThread = std::thread( &ObjModel::parseFile, bear, "bear.obj", windowWidth );
 
 		shader = new Shader("diffuse_shading.vert", "diffuse_shading.frag", true);
 		shader->printLog("LOADING SHADER: ");
@@ -283,8 +283,13 @@ void Window::displayCallback()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
+  
   Matrix4 ident = Matrix4();
+  Matrix4 invCam = Matrix4();
+  invCam.identity();
   ident.identity();
+  if ( Scene::camera != nullptr) 
+  	invCam = Scene::camera->getInverseMatrix();
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -300,7 +305,7 @@ void Window::displayCallback()
 		}
 		Scene::ptLight->draw(ident);
 		Scene::spotLight->draw(ident);
-		Scene::world->draw(Scene::camera->getInverseMatrix());
+		Scene::world->draw(invCam);
 	}
 	else {
 		if (Scene::shaderOn) {
@@ -312,7 +317,7 @@ void Window::displayCallback()
 		Scene::ptLight->draw(ident);
 		Scene::spotLight->draw(ident);
 		Scene::world->getMatrix() = Window::tmpMatrix;
-		Scene::world->draw(Scene::camera->getInverseMatrix());
+		Scene::world->draw(invCam);
 	}
   }
 
@@ -572,7 +577,8 @@ void Window::mouseMotionCallback(int currX, int currY) {
 		currPoint = Vector3(currX, currY, 0.0);
 		pixelDiff = currPoint.getY() - Window::mouseStartY;
 		zoomFactor = 1.0 + pixelDiff * Window::ZOOMSCALE;
-		Window::tmpMatrix.transformWorld(Matrix4::scale(zoomFactor,zoomFactor,zoomFactor));
+		Matrix4 scale = Matrix4::scale(zoomFactor,zoomFactor,zoomFactor);
+		Window::tmpMatrix.transformWorld(scale);
 
 	}
 

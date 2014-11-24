@@ -50,21 +50,25 @@ Robot::~Robot()
  */
 void Robot::createRobot() {
 
-	leftArmMtx = Matrix4::translate(-3.5, -2, 0);  //* Matrix4::scale(1, 3, 1);
-	rightArmMtx = Matrix4::translate(3.5, -2, 0); //* Matrix4::scale(1, 3, 1);
-	leftLegMtx = Matrix4::translate(-1.1, -5, 0);  //* Matrix4::scale(1, 3, 1);
-	rightLegMtx = Matrix4::translate(1.1, -5, 0); //* Matrix4::scale(1, 3, 1);
+	leftArmMtx = Matrix4::translate(-3.5, -2, 0); 
+	rightArmMtx = Matrix4::translate(3.5, -2, 0);
+	leftLegMtx = Matrix4::translate(-1.1, -5, 0); 
+	rightLegMtx = Matrix4::translate(1.1, -5, 0);
+	neckMtx = Matrix4::translate(0, 5, 0);
 
 	leftLegJoint = new MatrixTransform( leftLegMtx );
 	rightLegJoint = new MatrixTransform( rightLegMtx );
 	leftArmJoint = new MatrixTransform( leftArmMtx );
 	rightArmJoint = new MatrixTransform( rightArmMtx );
-	leftLegScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
-	rightLegScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
-	leftArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
-	rightArmScale = new MatrixTransform(Matrix4::scale(1, 3, 1));
 
-	neckJoint = new MatrixTransform(Matrix4::translate(0, 5, 0));
+	Matrix4 limbScale = Matrix4::scale(1, 3, 1);
+
+	leftLegScale = new MatrixTransform(limbScale);
+	rightLegScale = new MatrixTransform(limbScale);
+	leftArmScale = new MatrixTransform(limbScale);
+	rightArmScale = new MatrixTransform(limbScale);
+
+	neckJoint = new MatrixTransform(neckMtx);
 	leftLeg = new Cube(); // len 2
 	rightLeg = new Cube(); // len 2
 	rightArm = new Cube(); // len 2
@@ -148,12 +152,12 @@ void Robot::animate() {
 	leftLegAngle += rotateSpeed * -rotateDir;
 	rightLegAngle += rotateSpeed * rotateDir;
 
-	if (fabs(leftLegAngle) > 60) {
+	if (ABS(leftLegAngle) > 60) {
 		// If we've moved further than our threshold allows, reverse direction
 		rotateDir *= -1;
 	}
 
-	if (fabs(leftArmAngle) > 90) {
+	if (ABS(leftArmAngle) > 90) {
 		// If we've moved further than our threshold allows, reverse direction
 		rotateArmDir *= -1;
 	}

@@ -19,7 +19,7 @@ private:
 	double x, y, z;
 	double leftArmAngle, rightArmAngle, leftLegAngle, rightLegAngle;
 	double rotateDir, rotateArmDir, rotateSpeed;
-	Matrix4 leftArmMtx, rightArmMtx, leftLegMtx, rightLegMtx;
+	Matrix4 leftArmMtx, rightArmMtx, leftLegMtx, rightLegMtx, neckMtx;
 
 	// Helper function for constructing/modifying geometry
 	void createRobot(void);
