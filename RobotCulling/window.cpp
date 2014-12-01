@@ -11,7 +11,7 @@
 #include "main.h"
 #include "Window.h"
 #include "SpotLight.h"
-#include "BezierCurve.h"
+#include "BezierPatch.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ namespace Scene
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
-	BezierCurve *testCurve;
+	BezierPatch *waterPatch;
 	bool showBounds = false;
 	bool frustumCulling = false;
 	bool showFps = false;
@@ -82,7 +82,7 @@ namespace Scene
 		p1 = Vector4(-2.5,-7,0,1);
 		p2 = Vector4(2.5,7,0,1);
 		p3 = Vector4(5,0,0,1);
-		testCurve = new BezierCurve( p0, p1, p2, p3 );
+		waterPatch = new BezierPatch();
 
 		// Define the lighting and nodes in the scene
 
@@ -100,7 +100,7 @@ namespace Scene
 		ptLight->setDiffuse(0, 1, 0, 0); // green 
 
 		world->addChild( ptLight );
-		world->addChild( new Cube() ); // TODO: memory leak, just for testing
+		world->addChild( waterPatch ); // TODO: memory leak, just for testing
 
 	};
 	// Deallocate all kinds of stuff
@@ -112,7 +112,7 @@ namespace Scene
 		delete world; world = nullptr;
 		delete bunny, dragon, bear;
 		delete ptLight; delete spotLight;
-		delete testCurve;
+		delete waterPatch;
 		bunny = dragon = bear = nullptr;
 		ptLight = nullptr; spotLight = nullptr;
 	};
@@ -292,7 +292,7 @@ void Window::displayCallback()
 		Scene::shader->unbind();
 	}
 
-	Scene::testCurve->draw(100);
+	//Scene::waterPatch->draw(100);
 	Scene::ptLight->draw(ident);
 	Scene::spotLight->draw(ident);
 	Scene::world->draw(invCam);
