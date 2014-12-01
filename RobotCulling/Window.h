@@ -37,9 +37,6 @@ class Window	  // OpenGL output window related routines
     static void reshapeCallback(int, int);
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
-	static void mousePressCallback(int, int, int, int);
-	static void mouseMotionCallback(int, int);
-	static Vector3 trackBallMapping(int x, int y);
 
     // Draw Methods
     static void displayCallback(void);

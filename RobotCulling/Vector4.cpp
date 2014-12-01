@@ -84,6 +84,16 @@ void Vector4::negate() {
 }
 
 /**
+ * Scale
+ */
+void Vector4::scale(double s) {
+	this->x *= s;
+	this->y *= s;
+	this->z *= s;
+	this->w *= s;
+}
+
+/**
  * Length
  */
 double Vector4::length() {

@@ -22,6 +22,7 @@ public:
     double getW();
     void negate();
     void normalize();
+    void scale(double s);
 
     // Might be useful in the future
     bool isPoint();  // Returns true if this Vector4 represents a point (w = 1)

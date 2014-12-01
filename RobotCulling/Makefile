@@ -1,4 +1,4 @@
-NAME = modelviewers
+NAME = water
 ECHO = @echo
 CC = @clang++
 LIBS = -framework GLUT -framework OpenGL -framework Cocoa
