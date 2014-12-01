@@ -40,6 +40,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
+	MatrixTransform *patchScale, *patchTranslate;
 	bool showBounds = false;
 	bool frustumCulling = false;
 	bool showFps = false;
@@ -62,7 +63,7 @@ namespace Scene
 	void setup() {
 
 		camera = new Camera(
-			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 0, -20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
 		world = new MatrixTransform();
@@ -83,6 +84,10 @@ namespace Scene
 		p2 = Vector4(2.5,7,0,1);
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
+		Matrix4 scl = Matrix4::scale(50,50,50);
+		Matrix4 trn = Matrix4::translate(0.0,-1.0,0.0);
+		patchScale = new MatrixTransform( scl );
+		patchTranslate = new MatrixTransform( trn );
 
 		// Define the lighting and nodes in the scene
 
@@ -94,13 +99,14 @@ namespace Scene
 		spotLight->setSpotExponent(0);
 		spotLight->setSpotDir(Vector3(0, 0, -1));
 
-		ptLight = new PointLight(0, 4, -10);
+		ptLight = new PointLight(0, 2, -10);
 		ptLight->setAmbient(0, 0.25, 0, 1);
 		ptLight->setSpecular(0, 1, 0, 1);
 		ptLight->setDiffuse(0, 1, 0, 0); // green 
 
-		world->addChild( ptLight );
-		world->addChild( waterPatch ); // TODO: memory leak, just for testing
+		world->addChild( patchTranslate ); 
+		patchTranslate->addChild( patchScale );
+		patchScale->addChild( waterPatch );
 
 	};
 	// Deallocate all kinds of stuff
@@ -113,6 +119,8 @@ namespace Scene
 		delete bunny, dragon, bear;
 		delete ptLight; delete spotLight;
 		delete waterPatch;
+		delete patchScale, patchTranslate;
+		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
 		ptLight = nullptr; spotLight = nullptr;
 	};
@@ -272,6 +280,8 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
+  if (glGetError() != GL_NO_ERROR) cerr << "GL Error" << endl;
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
   
@@ -294,7 +304,7 @@ void Window::displayCallback()
 
 	//Scene::waterPatch->draw(100);
 	Scene::ptLight->draw(ident);
-	Scene::spotLight->draw(ident);
+	//Scene::spotLight->draw(ident);
 	Scene::world->draw(invCam);
 	
   }
