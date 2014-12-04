@@ -14,7 +14,6 @@ namespace Scene
 {
 	extern Camera *camera;
 	extern std::vector<Node*> nodeList;
-	extern std::vector<Plane> frustumPlanes;
 	extern double znear, zfar;
 	extern MatrixTransform *world;
 	extern Robot* createRobot(Vector3&);
@@ -25,13 +24,8 @@ namespace Scene
 class Window	  // OpenGL output window related routines
 {
   public:
-    static int width, height; 	            // window size
-    static int cameraMode;
-	static int mouseStartX, mouseStartY;
-    static double fov, ROTSCALE, ZOOMSCALE;
-	static bool rotating, zooming;
-	static Matrix4 preScrollMtx, tmpMatrix;
-	static Vector3 lastPoint;
+    static int width, height;  // useful vars
+    static double fov, deltaTime;
 
 	// Courtesy of http://en.wikibooks.org/wiki/OpenGL_Programming/Intermediate/Textures
 	static GLuint loadPPM(const char *filename, int width, int height);

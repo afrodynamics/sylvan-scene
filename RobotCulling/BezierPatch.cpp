@@ -158,7 +158,7 @@ void BezierPatch::render() {
 	// V Axis is parallel to X
 
 	glBegin(GL_QUADS); // Because I know this will work
-	glColor3f(0.0,0.35,1.0);
+	glColor4f(0.0,0.35,.9,.8); // Make transparent
 	for (u = 0.0; u < maxParam; u += inc ) {
 		for (v = 0.0; v < maxParam; v += inc ) {
 			// Now we have our parameters for our first coord

@@ -18,16 +18,8 @@ using namespace std;
 
 int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
+double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
-double Window::ROTSCALE = 0.125; // tutorial says to use 90.0
-double Window::ZOOMSCALE = 0.008;
-int Window::mouseStartX = 0;
-int Window::mouseStartY = 0;
-bool Window::rotating = false;
-bool Window::zooming = false;
-Vector3 Window::lastPoint = Vector3();;
-Matrix4 Window::preScrollMtx = Matrix4::translate(1,1,1); // Identity
-Matrix4 Window::tmpMatrix = Matrix4::translate(1, 1, 1);
 
 namespace Scene
 {
@@ -35,7 +27,6 @@ namespace Scene
 	MatrixTransform *world = nullptr; // Top level of the scene graph
 	ObjModel *bunny, *dragon, *bear = nullptr;
 	PointLight *ptLight;
-	SpotLight *spotLight;
 	SkyBox *sky;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
@@ -112,7 +103,7 @@ namespace Scene
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		world->addChild( patchTranslate ); 
-		world->addChild( skyBoxScale );
+		// world->addChild( skyBoxScale ); // This will cause problems with shader binding
 		//skyBoxScale->addChild( sky );
 		patchTranslate->addChild( patchScale );
 		//world->addChild( ptLight );
@@ -128,14 +119,14 @@ namespace Scene
 		}
 		delete world; world = nullptr;
 		delete bunny, dragon, bear;
-		delete ptLight; delete spotLight;
+		delete ptLight;
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
 		delete sky;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
-		ptLight = nullptr; spotLight = nullptr;
+		ptLight = nullptr;
 	};
 };
 
@@ -161,6 +152,7 @@ void Window::idleCallback()
 	// second.
 	if (time - timebase > 1000 && Scene::showFps) {
 		cerr << "FPS: " << frame * 1000 / (time - timebase) << endl;
+		deltaTime = (time - timebase) / 1000; // Divide by 1000 here so we don't have to do it a million times
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
@@ -223,15 +215,18 @@ void Window::displayCallback()
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 
+
+	// Enable environment mapping on our patch
 	if (Scene::shaderOn) {
 		Scene::shader->bind();
 	}
-	else {
-		Scene::shader->unbind();
-	}
 
-	// Scene::ptLight->draw(ident);
+	// Draw the patch et al
 	Scene::world->draw(invCam);
+	Scene::shader->unbind(); // Unbind after drawing here
+
+	// Draw the skybox
+	Scene::skyBoxScale->draw(invCam);
 	
   }
 
@@ -264,10 +259,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->setCulling(Scene::frustumCulling);
 	  cerr << "Culling is " << (Scene::frustumCulling == true ? "on" : "off" ) << endl;
 	  break;
-  case 'p':
+  case 'e':
 	  Scene::shaderOn = !Scene::shaderOn;
-	  // ** TODO ** enable/disable the shader
-	  cerr << "Shaders are " << (Scene::shaderOn == true ? "on" : "off") << endl;
+	  cerr << "Environment mapping is " << (Scene::shaderOn == true ? "on" : "off") << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
@@ -292,14 +286,10 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'z':
 	  transformation = Matrix4::scale(0.9, 0.9, 0.9);
 	  Scene::world->getMatrix().transformWorld(transformation);
-	  // glMatrixMode(GL_PROJECTION);
-	  // glScalef(.9,.9,.9);
 	  break;
   case 'Z':
 	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
 	  Scene::world->getMatrix().transformWorld(transformation);
-	  // glMatrixMode(GL_PROJECTION);
-	  // glScalef(1.1,1.1,1.1);
 	  break;
   case 'o':
 	  transformation = Matrix4::rotY(-5.0);
