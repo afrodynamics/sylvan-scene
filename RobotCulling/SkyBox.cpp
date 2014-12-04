@@ -27,139 +27,144 @@ void SkyBox::render() {
 	 *
 	 * All faces are unit length, with cube centered at 0,0,0
 	 * so that the scene graph positioning isn't a giant pain
+	 * 
+	 * OpenGL texture coordinates are centered in the upper left
+	 * +----------+
+	 * | (0,0)    | (1,0)
+	 * |          |
+	 * |          |
+	 * |          |
+	 * +----------+ (1,1)
+	 *   (0,1)
 	 */
 
-	// Back Face
+	// Front Face  ( GOOD! )
 	
 	glColor3f(1,1,1);
-	glBindTexture(GL_TEXTURE_2D, back);
+	glBindTexture(GL_TEXTURE_2D, front);
 	glEnable(GL_TEXTURE_2D);
 	glBegin(GL_QUADS);
-	
+
 	glNormal3f(0.0,1.0,0.0);
-	glTexCoord2f(0,0);
+	glTexCoord2f(0,1);
 	glVertex3f(-.5,-.5,-.5); // bottom left - from testing
 	
-	glTexCoord2f(0,1);
+	glTexCoord2f(1,1);
 	glVertex3f(+.5,-.5,-.5); // bottom right - from testing
 
-	glTexCoord2f(1,1);
+	glTexCoord2f(1,0);
 	glVertex3f(+.5,+.5,-.5); // top right corner - from testing
 
-	glTexCoord2f(1,0);
+	glTexCoord2f(0,0);
 	glVertex3f(-.5,+.5,-.5); // top left corner - from testing (1,0)
 
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0); // unbind texture
 	
-	// Front Face
+	// Back Face  ( GOOD, SEMANTICALLY AND IN GAME! )
 
-	glBindTexture(GL_TEXTURE_2D, front);
+	glBindTexture(GL_TEXTURE_2D, back);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
-	// glTexCoord2f(1,1);
-	glTexCoord2f(1,0);
-	glVertex3f(-.5,-.5,+.5);
-	
-	// glTexCoord2f(0,0);
-	glTexCoord2f(0,1);
-	glVertex3f(-.5,+.5,+.5);
-	
-	// glTexCoord2f(1,0);
-	glTexCoord2f(0,0);
-	glVertex3f(+.5,+.5,+.5);
-
-	// glTexCoord2f(0,1);
 	glTexCoord2f(1,1);
-	glVertex3f(+.5,-.5,+.5);
+	glVertex3f(-.5,-.5,+.5); // bottom right (when looking straight at it)
+	
+	glTexCoord2f(1,0);
+	glVertex3f(-.5,+.5,+.5); // top right
+	
+	glTexCoord2f(0,0);
+	glVertex3f(+.5,+.5,+.5); // top left
+
+	glTexCoord2f(0,1);
+	glVertex3f(+.5,-.5,+.5); // bot left
 
 	glEnd();	
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 
-	// Left Face (well actually it's on the right because everything is broken)
+	// Left Face ( GOOD ! )
 
 	glBindTexture(GL_TEXTURE_2D, left);
 	glBegin(GL_QUADS);
-
+							// glColor3f(1,0,0);
 	glNormal3f(0.0,1.0,0.0);
 	glTexCoord2f(1,1);
-	glVertex3f(-.5, -.5, -.5);
+	glVertex3f(-.5, -.5, -.5); // bot right
 	
 	glTexCoord2f(1,0);
-	glVertex3f(-.5, +.5, -.5);
+	glVertex3f(-.5, +.5, -.5); // top right (looking straight at this face)
 	
-	glTexCoord2f(0,1);
-	glVertex3f(-.5, +.5, +.5);
-
 	glTexCoord2f(0,0);
-	glVertex3f(-.5, -.5, +.5);
+	glVertex3f(-.5, +.5, +.5); // top left
 
+	glTexCoord2f(0,1);
+	glVertex3f(-.5, -.5, +.5); // bot left
+							// glColor3f(1,1,1);
 	glEnd();	
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 
-	// Right Face (well actually it's on the left because everything is broken)
+	// Right Face ( GOOD ! )
 
 	glBindTexture(GL_TEXTURE_2D, right);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
 
-	glTexCoord2f(0,0);
-	glVertex3f(+.5, -.5, +.5);
-	
-	glTexCoord2f(0,1);
-	glVertex3f(+.5, +.5, +.5);
-
-	glTexCoord2f(1,0);
-	glVertex3f(+.5, +.5, -.5);
-
 	glTexCoord2f(1,1);
-	glVertex3f(+.5, -.5, -.5);
+	glVertex3f(+.5, -.5, +.5); // bot left (looking straight at the face)
+	
+	glTexCoord2f(1,0);
+	glVertex3f(+.5, +.5, +.5); // top left
+
+	glTexCoord2f(0,0);
+	glVertex3f(+.5, +.5, -.5); // top right
+
+	glTexCoord2f(0,1);
+	glVertex3f(+.5, -.5, -.5); // bot right
 
 	glEnd();	
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 
-	// Bottom Face (Ground)
+	// Bottom Face ( GOOD ! )
 	
 	glBindTexture(GL_TEXTURE_2D, base);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
 
+	glTexCoord2f(0,1);
+	glVertex3f(-.5, -.5, +.5); // bot left (looking straight down at the floor)
+	
 	glTexCoord2f(1,1);
-	glVertex3f(-.5, -.5, +.5);
+	glVertex3f(+.5, -.5, +.5); // bot right
 	
 	glTexCoord2f(1,0);
-	glVertex3f(+.5, -.5, +.5);
-	
-	glTexCoord2f(0,1);
-	glVertex3f(+.5, -.5, -.5);
+	glVertex3f(+.5, -.5, -.5); // top right
 
 	glTexCoord2f(0,0);
-	glVertex3f(-.5, -.5, -.5);
+	glVertex3f(-.5, -.5, -.5); // top left
 	
 	glEnd();	
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 
-	// Top Face
+	// Top Face ( GOOD ! )
 	
 	glBindTexture(GL_TEXTURE_2D, top);
 	glBegin(GL_QUADS);
 	
 	glNormal3f(0.0,1.0,0.0);
 	
-	glTexCoord2f(0,0);
-	glVertex3f(-.5, +.5, -.5);
-	
 	glTexCoord2f(0,1);
-	glVertex3f(+.5, +.5, -.5);
+	glVertex3f(-.5, +.5, -.5); // bot left
+	
+	glTexCoord2f(1,1);
+	glVertex3f(+.5, +.5, -.5); // bot right 
 
 	glTexCoord2f(1,0);
-	glVertex3f(+.5, +.5, +.5);	
+	glVertex3f(+.5, +.5, +.5); // top left
 
-	glTexCoord2f(1,1);
-	glVertex3f(-.5, +.5, +.5);
+	glTexCoord2f(0,0);
+	glVertex3f(-.5, +.5, +.5); // top right
 	
 	glEnd();	
 	glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
