@@ -11,6 +11,7 @@
 #include "main.h"
 #include "Window.h"
 #include "SpotLight.h"
+#include "SkyBox.h"
 #include "BezierPatch.h"
 
 using namespace std;
@@ -35,12 +36,13 @@ namespace Scene
 	ObjModel *bunny, *dragon, *bear = nullptr;
 	PointLight *ptLight;
 	SpotLight *spotLight;
+	SkyBox *sky;
 	vector<Node*> nodeList;
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
-	MatrixTransform *patchScale, *patchTranslate;
+	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
 	bool showBounds = false;
 	bool frustumCulling = false;
 	bool showFps = false;
@@ -64,7 +66,7 @@ namespace Scene
 	void setup() {
 
 		camera = new Camera(
-			Vector3(0, 0, -20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
 		world = new MatrixTransform();
@@ -82,30 +84,40 @@ namespace Scene
 		p2 = Vector4(2.5,7,0,1);
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
-		Matrix4 scl = Matrix4::scale(50,50,50);
+		Matrix4 scl = Matrix4::scale(10,10,10);
 		Matrix4 trn = Matrix4::translate(0.0,-1.0,0.0);
 		patchScale = new MatrixTransform( scl );
+		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
 
 		// Load a bind the textures
-		sky_right = Window::loadPPM("text/right.ppm",1024,1024);		
-		sky_left = Window::loadPPM("text/left.ppm",1024,1024);
-		sky_front = Window::loadPPM("tex/front.ppm",1024,1024);
-		sky_back = Window::loadPPM("tex/back.ppm",1024,1024);
-		sky_up = Window::loadPPM("tex/top.ppm",1024,1024);
-		sky_down = Window::loadPPM("tex/base.ppm",1024,1024);
+		
+		sky = new SkyBox();
 
-		// Define the lighting and nodes in the scene
+		sky->right = Window::loadPPM("tex/right.ppm",1024,1024);		
+		sky->left = Window::loadPPM("tex/left.ppm",1024,1024);
+		sky->front = Window::loadPPM("tex/front.ppm",1024,1024);
+		sky->back = Window::loadPPM("tex/back.ppm",1024,1024);
+		sky->top = Window::loadPPM("tex/top.ppm",1024,1024);
+		sky->base = Window::loadPPM("tex/base.ppm",1024,1024);
 
-		ptLight = new PointLight(0, 5, 0);
-		ptLight->setAmbient(0.1, 0.1, 0.25, 1);
-		ptLight->setSpecular(0, 0, 70, 1);
-		ptLight->setDiffuse(0, .5, 70, 0); // green 
+		// Make sure no bytes are padded:
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		// Select GL_MODULATE to mix texture with polygon color for shading:
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		// Use bilinear interpolation:
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		world->addChild( patchTranslate ); 
+		world->addChild( skyBoxScale );
+		//skyBoxScale->addChild( sky );
 		patchTranslate->addChild( patchScale );
-		world->addChild( ptLight );
+		//world->addChild( ptLight );
 		patchScale->addChild( waterPatch );
+		patchScale->addChild( sky );
 
 	};
 	// Deallocate all kinds of stuff
@@ -118,7 +130,9 @@ namespace Scene
 		delete bunny, dragon, bear;
 		delete ptLight; delete spotLight;
 		delete waterPatch;
-		delete patchScale, patchTranslate;
+		delete patchScale, patchTranslate, skyBoxScale;
+		delete sky;
+		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
 		ptLight = nullptr; spotLight = nullptr;
@@ -186,92 +200,6 @@ void Window::reshapeCallback(int w, int h)
   double hFar = 2 * tan(fovRadians) * Scene::zfar;
   double wFar = hNear * aspectRatio;
 
-  // Erase everything in the frustum plane list for our Scene and recalculate
-
-  unsigned int originalSize = Scene::frustumList.size();
-  for (unsigned int i = 0; i < originalSize; i++) {
-	  Scene::frustumList.pop_back();
-  }
-
-  // Get camera axes
-  Vector3 d = Scene::camera->getLookDir();
-  Vector3 up = Scene::camera->getUp();
-  Vector3 right = Scene::camera->getRight();
-  Vector3 cam = Scene::camera->getPos();
-  d.normalize();
-  up.normalize();
-  right.normalize();
-
-  d.print("Camera look direction: ");
-  up.print("Camera up direction: ");
-  right.print("Camera right direction: "); // these look correct
-
-  Vector3 farCenter, nearCenter, nearNormal;
-  farCenter = cam + (d * Scene::zfar);
-  nearCenter = cam + (d * Scene::znear);
-  nearNormal = Scene::camera->getLookDir();
-
-  Plane nearPlane, farPlane, leftPlane, rightPlane, topPlane, bottomPlane;
-
-  // Remember, our normals should point ***OUTSIDE*** of the view frustum
-
-  nearPlane = Plane(nearNormal, nearCenter); 
-  nearNormal.negate();
-  farPlane = Plane(nearNormal, farCenter);
-  
-  // Get the point tmp on the right edge of the near plane
-  // and subtract it from the camera's position so we get a vector
-  // that points in the direction parallel to the right plane
-
-  Vector3 edgePoint = (nearCenter + right * (wNear / 2.0));
-  Vector3 tmp = edgePoint - cam;
-  tmp.normalize();
-  tmp = tmp.cross( tmp, up );
-
-  rightPlane = Plane(tmp, edgePoint);
-
-  // rightPlane is straight from the formula
-
-  // Left Plane
-
-  edgePoint = (nearCenter + right * (-wNear / 2.0));
-  tmp = edgePoint - cam; 
-  tmp.normalize();
-  tmp.cross(up, tmp);
-
-  leftPlane = Plane(tmp, edgePoint);
-
-  // Top Plane
-
-  edgePoint = (nearCenter + up * (hNear / 2.0));
-  tmp = edgePoint - cam;
-  tmp.normalize();
-  tmp.cross(right, tmp);
-
-  topPlane = Plane(tmp, edgePoint);
-
-  // Bottom Plane
-
-  edgePoint = (nearCenter + up * (-hNear / 2.0));
-  tmp = edgePoint - cam;
-  tmp.normalize();
-  tmp.negate();
-  tmp.cross(right, tmp);
-
-  bottomPlane = Plane(tmp, edgePoint);
-
-  // Once we've calculated everything, add our planes to the vector
-
-  Scene::frustumList.push_back(nearPlane); // wrong?
-  Scene::frustumList.push_back(farPlane); // correct
-  Scene::frustumList.push_back(leftPlane); // correct (when we flip the T/F return in Plane, the army disappears)
-  Scene::frustumList.push_back(rightPlane); // correct
-  Scene::frustumList.push_back(topPlane); // correct
-  Scene::frustumList.push_back(bottomPlane); // correct
-
-  // Tell the world what's up
-  Scene::world->setVector(&Scene::frustumList);
-
 };
 
 //----------------------------------------------------------------------------
@@ -279,7 +207,8 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
-  if (glGetError() != GL_NO_ERROR) cerr << "GL Error" << endl;
+  long err = glGetError();
+  if (err != GL_NO_ERROR) cerr << gluErrorString( err ) << endl;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
@@ -344,36 +273,40 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
-  case 'x':
-	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'X':
+  case 'x': // moving camera in -x direction, requires moving world in +x
 	  transformation = Matrix4::translate(1.0, 0.0, 0.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
+  case 'X':
+	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
+	  Scene::world->getMatrix().transformWorld(transformation);
+	  break;
   case 'y':
-	  transformation = Matrix4::translate(0.0, -1.0, 0.0);
+	  transformation = Matrix4::translate(0.0, +1.0, 0.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'Y':
-	  transformation = Matrix4::translate(0.0, +1.0, 0.0);
+	  transformation = Matrix4::translate(0.0, -1.0, 0.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'z':
 	  transformation = Matrix4::scale(0.9, 0.9, 0.9);
 	  Scene::world->getMatrix().transformWorld(transformation);
+	  // glMatrixMode(GL_PROJECTION);
+	  // glScalef(.9,.9,.9);
 	  break;
   case 'Z':
 	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
 	  Scene::world->getMatrix().transformWorld(transformation);
+	  // glMatrixMode(GL_PROJECTION);
+	  // glScalef(1.1,1.1,1.1);
 	  break;
   case 'o':
-	  transformation = Matrix4::rotY(-1.0);
+	  transformation = Matrix4::rotY(-5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'O':
-	  transformation = Matrix4::rotY(+1.0);
+	  transformation = Matrix4::rotY(+5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
   case 'r':
@@ -398,7 +331,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 GLuint Window::loadPPM(const char *filename, int width, int height) {
 
 	GLuint texture[1];     // storage for one texture
-	int twidth, theight;   // texture width/height [pixels]
 	const int BUFSIZE = 128;
 	FILE* fp;
 	unsigned int read;
@@ -455,12 +387,13 @@ GLuint Window::loadPPM(const char *filename, int width, int height) {
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 
 	// Generate the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
 
 	// Set bi-linear filtering for both minification and magnification
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	// cerr << texture[0] << endl;
 	return texture[0];
 }
 

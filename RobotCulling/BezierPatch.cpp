@@ -117,8 +117,7 @@ void BezierPatch::animate() {
 	}
 	// Second half of the control points will subtract the function
 	for (unsigned int i = MAX_CONTROL_POINTS / 2; i < MAX_CONTROL_POINTS; ++i) {
-	// Using Rex's equation, modified with my values
-	//for (unsigned int i = 0; i < MAX_CONTROL_POINTS; ++i ) {
+	
 		x = originalPoints[i].getX();
 		y = originalPoints[i].getY();
 		z = originalPoints[i].getZ();
@@ -164,6 +163,7 @@ void BezierPatch::render() {
 		for (v = 0.0; v < maxParam; v += inc ) {
 			// Now we have our parameters for our first coord
 			// for this quad. Then we need to calculate the others
+			
 			q0 = calcPoint(u,v);
 			q0_n = calcNormal(u,v,q0);
 			q1 = calcPoint(u + inc, v);
@@ -183,19 +183,6 @@ void BezierPatch::render() {
 			// 
 			// My U/V axes were not parallel to what I thought they
 			// were parallel to
-			/*glNormal3f(q0.getX(), q0.getY(), q0.getZ());
-			glVertex3f(q0.getX(), q0.getY(), q0.getZ());
-			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
-			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
-			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-
-			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
-			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
-			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-			glNormal3f(q3.getX(), q3.getY(), q3.getZ());
-			glVertex3f(q3.getX(), q3.getY(), q3.getZ());*/
 
 			glNormal3f(q0.getX(), q0.getY(), q0.getZ());
 			glVertex3f(q0.getX(), q0.getY(), q0.getZ());
@@ -214,9 +201,4 @@ void BezierPatch::render() {
 	glEnd();
 
 	animate();
-
-	// Debug: render as "wireframe"
-	// glColor3f(1.0,0.25,0.25);
-	// uCurve0.draw(samples); uCurve1.draw(samples); uCurve2.draw(samples); uCurve3.draw(samples);
-	// vCurve0.draw(samples); vCurve1.draw(samples); vCurve2.draw(samples); vCurve3.draw(samples);
 }
