@@ -47,6 +47,7 @@ namespace Scene
 	bool shaderOn = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
+	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -67,9 +68,6 @@ namespace Scene
 		);
 
 		world = new MatrixTransform();
-		bunny = new ObjModel();
-		dragon = new ObjModel();
-		bear = new ObjModel();
 
 		double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
 		double aspectRatio = ((double)(Window::width)) / (double)Window::height;
@@ -89,23 +87,24 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
 
+		// Load a bind the textures
+		sky_right = Window::loadPPM("text/right.ppm",1024,1024);		
+		sky_left = Window::loadPPM("text/left.ppm",1024,1024);
+		sky_front = Window::loadPPM("tex/front.ppm",1024,1024);
+		sky_back = Window::loadPPM("tex/back.ppm",1024,1024);
+		sky_up = Window::loadPPM("tex/top.ppm",1024,1024);
+		sky_down = Window::loadPPM("tex/base.ppm",1024,1024);
+
 		// Define the lighting and nodes in the scene
 
-		spotLight = new SpotLight(0, -4, -10, 0.0);
-		spotLight->setCutoff(20.0);
-		spotLight->setSpecular(0, 1, 1, 1); // blue as fuck
-		spotLight->setDiffuse(0, 0, 1, 1);
-		spotLight->setAmbient(0, 0, 1, 0);
-		spotLight->setSpotExponent(0);
-		spotLight->setSpotDir(Vector3(0, 0, -1));
-
-		ptLight = new PointLight(0, 2, -10);
-		ptLight->setAmbient(0, 0.25, 0, 1);
-		ptLight->setSpecular(0, 1, 0, 1);
-		ptLight->setDiffuse(0, 1, 0, 0); // green 
+		ptLight = new PointLight(0, 5, 0);
+		ptLight->setAmbient(0.1, 0.1, 0.25, 1);
+		ptLight->setSpecular(0, 0, 70, 1);
+		ptLight->setDiffuse(0, .5, 70, 0); // green 
 
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
+		world->addChild( ptLight );
 		patchScale->addChild( waterPatch );
 
 	};
@@ -302,9 +301,7 @@ void Window::displayCallback()
 		Scene::shader->unbind();
 	}
 
-	//Scene::waterPatch->draw(100);
-	Scene::ptLight->draw(ident);
-	//Scene::spotLight->draw(ident);
+	// Scene::ptLight->draw(ident);
 	Scene::world->draw(invCam);
 	
   }
@@ -388,6 +385,84 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   }
 
 };
+
+/** Load a ppm file from disk, then loads it into OpenlGL.
+ @input filename The location of the PPM file.  If the file is not found, an error message
+		will be printed and this function will return 0
+ @input width This will be modified to contain the width of the loaded image, or 0 if file not found
+ @input height This will be modified to contain the height of the loaded image, or 0 if file not found
+ @return Returns the RGB pixel data as interleaved unsigned chars (R0 G0 B0 R1 G1 B1 R2 G2 B2 .... etc) or 0 if an error ocured
+
+ Stolen from Jurgen
+**/
+GLuint Window::loadPPM(const char *filename, int width, int height) {
+
+	GLuint texture[1];     // storage for one texture
+	int twidth, theight;   // texture width/height [pixels]
+	const int BUFSIZE = 128;
+	FILE* fp;
+	unsigned int read;
+	unsigned char* rawData; // texture pixel data
+	char buf[3][BUFSIZE];
+	char* retval_fgets;
+	size_t retval_sscanf;
+
+	if ( (fp=fopen(filename, "rb")) == NULL)
+	{
+		std::cerr << "error reading ppm file, could not locate " << filename << std::endl;
+		width = 0;
+		height = 0;
+		return NULL;
+	}
+
+	// Read magic number:
+	retval_fgets = fgets(buf[0], BUFSIZE, fp);
+
+	// Read width and height:
+	do
+	{
+		retval_fgets=fgets(buf[0], BUFSIZE, fp);
+	} while (buf[0][0] == '#');
+	retval_sscanf=sscanf(buf[0], "%s %s", buf[1], buf[2]);
+	width  = atoi(buf[1]);
+	height = atoi(buf[2]);
+
+	// Read maxval:
+	do
+	{
+	  retval_fgets=fgets(buf[0], BUFSIZE, fp);
+	} while (buf[0][0] == '#');
+
+	// Read image data:
+	rawData = new unsigned char[width * height * 3];
+	read = fread(rawData, width * height * 3, 1, fp);
+	fclose(fp);
+	if (read != 1)
+	{
+		std::cerr << "error parsing ppm file, incomplete data" << std::endl;
+		delete[] rawData;
+		width = 0;
+		height = 0;
+		return NULL;
+	}
+
+	// Load this file into an OpenGL texture object!
+  
+	// Create ID for texture
+	glGenTextures(1, &texture[0]);   
+
+	// Set this texture to be the one we are working with
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
+
+	// Generate the texture
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
+
+	// Set bi-linear filtering for both minification and magnification
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	return texture[0];
+}
 
 //----------------------------------------------------------------------------
 // Callback method called by GLUT when keys are pressed

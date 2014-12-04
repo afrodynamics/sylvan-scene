@@ -33,6 +33,9 @@ class Window	  // OpenGL output window related routines
 	static Matrix4 preScrollMtx, tmpMatrix;
 	static Vector3 lastPoint;
 
+	// Courtesy of http://en.wikibooks.org/wiki/OpenGL_Programming/Intermediate/Textures
+	static GLuint loadPPM(const char *filename, int width, int height);
+
     static void idleCallback(void);
     static void reshapeCallback(int, int);
     static void keyboardCallback(unsigned char,int,int);

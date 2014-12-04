@@ -68,6 +68,20 @@ Vector4 BezierPatch::calcPoint(double u, double v) {
 	return b.calcPoint(v);
 }
 
+// Calculate the normal at the point on the patch specified by u,v
+Vector3 BezierPatch::calcNormal(double u, double v, Vector4 pt) {
+	double delta = 0.0001;
+	Vector4 tan_u = calcPoint(u + delta, v) - pt;
+	Vector4 tan_v = calcPoint(u, v + delta) - pt;
+	Vector3 tan_u3 = Vector3( tan_u.getX(), tan_u.getY(), tan_u.getZ() );
+	Vector3 tan_v3 = Vector3( tan_v.getX(), tan_v.getY(), tan_v.getZ() );
+	tan_u3.normalize();
+	tan_v3.normalize(); // Avoid floating point issues
+	tan_u3.cross(tan_u3, tan_v3);
+	// tan_u3.normalize();
+	return tan_u3;
+}
+
 // If we update/modify control points, we should update all the curves
 // since I'm lazy and don't want to write lots of if/elses
 void BezierPatch::updateCurves() {
@@ -103,10 +117,13 @@ void BezierPatch::animate() {
 	}
 	// Second half of the control points will subtract the function
 	for (unsigned int i = MAX_CONTROL_POINTS / 2; i < MAX_CONTROL_POINTS; ++i) {
+	// Using Rex's equation, modified with my values
+	//for (unsigned int i = 0; i < MAX_CONTROL_POINTS; ++i ) {
 		x = originalPoints[i].getX();
 		y = originalPoints[i].getY();
 		z = originalPoints[i].getZ();
 
+		//y -= amplitude * ( sqrt(x*x + z*z) * sin( period * radians ) - cos( period * radians ))/100;
 		y -= amplitude * (sin( period * radians ) - cos( period * radians ))/100;
 
 		points[i] = Vector4(x,y,z,1.0);
@@ -136,17 +153,26 @@ void BezierPatch::render() {
 	double inc = 1.0 / (double)samples;
 	double maxParam = 1.0 - inc;
 	Vector4 q0, q1, q2, q3;
+	Vector3 q0_n, q1_n, q2_n, q3_n;
 
-	glBegin(GL_TRIANGLES); // Because I know this will work
+	// U Axis is parallel to Z
+	// V Axis is parallel to X
+
+	glBegin(GL_QUADS); // Because I know this will work
 	glColor3f(0.0,0.35,1.0);
 	for (u = 0.0; u < maxParam; u += inc ) {
 		for (v = 0.0; v < maxParam; v += inc ) {
 			// Now we have our parameters for our first coord
 			// for this quad. Then we need to calculate the others
 			q0 = calcPoint(u,v);
+			q0_n = calcNormal(u,v,q0);
 			q1 = calcPoint(u + inc, v);
+			q1_n = calcNormal(u + inc, v, q1);
 			q2 = calcPoint(u, v + inc);
+			q2_n = calcNormal(u, v + inc, q2);
 			q3 = calcPoint(u + inc, v + inc);  
+			q3_n = calcNormal(u + inc, v + inc, q3);
+
 			// because of maxParam, q3 in last iteration will have
 			//  (u, v) = ( 1.0, 1.0 ) which is what we want
 			
@@ -154,23 +180,35 @@ void BezierPatch::render() {
 			//   this defines the triangles as "back facing"
 			//   even though it should be front facing...
 			//   so it's drawing the underside of the patch
-			// glVertex3f(q0.getX(), q0.getY(), q0.getZ());
-			// glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-			// glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-
-			// glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-			// glVertex3f(q3.getX(), q3.getY(), q3.getZ());
-			// glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-			
-			// "backwards" as far as I'm concerned works
+			// 
+			// My U/V axes were not parallel to what I thought they
+			// were parallel to
+			/*glNormal3f(q0.getX(), q0.getY(), q0.getZ());
 			glVertex3f(q0.getX(), q0.getY(), q0.getZ());
+			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
 			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
+			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
 			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
 
+			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
 			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
+			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
 			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
+			glNormal3f(q3.getX(), q3.getY(), q3.getZ());
+			glVertex3f(q3.getX(), q3.getY(), q3.getZ());*/
+
+			glNormal3f(q0.getX(), q0.getY(), q0.getZ());
+			glVertex3f(q0.getX(), q0.getY(), q0.getZ());
+
+			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
+			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
+
+			glNormal3f(q3.getX(), q3.getY(), q3.getZ());	
 			glVertex3f(q3.getX(), q3.getY(), q3.getZ());
 
+			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
+			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
+				
 		}
 	}
 	glEnd();

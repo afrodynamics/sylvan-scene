@@ -108,7 +108,7 @@ void PointLight::render() {
 	// Determine translation matrix and multiply by our camera matrix to position light
 	// in the scene
 	centerPos = Vector4( position[0], position[1], position[2], position[3] );
-	Matrix4 tmp = /* lastC * */ Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
+	Matrix4 tmp = lastC * Matrix4::translate(centerPos.getX(), centerPos.getY(), centerPos.getZ());
 
 	if (spotAngle != 180.0) {
 		// We want to rotate the cone
@@ -127,7 +127,7 @@ void PointLight::render() {
 	glLoadMatrixd(tmp.getPointer());	
 	positionSphere->render(); // Geode would've loaded the appropriate matrix
 
-	glLoadIdentity();
+	//glLoadIdentity(); // we now want the light source in our scene graph pos
 	glEnable(lightId);
 	
 	if (spotAngle != 180.0) {
