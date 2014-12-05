@@ -186,7 +186,7 @@ void BezierPatch::render() {
 				q3_n = calcNormal(u + inc, v + inc, q3);
 
 				// Flip the normals (test)
-				q0_n.negate(); q1_n.negate(); q2_n.negate(); q3_n.negate();
+				// q0_n.negate(); q1_n.negate(); q2_n.negate(); q3_n.negate();
 
 				// because of maxParam, q3 in last iteration will have
 				//  (u, v) = ( 1.0, 1.0 ) which is what we want

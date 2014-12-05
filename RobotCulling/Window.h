@@ -28,7 +28,7 @@ class Window	  // OpenGL output window related routines
     static double fov, deltaTime;
 
 	// Courtesy of http://en.wikibooks.org/wiki/OpenGL_Programming/Intermediate/Textures
-	static GLuint loadPPM(const char *filename, int width, int height);
+	static GLuint loadPPM(const char *filename, int width, int height, int texID);
 
     static void idleCallback(void);
     static void reshapeCallback(int, int);

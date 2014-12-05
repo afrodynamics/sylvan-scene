@@ -40,6 +40,7 @@ namespace Scene
 	bool shaderOn = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
+	GLuint textures[6];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
 	// Create a new robot at the given position in world coordinates
@@ -85,12 +86,14 @@ namespace Scene
 		
 		sky = new SkyBox();
 
-		sky->right = Window::loadPPM("tex/right.ppm",1024,1024);		
-		sky->left = Window::loadPPM("tex/left.ppm",1024,1024);
-		sky->front = Window::loadPPM("tex/front.ppm",1024,1024);
-		sky->back = Window::loadPPM("tex/back.ppm",1024,1024);
-		sky->top = Window::loadPPM("tex/top.ppm",1024,1024);
-		sky->base = Window::loadPPM("tex/base.ppm",1024,1024);
+		glGenTextures(6, textures);
+
+		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
+		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
+		sky->front = Window::loadPPM("tex/front.ppm",1024,1024,2);
+		sky->back = Window::loadPPM("tex/back.ppm",1024,1024,3);
+		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
+		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
 		// Make sure no bytes are padded:
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -101,45 +104,6 @@ namespace Scene
 		// Use bilinear interpolation:
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		// We need to give the shader our information
-		
-		long err = glGetError();
-
-		if (err != GL_NO_ERROR) cerr << "after first bind " << gluErrorString( err ) << endl;
-		GLint texLoc = glGetUniformLocationARB(shader->pid,"right");
-
-		err = glGetError();
-		if (err != GL_NO_ERROR) cerr <<  "after get unfirom location: " << gluErrorString( err ) << endl;
-
-		glUniform1i( texLoc, 0 );
-
-		err = glGetError();
-		if (err != GL_NO_ERROR) cerr << "after uniform1i: " << gluErrorString( err ) << endl;
-  		
-  		texLoc = glGetUniformLocationARB(shader->pid,"left");
-		glUniform1i( texLoc, 1 );
-		
-  		texLoc = glGetUniformLocationARB(shader->pid,"front");
-		glUniform1i( texLoc, 2 );
-
-		texLoc = glGetUniformLocationARB(shader->pid,"back");
-		glUniform1i( texLoc, 3 );
-
-		texLoc = glGetUniformLocationARB(shader->pid,"top");
-		glUniform1i( texLoc, 4 );
-
-		texLoc = glGetUniformLocationARB(shader->pid,"base");
-		glUniform1i( texLoc, 5 );
-
-		// -------- fine ---------
-
-		glBindTexture(GL_TEXTURE_2D, sky->right);
-		glBindTexture(GL_TEXTURE_2D, sky->left );
-		glBindTexture(GL_TEXTURE_2D, sky->front );
-		glBindTexture(GL_TEXTURE_2D, sky->back );
-		glBindTexture(GL_TEXTURE_2D, sky->top );		
-		glBindTexture(GL_TEXTURE_2D, sky->base );
 
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
@@ -256,15 +220,6 @@ void Window::displayCallback()
   invCam = invCam * Scene::world->getMatrix();
   Vector3 camPos3 = Scene::camera->getPos();
   Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
-  //camPos.print("cam position");
-
-  // Update uniform variables in our shader
-  float camArray[3];
-  camArray[0] = camPos.getX();
-  camArray[1] = camPos.getY();
-  camArray[2] = camPos.getZ();
-  GLuint var = glGetUniformLocationARB(Scene::shader->pid, "CameraPosition");
-  // glUniform3fv(var, 1, camArray);
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -281,7 +236,7 @@ void Window::displayCallback()
 		Scene::shader->unbind(); // Unbind after drawing here
 	}
 
-	// Draw the skybox
+	// Draw the skybox without shader interference
 	Scene::skyBoxScale->draw(invCam);
 	
   }
@@ -374,9 +329,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 
  Stolen from Jurgen
 **/
-GLuint Window::loadPPM(const char *filename, int width, int height) {
+GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 
-	GLuint texture[1];     // storage for one texture
+	// GLuint texture[1];     // storage for one texture
 	const int BUFSIZE = 128;
 	FILE* fp;
 	unsigned int read;
@@ -427,10 +382,31 @@ GLuint Window::loadPPM(const char *filename, int width, int height) {
 	// Load this file into an OpenGL texture object!
   
 	// Create ID for texture
-	glGenTextures(1, &texture[0]);   
+	// glGenTextures(1, &texture[0]);   
 
 	// Set this texture to be the one we are working with
 	//glBindTexture(GL_TEXTURE_2D, texture[0]);
+	
+	GLuint texLoc;
+	switch (texID) {
+		case 0: texLoc = glGetUniformLocationARB(Scene::shader->pid,"right"); break;
+		case 1: texLoc = glGetUniformLocationARB(Scene::shader->pid,"left"); break;
+		case 2: texLoc = glGetUniformLocationARB(Scene::shader->pid,"front"); break;
+		case 3: texLoc = glGetUniformLocationARB(Scene::shader->pid,"back"); break;
+		case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
+		case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
+	}
+
+	int err = glGetError();
+	if (err != GL_NO_ERROR) cerr <<  "in loadPPM: after get uniform location: " << gluErrorString( err ) << endl;
+
+	glUniform1iARB( texLoc, 0 );
+
+	err = glGetError();
+	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
+		
+	glActiveTexture(GL_TEXTURE0 + texID);
+	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]);
 
 	// Generate the texture
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
@@ -439,8 +415,10 @@ GLuint Window::loadPPM(const char *filename, int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	cerr << filename << " has tex ID: " << texture[0] << endl;
-	return texture[0];
+	// cerr << filename << " has tex ID: " << texture[0] << endl;
+	// return texture[0];
+	cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
+	return Scene::textures[texID];
 }
 
 //----------------------------------------------------------------------------

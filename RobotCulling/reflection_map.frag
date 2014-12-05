@@ -38,7 +38,7 @@ void main()
 		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Testing to see if reflect is working
 		rMax = reflAbs.y;
 		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
-		if ( sign( refl.y ) < 0.0 ) {
+		if ( refl.y < 0.0 ) {
 			gl_FragColor = texture2D( base, reflAbs.xz );
 		}
 		else {
@@ -50,7 +50,7 @@ void main()
 		gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Testing to see if reflect is working
 		rMax = reflAbs.z;
 		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
-		if ( sign( refl.z ) < 0.0 ) {
+		if ( refl.z < 0.0 ) {
 			gl_FragColor = texture2D( front, reflAbs.xy );
 		}
 		else {
@@ -58,7 +58,7 @@ void main()
 		}
 	}
 
-	gl_FragColor = texture2D( front, reflAbs.xy );
+	// gl_FragColor = texture2D( right, reflAbs.xy );
 
 	//gl_FragColor = vec4( gl_TexCoord[0].stp, 1.0 ); // passed in from vtx shader
 }
