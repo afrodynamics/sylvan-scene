@@ -269,7 +269,6 @@ void Window::displayCallback()
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 
-
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn) {
 		Scene::shader->bind();

@@ -18,22 +18,44 @@ void main()
 {
 	vec3 refl = gl_TexCoord[0].stp; // Hacky but hopefully it'll work
 	vec3 reflAbs = vec3( abs(refl.x), abs(refl.y), abs(refl.z) );
+	vec3 result;
 	float rMax = 0.0;
 
 	if ( reflAbs.x >= reflAbs.y && reflAbs.x >= reflAbs.z ) {
 		// X is the biggest
 		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Testing to see if reflect is working
 		rMax = reflAbs.x;
+		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
+		if ( refl.x < 0.0 ) {
+			gl_FragColor = texture2D( left, reflAbs.yz );
+		}
+		else {
+			gl_FragColor = texture2D( right, reflAbs.yz );
+		}
 	}
 	else if ( reflAbs.y >= reflAbs.x && reflAbs.y >= reflAbs.z ) {
 		// Y is the biggest
 		gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Testing to see if reflect is working
 		rMax = reflAbs.y;
+		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
+		if ( sign( refl.y ) < 0.0 ) {
+			gl_FragColor = texture2D( base, reflAbs.xz );
+		}
+		else {
+			gl_FragColor = texture2D( top, reflAbs.xz );
+		}
 	}
 	else if ( reflAbs.z >= reflAbs.x && reflAbs.z >= reflAbs.y ) {
 		// Z is the biggest
 		gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0); // Testing to see if reflect is working
 		rMax = reflAbs.z;
+		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
+		if ( sign( refl.z ) < 0.0 ) {
+			gl_FragColor = texture2D( front, reflAbs.xy );
+		}
+		else {
+			gl_FragColor = texture2D( back, reflAbs.xy );
+		}
 	}
 
 	gl_FragColor = texture2D( front, reflAbs.xy );

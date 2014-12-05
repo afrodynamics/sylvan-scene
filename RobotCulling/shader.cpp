@@ -103,7 +103,7 @@ Shader::setup(const char *vs, const char *fs)
 	
 	glShaderSourceARB(vid, 1, &vs, 0);
 	glShaderSourceARB(fid, 1, &fs, 0);
-	
+
 	glCompileShaderARB(vid);
 	glCompileShaderARB(fid);
 	char glslLog[1024];
