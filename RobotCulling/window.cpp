@@ -225,7 +225,7 @@ void Window::displayCallback()
   camArray[1] = camPos.getY();
   camArray[2] = camPos.getZ();
   GLuint var = glGetUniformLocationARB(Scene::shader->pid, "CameraPosition");
-  //glUniform3fv(var, 1, camArray);
+  // glUniform3fv(var, 1, camArray);
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
