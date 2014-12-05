@@ -95,15 +95,15 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
-		// Make sure no bytes are padded:
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		// Set the sky texture offsets from GL_TEXTURE0 to whatever they *should* be
+		sky->right = 0;
+		sky->left = 1;
+		sky->front = 2;
+		sky->back = 3;
+		sky->top = 4;
+		sky->base = 5;
 
-		// Select GL_MODULATE to mix texture with polygon color for shading:
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-		// Use bilinear interpolation:
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//
 
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
@@ -400,12 +400,19 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	int err = glGetError();
 	if (err != GL_NO_ERROR) cerr <<  "in loadPPM: after get uniform location: " << gluErrorString( err ) << endl;
 
-	glUniform1iARB( texLoc, 0 );
+	glUniform1i( texLoc, 0 );
 
 	err = glGetError();
 	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
 		
-	glActiveTexture(GL_TEXTURE0 + texID);
+	switch (texID) {
+		case 0: glActiveTexture( GL_TEXTURE0 ); break; // right
+		case 1: glActiveTexture( GL_TEXTURE1 ); break; // left
+		case 2: glActiveTexture( GL_TEXTURE2 ); break; // front
+		case 3: glActiveTexture( GL_TEXTURE3 ); break; // back
+		case 4: glActiveTexture( GL_TEXTURE4 ); break; // top
+		case 5: glActiveTexture( GL_TEXTURE5 ); break; // base
+	}
 	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]);
 
 	// Generate the texture
@@ -414,6 +421,16 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	// Set bi-linear filtering for both minification and magnification
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Make sure no bytes are padded:
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	// Select GL_MODULATE to mix texture with polygon color for shading:
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	// Use bilinear interpolation:
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// cerr << filename << " has tex ID: " << texture[0] << endl;
 	// return texture[0];
