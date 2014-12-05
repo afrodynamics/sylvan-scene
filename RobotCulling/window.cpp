@@ -76,7 +76,7 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		Matrix4 scl = Matrix4::scale(10,10,10);
-		Matrix4 trn = Matrix4::translate(0.0,-1.0,0.0);
+		Matrix4 trn = Matrix4::translate(0.0,0.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
@@ -103,12 +103,11 @@ namespace Scene
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		world->addChild( patchTranslate ); 
-		// world->addChild( skyBoxScale ); // This will cause problems with shader binding
-		//skyBoxScale->addChild( sky );
 		patchTranslate->addChild( patchScale );
-		//world->addChild( ptLight );
 		patchScale->addChild( waterPatch );
-		patchScale->addChild( sky );
+
+		// Sky box needs to be in a separate scene graph so we can bind differeny shaders
+		skyBoxScale->addChild( sky );
 
 	};
 	// Deallocate all kinds of stuff
@@ -226,6 +225,7 @@ void Window::displayCallback()
 	Scene::shader->unbind(); // Unbind after drawing here
 
 	// Draw the skybox
+	invCam = invCam * Scene::world->getMatrix();
 	Scene::skyBoxScale->draw(invCam);
 	
   }

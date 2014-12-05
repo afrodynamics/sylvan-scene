@@ -3,6 +3,8 @@
 #include <vector>
 #include "BezierPatch.h"
 
+using namespace std;
+
 BezierPatch::BezierPatch() {
 	
 	// Create a patch in the XZ plane
@@ -15,9 +17,21 @@ BezierPatch::BezierPatch() {
 	boundingRadius = .5; // For "culling" even though it doesn't work
 
 	// Define control points
-	for (double zz = minZ; zz < maxZ; zz += maxZ / 2.0 ) {
-		for (double xx = minX; xx < maxX; xx += maxX / 2.0 ) {
-			points.push_back(Vector4( xx, 0.0, zz, 1.0 ));
+	// for (double zz = minZ; zz < maxZ; zz += maxZ / 2.0 ) {
+	// 	for (double xx = minX; xx < maxX; xx += maxX / 2.0 ) {
+	// 		points.push_back(Vector4( xx, 0.0, zz, 1.0 ));
+	// 	}
+	// }
+	// Don't use doubles in for loops
+	for ( int zz = 0; zz < 4; ++zz) {
+		for ( int xx = 0; xx < 4; ++xx) {
+			double xNormalized = (double)xx / 3.0;
+			double zNormalized = (double)zz / 3.0;
+			xNormalized -= .5;
+			zNormalized -= .5; // Center points around 0,0,0
+			Vector4 vec4 = Vector4( xNormalized, 0.0, zNormalized, 1.0 );
+			vec4.print("Control Point: ");
+			points.push_back(vec4);
 		}
 	}
 
@@ -199,6 +213,8 @@ void BezierPatch::render() {
 		}
 	}
 	glEnd();
+
+	// uCurve1.draw(samples); uCurve0.draw(samples); uCurve2.draw(samples); uCurve3.draw(samples);
 
 	animate();
 }
