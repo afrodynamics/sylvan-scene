@@ -27,6 +27,7 @@ class Shader
 public:
 	//unsigned int pid; // prog id
 	GLhandleARB pid; // prog id
+	GLhandleARB vid, fid;
 
 public:
 	Shader(const char *vert, const char *frag, bool isFile=true);

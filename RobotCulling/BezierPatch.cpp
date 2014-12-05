@@ -27,7 +27,7 @@ BezierPatch::BezierPatch() {
 			xNormalized -= .5;
 			zNormalized -= .5; // Center points around 0,0,0
 			Vector4 vec4 = Vector4( xNormalized, 0.0, zNormalized, 1.0 );
-			vec4.print("Patch Control Point: ");
+			//vec4.print("Patch Control Point: ");
 			points.push_back(vec4);
 		}
 	}

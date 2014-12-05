@@ -98,8 +98,8 @@ Shader::setup(const char *vs, const char *fs)
 	
 	//GLuint vid = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
 	//GLuint fid = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
-	GLhandleARB vid = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
-	GLhandleARB fid = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+	vid = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+	fid = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
 	
 	glShaderSourceARB(vid, 1, &vs, 0);
 	glShaderSourceARB(fid, 1, &fs, 0);

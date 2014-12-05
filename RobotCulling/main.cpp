@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
   float specular[]  = {1.0, 1.0, 1.0, 1.0};
   float shininess[] = {100.0};
-  float position[]  = {0.0, 9000.0, 1.0, 0.0};	// lightsource position
+  float position[]  = {0.0, 10.0, 0.0, 0.0};	// lightsource position
 
     
   glutInit(&argc, argv);      	      	      // initialize GLUT

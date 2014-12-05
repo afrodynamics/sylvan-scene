@@ -102,6 +102,45 @@ namespace Scene
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+		// We need to give the shader our information
+		
+		long err = glGetError();
+
+		if (err != GL_NO_ERROR) cerr << "after first bind " << gluErrorString( err ) << endl;
+		GLint texLoc = glGetUniformLocationARB(shader->pid,"right");
+
+		err = glGetError();
+		if (err != GL_NO_ERROR) cerr <<  "after get unfirom location: " << gluErrorString( err ) << endl;
+
+		glUniform1i( texLoc, 0 );
+
+		err = glGetError();
+		if (err != GL_NO_ERROR) cerr << "after uniform1i: " << gluErrorString( err ) << endl;
+  		
+  		texLoc = glGetUniformLocationARB(shader->pid,"left");
+		glUniform1i( texLoc, 1 );
+		
+  		texLoc = glGetUniformLocationARB(shader->pid,"front");
+		glUniform1i( texLoc, 2 );
+
+		texLoc = glGetUniformLocationARB(shader->pid,"back");
+		glUniform1i( texLoc, 3 );
+
+		texLoc = glGetUniformLocationARB(shader->pid,"top");
+		glUniform1i( texLoc, 4 );
+
+		texLoc = glGetUniformLocationARB(shader->pid,"base");
+		glUniform1i( texLoc, 5 );
+
+		// -------- fine ---------
+
+		glBindTexture(GL_TEXTURE_2D, sky->right);
+		glBindTexture(GL_TEXTURE_2D, sky->left );
+		glBindTexture(GL_TEXTURE_2D, sky->front );
+		glBindTexture(GL_TEXTURE_2D, sky->back );
+		glBindTexture(GL_TEXTURE_2D, sky->top );		
+		glBindTexture(GL_TEXTURE_2D, sky->base );
+
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
@@ -392,7 +431,7 @@ GLuint Window::loadPPM(const char *filename, int width, int height) {
 	glGenTextures(1, &texture[0]);   
 
 	// Set this texture to be the one we are working with
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	//glBindTexture(GL_TEXTURE_2D, texture[0]);
 
 	// Generate the texture
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
@@ -401,7 +440,7 @@ GLuint Window::loadPPM(const char *filename, int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// cerr << texture[0] << endl;
+	cerr << filename << " has tex ID: " << texture[0] << endl;
 	return texture[0];
 }
 
