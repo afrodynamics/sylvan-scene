@@ -2,16 +2,13 @@
 #include <cmath>
 #include <vector>
 #include "BezierPatch.h"
+#include "Window.h"
 
 using namespace std;
 
 BezierPatch::BezierPatch() {
 	
 	// Create a patch in the XZ plane
-	double minX = -.5;
-	double minZ = -.5; 
-	double maxX = .5;
-	double maxZ = .5;
 	samples = 100;
 	radians = 0.0;
 	boundingRadius = .5; // For "culling" even though it doesn't work
@@ -30,7 +27,7 @@ BezierPatch::BezierPatch() {
 			xNormalized -= .5;
 			zNormalized -= .5; // Center points around 0,0,0
 			Vector4 vec4 = Vector4( xNormalized, 0.0, zNormalized, 1.0 );
-			vec4.print("Control Point: ");
+			vec4.print("Patch Control Point: ");
 			points.push_back(vec4);
 		}
 	}
@@ -116,7 +113,7 @@ void BezierPatch::animate() {
 
 	double x, y, z;
 	double period = 64; // Good #s: 16,
-	radians += M_PI / 1024.0; // Needs to be made frame independent
+	radians += M_PI / 1024; // Not delta timing on my own, screw that
 	double amplitude = 2;
 	
 	// First half of the control points will add the function
@@ -171,50 +168,59 @@ void BezierPatch::render() {
 	// U Axis is parallel to Z
 	// V Axis is parallel to X
 
-	glBegin(GL_QUADS); // Because I know this will work
 	glColor4f(0.0,0.35,.9,.8); // Make transparent
-	for (u = 0.0; u < maxParam; u += inc ) {
-		for (v = 0.0; v < maxParam; v += inc ) {
-			// Now we have our parameters for our first coord
-			// for this quad. Then we need to calculate the others
-			
-			q0 = calcPoint(u,v);
-			q0_n = calcNormal(u,v,q0);
-			q1 = calcPoint(u + inc, v);
-			q1_n = calcNormal(u + inc, v, q1);
-			q2 = calcPoint(u, v + inc);
-			q2_n = calcNormal(u, v + inc, q2);
-			q3 = calcPoint(u + inc, v + inc);  
-			q3_n = calcNormal(u + inc, v + inc, q3);
-
-			// because of maxParam, q3 in last iteration will have
-			//  (u, v) = ( 1.0, 1.0 ) which is what we want
-			
-			// Counter clockwise order: for some reason
-			//   this defines the triangles as "back facing"
-			//   even though it should be front facing...
-			//   so it's drawing the underside of the patch
-			// 
-			// My U/V axes were not parallel to what I thought they
-			// were parallel to
-
-			glNormal3f(q0.getX(), q0.getY(), q0.getZ());
-			glVertex3f(q0.getX(), q0.getY(), q0.getZ());
-
-			glNormal3f(q2.getX(), q2.getY(), q2.getZ());
-			glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-
-			glNormal3f(q3.getX(), q3.getY(), q3.getZ());	
-			glVertex3f(q3.getX(), q3.getY(), q3.getZ());
-
-			glNormal3f(q1.getX(), q1.getY(), q1.getZ());
-			glVertex3f(q1.getX(), q1.getY(), q1.getZ());
+	if ( !drawBoundingSphere ) {
+		glBegin(GL_QUADS); // Because I know this will work
+		for (u = 0.0; u < maxParam; u += inc ) {
+			for (v = 0.0; v < maxParam; v += inc ) {
+				// Now we have our parameters for our first coord
+				// for this quad. Then we need to calculate the others
 				
-		}
-	}
-	glEnd();
+				q0 = calcPoint(u,v);
+				q0_n = calcNormal(u,v,q0);
+				q1 = calcPoint(u + inc, v);
+				q1_n = calcNormal(u + inc, v, q1);
+				q2 = calcPoint(u, v + inc);
+				q2_n = calcNormal(u, v + inc, q2);
+				q3 = calcPoint(u + inc, v + inc);  
+				q3_n = calcNormal(u + inc, v + inc, q3);
 
-	// uCurve1.draw(samples); uCurve0.draw(samples); uCurve2.draw(samples); uCurve3.draw(samples);
+				// Flip the normals (test)
+				q0_n.negate(); q1_n.negate(); q2_n.negate(); q3_n.negate();
+
+				// because of maxParam, q3 in last iteration will have
+				//  (u, v) = ( 1.0, 1.0 ) which is what we want
+				
+				// Counter clockwise order: for some reason
+				//   this defines the triangles as "back facing"
+				//   even though it should be front facing...
+				//   so it's drawing the underside of the patch
+				// 
+				// My U/V axes were not parallel to what I thought they
+				// were parallel to
+
+				glNormal3f(q0.getX(), q0.getY(), q0.getZ());
+				glVertex3f(q0.getX(), q0.getY(), q0.getZ());
+
+				glNormal3f(q2.getX(), q2.getY(), q2.getZ());
+				glVertex3f(q2.getX(), q2.getY(), q2.getZ());
+
+				glNormal3f(q3.getX(), q3.getY(), q3.getZ());	
+				glVertex3f(q3.getX(), q3.getY(), q3.getZ());
+
+				glNormal3f(q1.getX(), q1.getY(), q1.getZ());
+				glVertex3f(q1.getX(), q1.getY(), q1.getZ());
+					
+			}
+		}
+		glEnd();
+	}
+	else {
+		// Draw "wireframe" of patch
+		updateCurves();
+		uCurve0.draw(samples); uCurve1.draw(samples); uCurve2.draw(samples); uCurve3.draw(samples);
+		vCurve0.draw(samples); vCurve1.draw(samples); vCurve2.draw(samples); vCurve3.draw(samples);
+	}
 
 	animate();
 }

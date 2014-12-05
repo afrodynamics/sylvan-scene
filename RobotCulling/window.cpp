@@ -66,7 +66,7 @@ namespace Scene
 		double aspectRatio = ((double)(Window::width)) / (double)Window::height;
 		double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
 
-		shader = new Shader("diffuse_shading.vert", "diffuse_shading.frag", true);
+		shader = new Shader("reflection_map.vert", "reflection_map.frag", true);
 		shader->printLog("LOADING SHADER: ");
 
 		Vector4 p0, p1, p2, p3;
@@ -75,8 +75,8 @@ namespace Scene
 		p2 = Vector4(2.5,7,0,1);
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
-		Matrix4 scl = Matrix4::scale(10,10,10);
-		Matrix4 trn = Matrix4::translate(0.0,0.0,0.0);
+		Matrix4 scl = Matrix4::scale(50,50,50);
+		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
@@ -149,9 +149,11 @@ void Window::idleCallback()
 
 	// Reset the counter and print the FPS if our timer has lasted longer than a 
 	// second.
-	if (time - timebase > 1000 && Scene::showFps) {
-		cerr << "FPS: " << frame * 1000 / (time - timebase) << endl;
-		deltaTime = (time - timebase) / 1000; // Divide by 1000 here so we don't have to do it a million times
+	if (time - timebase > 1000) {
+		// Always calculate delta time
+		deltaTime = (time - timebase) - 1000;
+		if ( Scene::showFps ) 
+			cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
@@ -211,6 +213,20 @@ void Window::displayCallback()
   if ( Scene::camera != nullptr) 
   	invCam = Scene::camera->getInverseMatrix();
 
+  // Used by the skybox
+  invCam = invCam * Scene::world->getMatrix();
+  Vector3 camPos3 = Scene::camera->getPos();
+  Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
+  //camPos.print("cam position");
+
+  // Update uniform variables in our shader
+  float camArray[3];
+  camArray[0] = camPos.getX();
+  camArray[1] = camPos.getY();
+  camArray[2] = camPos.getZ();
+  GLuint var = glGetUniformLocationARB(Scene::shader->pid, "CameraPosition");
+  //glUniform3fv(var, 1, camArray);
+
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 
@@ -221,11 +237,13 @@ void Window::displayCallback()
 	}
 
 	// Draw the patch et al
-	Scene::world->draw(invCam);
-	Scene::shader->unbind(); // Unbind after drawing here
+	Matrix4 invCam2 = Scene::camera->getInverseMatrix();
+	Scene::world->draw( invCam2 );
+	if ( Scene::shaderOn ) {
+		Scene::shader->unbind(); // Unbind after drawing here
+	}
 
 	// Draw the skybox
-	invCam = invCam * Scene::world->getMatrix();
 	Scene::skyBoxScale->draw(invCam);
 	
   }
