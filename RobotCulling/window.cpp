@@ -95,16 +95,12 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
-		// Set the sky texture offsets from GL_TEXTURE0 to whatever they *should* be
-		// sky->right = 0;
-		// sky->left = 1;
-		// sky->front = 2;
-		// sky->back = 3;
-		// sky->top = 4;
-		// sky->base = 5;
+		ptLight = new PointLight(0, 2, 0);
+		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
+		ptLight->setSpecular(0, 0, 1, 1);
+		ptLight->setDiffuse(.35, .35, .35, 0); // green
 
-		//
-
+		world->addChild( ptLight );
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );

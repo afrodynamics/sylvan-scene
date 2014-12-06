@@ -122,12 +122,9 @@ void PointLight::render() {
 
 	tmp.transpose();
 
-	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(tmp.getPointer());	
 	positionSphere->render(); // Geode would've loaded the appropriate matrix
-
-	//glLoadIdentity(); // we now want the light source in our scene graph pos
 	glEnable(lightId);
 	
 	if (spotAngle != 180.0) {
@@ -145,7 +142,6 @@ void PointLight::render() {
 	}
 
 	glLightfv( lightId, GL_POSITION, position );
-	glPopMatrix();
 
 };
 

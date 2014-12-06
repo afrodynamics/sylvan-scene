@@ -189,37 +189,18 @@ void BezierPatch::render() {
 				// because of maxParam, q3 in last iteration will have
 				//  (u, v) = ( 1.0, 1.0 ) which is what we want
 				
-				// Counter clockwise order: for some reason
-				//   this defines the triangles as "back facing"
-				//   even though it should be front facing...
-				//   so it's drawing the underside of the patch
-				// 
-				// My U/V axes were not parallel to what I thought they
-				// were parallel to
-				/* // this order works if U parallel to Z, V parallel to X
 				glNormal3f(q0_n.getX(), q0_n.getY(), q0_n.getZ());
-				glVertex3f(q0.getX(), q0.getY(), q0.getZ());
-
-				glNormal3f(q2_n.getX(), q2.getY(), q2_n.getZ());
-				glVertex3f(q2.getX(), q2.getY(), q2.getZ());
-
-				glNormal3f(q3_n.getX(), q3.getY(), q3_n.getZ());	
-				glVertex3f(q3.getX(), q3.getY(), q3.getZ());
-
-				glNormal3f(q1_n.getX(), q1_n.getY(), q1_n.getZ());
-				glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-					*/
 				// For U || X and V || Z:
-				glNormal3f(q1_n.getX(), q1_n.getY(), q1_n.getZ());
+				// glNormal3f(q1_n.getX(), q1_n.getY(), q1_n.getZ());
 				glVertex3f(q1.getX(), q1.getY(), q1.getZ());
 
-				glNormal3f(q3_n.getX(), q3.getY(), q3_n.getZ());
+				// glNormal3f(q3_n.getX(), q3.getY(), q3_n.getZ());
 				glVertex3f(q3.getX(), q3.getY(), q3.getZ());
 
-				glNormal3f(q2_n.getX(), q2.getY(), q2_n.getZ());
+				// glNormal3f(q2_n.getX(), q2.getY(), q2_n.getZ());
 				glVertex3f(q2.getX(), q2.getY(), q2.getZ());
 
-				glNormal3f(q0_n.getX(), q0_n.getY(), q0_n.getZ());
+				// glNormal3f(q0_n.getX(), q0_n.getY(), q0_n.getZ());
 				glVertex3f(q0.getX(), q0.getY(), q0.getZ());
 			}
 		}

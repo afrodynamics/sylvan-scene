@@ -365,14 +365,14 @@ bool ObjModel::cppParseFile(string fname) {
 	double scaleY = windowWidth / ABS(ABS(yMax) + ABS(yMin));
 	double scaleZ = windowWidth / ABS(ABS(zMax) + ABS(zMin));
 
-#ifdef _APPLE_
+#ifdef __APPLE__
 	double scaleFactor = std::min( std::min(scaleX, scaleY), std::min(scaleY, scaleZ) );
 #else
 	double scaleFactor = fmin(fmin(scaleX, scaleY), fmin(scaleY, scaleZ));
 #endif
 	Vector3 centerVector = Vector3(-xMiddle, -yMiddle, -zMiddle);
 
-#ifdef _APPLE_
+#ifdef __APPLE__
 	boundingRadius = std::max( (centerVector - minimum).length(), (centerVector - maximum).length()); 
 #else
 	boundingRadius = fmax((centerVector - minimum).length(), (centerVector - maximum).length());
