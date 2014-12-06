@@ -32,6 +32,7 @@ public:
 
 	Vector4 calcPoint(double u, double v);  // Calculates pt on patch at (u,v)
 	Vector3 calcNormal(double u, double v, Vector4 pt); // Calculate normal of pt at (u,v)
+	Vector3 calcNormal(Vector4 center, Vector4 alongU, Vector4 alongV);
 
 	// Changes control points of all the internal curves. Use if we modify
 	// a control point (i.e animation)
