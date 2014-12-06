@@ -14,14 +14,9 @@ BezierPatch::BezierPatch() {
 	boundingRadius = .5; // For "culling" even though it doesn't work
 
 	// Define control points
-	// for (double zz = minZ; zz < maxZ; zz += maxZ / 2.0 ) {
-	// 	for (double xx = minX; xx < maxX; xx += maxX / 2.0 ) {
-	// 		points.push_back(Vector4( xx, 0.0, zz, 1.0 ));
-	// 	}
-	// }
 	// Don't use doubles in for loops
-	for ( int zz = 0; zz < 4; ++zz) {
-		for ( int xx = 0; xx < 4; ++xx) {
+	for ( int xx = 0; xx < 4; ++xx) {
+		for ( int zz = 0; zz < 4; ++zz) {
 			double xNormalized = (double)xx / 3.0;
 			double zNormalized = (double)zz / 3.0;
 			xNormalized -= .5;
@@ -38,12 +33,14 @@ BezierPatch::BezierPatch() {
 	}
 
 	// V Curves are parallel to the U axis (but they get further from each other in the V direction)
+	// U parallel to X
 	vCurve0 = BezierCurve( points[0], points[1], points[2], points[3] );
 	vCurve1 = BezierCurve( points[4], points[5], points[6], points[7] );
 	vCurve2 = BezierCurve( points[8], points[9], points[10], points[11] );
 	vCurve3 = BezierCurve( points[12], points[13], points[14], points[15] );
 
 	// U Curves are "vertical" if we are looking straight down Z (parallel to V)
+	// V parallel to Z
 	uCurve0 = BezierCurve( points[0], points[4], points[8], points[12] );
 	uCurve1 = BezierCurve( points[1], points[5], points[9], points[13] );
 	uCurve2 = BezierCurve( points[2], points[6], points[10], points[14] );
@@ -81,7 +78,10 @@ Vector4 BezierPatch::calcPoint(double u, double v) {
 
 // Calculate the normal at the point on the patch specified by u,v
 Vector3 BezierPatch::calcNormal(double u, double v, Vector4 pt) {
-	double delta = 0.0001;
+
+	// U is parallel to X
+	// V is parallel to Z
+	double delta = 0.001;
 	Vector4 tan_u = calcPoint(u + delta, v) - pt;
 	Vector4 tan_v = calcPoint(u, v + delta) - pt;
 	Vector3 tan_u3 = Vector3( tan_u.getX(), tan_u.getY(), tan_u.getZ() );
@@ -134,7 +134,8 @@ void BezierPatch::animate() {
 		z = originalPoints[i].getZ();
 
 		//y -= amplitude * ( sqrt(x*x + z*z) * sin( period * radians ) - cos( period * radians ))/100;
-		y -= amplitude * (sin( period * radians ) - cos( period * radians ))/100;
+		//y -= amplitude * (sin( period * radians ) - cos( period * radians ))/100;
+		y -= amplitude * (sin(period * radians) - cos(period * radians)) / 100;
 
 		points[i] = Vector4(x,y,z,1.0);
 	}
@@ -184,10 +185,7 @@ void BezierPatch::render() {
 				q2_n = calcNormal(u, v + inc, q2);
 				q3 = calcPoint(u + inc, v + inc);  
 				q3_n = calcNormal(u + inc, v + inc, q3);
-
-				// Flip the normals (test)
-				// q0_n.negate(); q1_n.negate(); q2_n.negate(); q3_n.negate();
-
+				
 				// because of maxParam, q3 in last iteration will have
 				//  (u, v) = ( 1.0, 1.0 ) which is what we want
 				
@@ -198,19 +196,31 @@ void BezierPatch::render() {
 				// 
 				// My U/V axes were not parallel to what I thought they
 				// were parallel to
-
-				glNormal3f(q0.getX(), q0.getY(), q0.getZ());
+				/* // this order works if U parallel to Z, V parallel to X
+				glNormal3f(q0_n.getX(), q0_n.getY(), q0_n.getZ());
 				glVertex3f(q0.getX(), q0.getY(), q0.getZ());
 
-				glNormal3f(q2.getX(), q2.getY(), q2.getZ());
+				glNormal3f(q2_n.getX(), q2.getY(), q2_n.getZ());
 				glVertex3f(q2.getX(), q2.getY(), q2.getZ());
 
-				glNormal3f(q3.getX(), q3.getY(), q3.getZ());	
+				glNormal3f(q3_n.getX(), q3.getY(), q3_n.getZ());	
 				glVertex3f(q3.getX(), q3.getY(), q3.getZ());
 
-				glNormal3f(q1.getX(), q1.getY(), q1.getZ());
+				glNormal3f(q1_n.getX(), q1_n.getY(), q1_n.getZ());
 				glVertex3f(q1.getX(), q1.getY(), q1.getZ());
-					
+					*/
+				// For U || X and V || Z:
+				glNormal3f(q1_n.getX(), q1_n.getY(), q1_n.getZ());
+				glVertex3f(q1.getX(), q1.getY(), q1.getZ());
+
+				glNormal3f(q3_n.getX(), q3.getY(), q3_n.getZ());
+				glVertex3f(q3.getX(), q3.getY(), q3.getZ());
+
+				glNormal3f(q2_n.getX(), q2.getY(), q2_n.getZ());
+				glVertex3f(q2.getX(), q2.getY(), q2.getZ());
+
+				glNormal3f(q0_n.getX(), q0_n.getY(), q0_n.getZ());
+				glVertex3f(q0.getX(), q0.getY(), q0.getZ());
 			}
 		}
 		glEnd();
