@@ -4,6 +4,7 @@
 
 void main()
 {
+	vec3 CameraPosition = vec3(0,0,20.0);
     vec3 Normal = gl_NormalMatrix * gl_Normal; // Make sure normal is scaled properly
     vec4 Position = gl_ModelViewProjectionMatrix * gl_Vertex; // OR: gl_ModelViewMatrix * gl_Vertex // = cam space
     vec3 Reflection = reflect(normalize(Position.xyz), normalize(Normal));

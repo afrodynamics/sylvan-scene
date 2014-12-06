@@ -168,7 +168,7 @@ void BezierPatch::render() {
 	// U Axis is parallel to Z
 	// V Axis is parallel to X
 
-	glColor4f(0.0,0.35,.9,.8); // Make transparent
+	glColor3f(0.0,0.35,.9); // Make transparent
 	if ( !drawBoundingSphere ) {
 		glBegin(GL_QUADS); // Because I know this will work
 		for (u = 0.0; u < maxParam; u += inc ) {

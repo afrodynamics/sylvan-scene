@@ -103,8 +103,6 @@ namespace Scene
 		// sky->top = 4;
 		// sky->base = 5;
 
-		//
-
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
@@ -227,6 +225,11 @@ void Window::displayCallback()
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn) {
 		Scene::shader->bind();
+		// glBindTexture(GL_TEXTURE_2D, 0); // unbind textures?
+		glBindTexture(GL_TEXTURE_2D, Scene::sky->front);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	// Draw the patch et al

@@ -163,7 +163,8 @@ void SkyBox::render() {
 	glVertex3f(-.5, +.5, +.5); // top right
 	
 	glEnd();	
-	glBindTexture(GL_TEXTURE_2D, front);
+	//glBindTexture(GL_TEXTURE_2D, 0); // Unbind all textures
+
 	// glDisable(GL_TEXTURE_2D);
 	// glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 
