@@ -365,11 +365,18 @@ bool ObjModel::cppParseFile(string fname) {
 	double scaleY = windowWidth / ABS(ABS(yMax) + ABS(yMin));
 	double scaleZ = windowWidth / ABS(ABS(zMax) + ABS(zMin));
 
+#ifdef _APPLE_
 	double scaleFactor = std::min( std::min(scaleX, scaleY), std::min(scaleY, scaleZ) );
+#else
+	double scaleFactor = fmin(fmin(scaleX, scaleY), fmin(scaleY, scaleZ));
+#endif
+	Vector3 centerVector = Vector3(-xMiddle, -yMiddle, -zMiddle);
 
-	Vector3 centerVector = Vector3(-xMiddle, -yMiddle, -zMiddle);	
+#ifdef _APPLE_
 	boundingRadius = std::max( (centerVector - minimum).length(), (centerVector - maximum).length()); 
-
+#else
+	boundingRadius = fmax((centerVector - minimum).length(), (centerVector - maximum).length());
+#endif
 	// Translate the model's vertices from its center to *THE* center
 	Matrix4 translationMtx = Matrix4::translate(-xMiddle, -yMiddle, -zMiddle);
 	mtx->transformWorld(translationMtx);
