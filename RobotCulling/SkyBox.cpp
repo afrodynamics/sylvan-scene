@@ -43,7 +43,7 @@ void SkyBox::render() {
 	glColor3f(1,1,1);
 	glEnable(GL_TEXTURE_2D);
 
-	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, front);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
@@ -63,7 +63,7 @@ void SkyBox::render() {
 	
 	// Back Face  ( GOOD, SEMANTICALLY AND IN GAME! )
 
-	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, back);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
@@ -83,7 +83,7 @@ void SkyBox::render() {
 
 	// Left Face ( GOOD ! )
 
-	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, left);
 	glBegin(GL_QUADS);
 							// glColor3f(1,0,0);
 	glNormal3f(0.0,1.0,0.0);
@@ -103,7 +103,7 @@ void SkyBox::render() {
 
 	// Right Face ( GOOD ! )
 
-	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, right);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
@@ -124,7 +124,7 @@ void SkyBox::render() {
 
 	// Bottom Face ( GOOD ! )
 	
-	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, base);
 	glBegin(GL_QUADS);
 
 	glNormal3f(0.0,1.0,0.0);
@@ -145,7 +145,7 @@ void SkyBox::render() {
 
 	// Top Face ( GOOD ! )
 	
-	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, top);
 	glBegin(GL_QUADS);
 	
 	glNormal3f(0.0,1.0,0.0);
@@ -163,7 +163,7 @@ void SkyBox::render() {
 	glVertex3f(-.5, +.5, +.5); // top right
 	
 	glEnd();	
-	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, front);
 	// glDisable(GL_TEXTURE_2D);
 	// glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
 

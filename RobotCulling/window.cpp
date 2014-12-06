@@ -96,12 +96,12 @@ namespace Scene
 		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
 		// Set the sky texture offsets from GL_TEXTURE0 to whatever they *should* be
-		sky->right = 0;
-		sky->left = 1;
-		sky->front = 2;
-		sky->back = 3;
-		sky->top = 4;
-		sky->base = 5;
+		// sky->right = 0;
+		// sky->left = 1;
+		// sky->front = 2;
+		// sky->back = 3;
+		// sky->top = 4;
+		// sky->base = 5;
 
 		//
 
@@ -405,14 +405,15 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	err = glGetError();
 	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
 		
-	switch (texID) {
-		case 0: glActiveTexture( GL_TEXTURE0 ); break; // right
-		case 1: glActiveTexture( GL_TEXTURE1 ); break; // left
-		case 2: glActiveTexture( GL_TEXTURE2 ); break; // front
-		case 3: glActiveTexture( GL_TEXTURE3 ); break; // back
-		case 4: glActiveTexture( GL_TEXTURE4 ); break; // top
-		case 5: glActiveTexture( GL_TEXTURE5 ); break; // base
-	}
+	glActiveTexture(GL_TEXTURE0);
+	// switch (texID) {
+	// 	case 0: glActiveTexture( GL_TEXTURE0 ); break; // right
+	// 	case 1: glActiveTexture( GL_TEXTURE1 ); break; // left
+	// 	case 2: glActiveTexture( GL_TEXTURE2 ); break; // front
+	// 	case 3: glActiveTexture( GL_TEXTURE3 ); break; // back
+	// 	case 4: glActiveTexture( GL_TEXTURE4 ); break; // top
+	// 	case 5: glActiveTexture( GL_TEXTURE5 ); break; // base
+	// }
 	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]);
 
 	// Generate the texture
