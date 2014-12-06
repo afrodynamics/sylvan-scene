@@ -95,6 +95,16 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
+		// Set the sky texture offsets from GL_TEXTURE0 to whatever they *should* be
+		// sky->right = 0;
+		// sky->left = 1;
+		// sky->front = 2;
+		// sky->back = 3;
+		// sky->top = 4;
+		// sky->base = 5;
+
+		//
+
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
@@ -197,7 +207,7 @@ void Window::displayCallback()
   if (err != GL_NO_ERROR) cerr << gluErrorString( err ) << endl;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
-  glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode 
+  glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
   
   Matrix4 ident = Matrix4();
   Matrix4 invCam = Matrix4();

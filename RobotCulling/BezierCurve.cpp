@@ -45,9 +45,7 @@ void BezierCurve::updateControlPoints(Vector4 *a, Vector4 *b, Vector4 *c, Vector
 
 Vector4 BezierCurve::calcPoint(double t) {
 	if ( t < 0 || t > 1 ) {
-		//throw runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");
-		if (t < 0) return p0;
-		if (t > 1) return p3;
+		throw runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");
 	}
 	// Copy our control points into temporaries so we don't modify them
 	// with scale
@@ -62,9 +60,9 @@ Vector4 BezierCurve::calcPoint(double t) {
 	double coeff0, coeff1, coeff2; // Third coeff is just t^3
 	tSquared = pow(t, 2);
 	tCubed = pow(t, 3);
-	coeff0 = -tCubed + 3.0 * tSquared - 3.0 * t + 1;
-	coeff1 = 3.0 * tCubed - 6.0 * tSquared + 3.0 * t;
-	coeff2 = -3.0 * tCubed + 3.0 * tSquared;
+	coeff0 = -tCubed + 3 * tSquared - 3 * t + 1;
+	coeff1 = 3 * tCubed - 6 * tSquared + 3 * t;
+	coeff2 = -3 * tCubed + 3 * tSquared;
 	q0.scale(coeff0);
 	q1.scale(coeff1);
 	q2.scale(coeff2);
@@ -75,14 +73,14 @@ Vector4 BezierCurve::calcPoint(double t) {
 
 void BezierCurve::draw(double samples) {
 	// Draws a Bezier curve using uniform sampling
-	int t = 0;
+	double t = 0.0;
 	double t_inc = 1.0 / samples;
 	Vector4 pt;
 	glBegin(GL_LINE_STRIP);
-	while ( t < samples ) {
-		pt = calcPoint( t / samples );
+	while ( t < 1.0 ) {
+		pt = calcPoint(t);
 		glVertex3d( pt.getX(), pt.getY(), pt.getZ() );
-		t++; // Move forward
+		t += t_inc; // Move forward
 	}
 	glEnd();
 }
