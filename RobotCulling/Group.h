@@ -13,8 +13,7 @@ public:
 	void addChild(Node*); // Takes a const Node reference, copies it and allocates it with new
 	void removeChild(Node*); 
 	void draw(Matrix4& C);
-	void showBoundingBox(bool); // Toggles the showing of the wireframe bounding spheres all the way down the tree
-	void setCulling(bool);
-	void setVector(std::vector<Plane>*);
-	virtual void updateBounds(void) = 0;
+	void showBoundingBox(bool);
+	void setShader(Shader*); // Attach shader to this node
+	void enableShader(bool); // Enable/disable shader
 };

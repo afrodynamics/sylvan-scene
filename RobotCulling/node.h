@@ -1,6 +1,7 @@
 #pragma once
 #include "Matrix4.h"
-#include "Plane.h"
+#include "shader.h"
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>  // Include GLUT header for Mac OS X
 #else
@@ -14,8 +15,8 @@ class Node
 protected:
 	Matrix4 lastC; // Last matrix we received in the draw method, multiplied by the identity
 	               // or by the matrix stored in this node (if it is a MatrixTransform)
-	bool culling;
-	std::vector<Plane> *frustumPlanes;
+	bool culling, useShader;
+	Shader *shader;
 
 	// Light Index (for *Light instances)
 	int lightIndex;
@@ -31,13 +32,8 @@ public:
 	~Node();
 	virtual void draw(Matrix4& C) = 0;
 	virtual void showBoundingBox(bool) = 0;
-	virtual void setCulling(bool) = 0;
+	virtual void setShader(Shader*) = 0; // Attach shader to this node
+	virtual void enableShader(bool) = 0; // Enable/disable shader
 
-	virtual void setVector(std::vector<Plane> *f) = 0;
-
-	// Recursively updates the bounding sphere information according to the last matrix
-	// we received in draw (transformed by an auxilary matrix if the given Node has its
-	// own matrix.)
-	virtual void updateBounds(void) = 0; 
 };
 

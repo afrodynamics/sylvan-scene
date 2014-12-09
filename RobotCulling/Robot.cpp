@@ -173,44 +173,7 @@ void Robot::draw(Matrix4& C) {
 	
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0, 0, 0, 1);
-
-	if (culling == false) {
-		Group::draw(lastC);
-	}
-	else {
-		// Do intersection testing here
-		if (frustumPlanes != nullptr) {
-			bool inside = false;
-			bool intersects = false;
-			Vector3 center = Vector3(centerPos.getX(), centerPos.getY(), centerPos.getZ());
-
-			for (auto iter = frustumPlanes->begin(); iter != frustumPlanes->end(); iter++) {
-
-				int ret = (*iter).sphereInsideOrOn(center, boundingRadius);
-				if (ret == Plane::OUTSIDE) {
-					inside = false;
-					intersects = false; break;
-				}
-				else if (ret == Plane::INTERSECTS) {
-					intersects = true;
-				}
-				else {
-					inside = true;
-				}
-			}
-
-			if (intersects == true) {
-				Group::draw(lastC);
-			}
-			else if (inside == true) {
-				Group::draw(lastC);
-			}
-			else {
-				return;
-			}
-		}
-	}
-
+	Group::draw(lastC);
 	animate();
 	
 }

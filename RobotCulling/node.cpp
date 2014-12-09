@@ -6,6 +6,11 @@ Node::Node()
 {
 	drawBoundingSphere = false;
 	culling = false;
+	useShader = false;
 }
 
-Node::~Node() {}
+Node::~Node() {
+	if (shader != nullptr) {
+		delete shader;
+	}
+}

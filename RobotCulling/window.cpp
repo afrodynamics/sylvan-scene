@@ -1,5 +1,4 @@
 #include <iostream>
-#include "shader.h"
 
 #ifndef __APPLE__
 #include <GL/glut.h>
@@ -35,7 +34,6 @@ namespace Scene
 	BezierPatch *waterPatch;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
 	bool showBounds = false;
-	bool frustumCulling = false;
 	bool showFps = false;
 	bool shaderOn = false;
 	double znear = 1.0;
@@ -135,8 +133,6 @@ void Window::idleCallback()
 {
 
 	static int frame = 0, time, timebase = 0;
-
-	Scene::world->setCulling(Scene::frustumCulling);
 
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
@@ -265,11 +261,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showBounds = !Scene::showBounds;
 	  Scene::world->showBoundingBox(Scene::showBounds);
 	  cerr << "Bounding spheres are " << (Scene::showBounds ? "on" : "off") << endl;
-	  break;
-  case 'c':
-	  Scene::frustumCulling = !Scene::frustumCulling;
-	  Scene::world->setCulling(Scene::frustumCulling);
-	  cerr << "Culling is " << (Scene::frustumCulling == true ? "on" : "off" ) << endl;
 	  break;
   case 'e':
 	  Scene::shaderOn = !Scene::shaderOn;

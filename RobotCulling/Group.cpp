@@ -15,10 +15,22 @@ Group::~Group()
 }
 
 void Group::draw(Matrix4& C) {
+	
 	list<Node*>::iterator iter = children.begin();
+
+	// Enable shader, if it exists
+	if ( shader != nullptr && useShader ) {
+		shader->bind();
+	}
+
 	while (iter != children.end()) {
 		(*iter)->draw(C);
 		iter++;
+	}
+
+	// Disbale the shader
+	if ( shader != nullptr && useShader ) {
+		shader->unbind();
 	}
 
 	if (drawBoundingSphere == true) {
@@ -61,20 +73,14 @@ void Group::showBoundingBox(bool show) {
 	}
 }
 
-void Group::setCulling(bool show) {
-	culling = show;
-	auto iter = children.begin();
-	while (iter != children.end()) {
-		(*iter)->setCulling(show);
-		iter++;
+void Group::setShader(Shader* shad) {
+	if ( shader != nullptr ) {
+		this->shader = shad;
 	}
-};
-
-void Group::setVector(std::vector<Plane> *f) {
-	frustumPlanes = f;
-	auto iter = children.begin();
-	while (iter != children.end()) {
-		(*iter)->setVector(f);
-		iter++;
+	else {
+		this->shader = shad; // Potential memory leak, behavior as yet undecided	
 	}
-}
+}; // Attach shader to this node
+void Group::enableShader(bool toggle) {
+	useShader = toggle;
+}; // Enable/disable shader
