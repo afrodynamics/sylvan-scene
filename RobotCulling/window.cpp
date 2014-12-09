@@ -65,9 +65,6 @@ namespace Scene
 		double aspectRatio = ((double)(Window::width)) / (double)Window::height;
 		double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
 
-		shader = new Shader("reflection_map.vert", "reflection_map.frag", true);
-		shader->printLog("LOADING SHADER: ");
-
 		Vector4 p0, p1, p2, p3;
 		p0 = Vector4(-5,0,0,1);
 		p1 = Vector4(-2.5,-7,0,1);
@@ -83,6 +80,9 @@ namespace Scene
 		// Load a bind the textures
 		
 		sky = new SkyBox();
+
+		shader = new Shader("reflection_map.vert", "reflection_map.frag", true);
+		shader->printLog("LOADING SHADER: ");
 
 		glGenTextures(6, textures);
 
@@ -102,6 +102,8 @@ namespace Scene
 		world->addChild( patchTranslate ); 
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
+
+		waterPatch->setShader( shader ); // This patch should have a shader
 
 		// Sky box needs to be in a separate scene graph so we can bind differeny shaders
 		skyBoxScale->addChild( sky );
@@ -217,21 +219,18 @@ void Window::displayCallback()
   if ( Scene::camera && Scene::world ) {
 
 	// Enable environment mapping on our patch
-	if (Scene::shaderOn) {
-		Scene::shader->bind();
-		// glBindTexture(GL_TEXTURE_2D, 0); // unbind textures?
+	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
+		Scene::waterPatch->enableShader( Scene::shaderOn );
 		glBindTexture(GL_TEXTURE_2D, Scene::sky->front);
 	}
-	else {
+	else if ( Scene::waterPatch != nullptr ) {
+		Scene::waterPatch->enableShader( Scene::shaderOn );
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	// Draw the patch et al
 	Matrix4 invCam2 = Scene::camera->getInverseMatrix();
 	Scene::world->draw( invCam2 );
-	if ( Scene::shaderOn ) {
-		Scene::shader->unbind(); // Unbind after drawing here
-	}
 
 	// Draw the skybox without shader interference
 	Scene::skyBoxScale->draw(invCam);
