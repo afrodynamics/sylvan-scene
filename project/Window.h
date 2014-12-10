@@ -1,6 +1,7 @@
 #ifndef _WINDOW_H_
 #define _WINDOW_H_
 #include <vector>
+#include <string>
 #include "Matrix4.h"
 #include "Camera.h"
 #include "Robot.h"
@@ -36,7 +37,7 @@ class Window	  // OpenGL output window related routines
     static void functionKeysCallback(int,int,int);
 
     // Utility
-    static void printGLError(); // Prints a glError() with gluErrorString() if a glError has occurred
+    static void printGLError(std::string); // Prints a glError() with gluErrorString() if a glError has occurred
 
     // Draw Methods
     static void displayCallback(void);
