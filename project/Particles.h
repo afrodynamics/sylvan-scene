@@ -17,7 +17,6 @@ struct Particle
 
 class Particles {
 private:
-    bool isActive;
     int world_height;
     int world_width;
     int world_depth;
@@ -25,8 +24,8 @@ private:
 
 public:
     Particles(int width, int height, int depth);
+    void create();
     void update();
     void reincarnation(int index);
     void render();
-    void setActive(bool val);
 };

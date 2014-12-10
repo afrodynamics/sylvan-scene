@@ -39,7 +39,7 @@ namespace Scene
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
-    bool raining = false;
+    bool isRaining = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	GLuint textures[6];
@@ -239,8 +239,10 @@ void Window::displayCallback()
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
-    Scene::rain->render();
-    Scene::rain->update();
+    if(Scene::isRaining) {
+        Scene::rain->render();
+        Scene::rain->update();
+    }
   }
 
   glFlush();  
@@ -305,9 +307,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().identity();
 	  break;
   case '1':
-      Scene::raining = !Scene::raining;
-      Scene::rain->setActive(Scene::raining);
-      cerr << (Scene::raining ? "It is" : "It is not") << " raining" << endl;
+      Scene::isRaining = !Scene::isRaining;
+      cerr << (Scene::isRaining ? "It is" : "It is not") << " raining" << endl;
       break;
   default:
       cerr << "Pressed: " << key << endl;
