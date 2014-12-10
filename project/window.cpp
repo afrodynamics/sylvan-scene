@@ -305,6 +305,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
+      Scene::camera->reset();
 	  break;
   case '1':
       Scene::isRaining = !Scene::isRaining;

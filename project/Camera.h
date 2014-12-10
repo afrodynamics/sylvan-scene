@@ -16,6 +16,9 @@
 
 class Camera{
 private:
+    Vector3 initialEVector;
+    Vector3 initialDVector;
+    Vector3 initialUpVector;
     Vector3 e;
     Vector3 d;
     Vector3 up;
@@ -38,5 +41,6 @@ public:
     void moveForward();
     void moveBackward();
     Vector3 getPos();
+    void reset();
 };
 #endif /* defined(__Project2__Camera__) */
