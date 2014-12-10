@@ -27,10 +27,10 @@ void main()
 		rMax = reflAbs.x;
 		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
 		if ( refl.x < 0.0 ) {
-			gl_FragColor = texture2D( left, reflAbs.yz );
+			gl_FragColor = texture2D( left, result.yz );
 		}
 		else {
-			gl_FragColor = texture2D( right, reflAbs.yz );
+			gl_FragColor = texture2D( right, result.yz );
 		}
 	}
 	else if ( reflAbs.y >= reflAbs.x && reflAbs.y >= reflAbs.z ) {
@@ -39,10 +39,10 @@ void main()
 		rMax = reflAbs.y;
 		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
 		if ( refl.y < 0.0 ) {
-			gl_FragColor = texture2D( base, reflAbs.xz );
+			gl_FragColor = texture2D( base, result.xz );
 		}
 		else {
-			gl_FragColor = texture2D( top, reflAbs.xz );
+			gl_FragColor = texture2D( top, result.xz );
 		}
 	}
 	else if ( reflAbs.z >= reflAbs.x && reflAbs.z >= reflAbs.y ) {
@@ -51,14 +51,10 @@ void main()
 		rMax = reflAbs.z;
 		result = vec3( (reflAbs.x/rMax + 1.0)/2.0, (reflAbs.y/rMax + 1.0)/2.0, (reflAbs.z/rMax + 1.0)/2.0 );
 		if ( refl.z < 0.0 ) {
-			gl_FragColor = texture2D( front, reflAbs.xy );
+			gl_FragColor = texture2D( front, result.xy );
 		}
 		else {
-			gl_FragColor = texture2D( back, reflAbs.xy );
+			gl_FragColor = texture2D( back, result.xy );
 		}
 	}
-
-	// gl_FragColor = texture2D( right, reflAbs.xy );
-
-	//gl_FragColor = vec4( gl_TexCoord[0].stp, 1.0 ); // passed in from vtx shader
 }

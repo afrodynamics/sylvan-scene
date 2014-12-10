@@ -55,15 +55,12 @@ namespace Scene
 	// Initialize pointers with defaults
 	void setup() {
 
+		// Scene setup
 		camera = new Camera(
 			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
 		world = new MatrixTransform();
-
-		double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
-		double aspectRatio = ((double)(Window::width)) / (double)Window::height;
-		double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
 
 		Vector4 p0, p1, p2, p3;
 		p0 = Vector4(-5,0,0,1);
@@ -76,15 +73,16 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
+		ptLight = new PointLight(0, 2, 0);
+		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
+		ptLight->setSpecular(0, 0, 1, 1);
+		ptLight->setDiffuse(.35, .35, .35, 0);
 
 		// Load a bind the textures
 		
-		sky = new SkyBox();
+		sky = new SkyBox(); // Still don't have a good texture class here
 
-		shader = new Shader("reflection_map.vert", "reflection_map.frag", true);
-		shader->printLog("LOADING SHADER: ");
-
-		glGenTextures(6, textures);
+		glGenTextures(6, textures); // This needs to be made OOP
 
 		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
 		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
@@ -93,20 +91,35 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
 
-		ptLight = new PointLight(0, 2, 0);
-		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
-		ptLight->setSpecular(0, 0, 1, 1);
-		ptLight->setDiffuse(.35, .35, .35, 0); // green
+		/*  Assign texture locations into the vertex & fragment shader  */
+		// This did not belong inside of loadPPM
+		
+		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
+		shader->printLog(">>> reflection_map shader >>>");
+		GLuint texLoc;
+		for (int texID = 0; texID < 6; texID++) {
+			switch (texID) {
+				case 0: texLoc = glGetUniformLocationARB(Scene::shader->pid,"right"); break;
+				case 1: texLoc = glGetUniformLocationARB(Scene::shader->pid,"left"); break;
+				case 2: texLoc = glGetUniformLocationARB(Scene::shader->pid,"front"); break;
+				case 3: texLoc = glGetUniformLocationARB(Scene::shader->pid,"back"); break;
+				case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
+				case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
+			}
 
+			glUniform1i( texLoc, 0 ); // The zero here determines what kind of texture this is
+		}
+
+		// Now we only have 1 scene graph, less hacky than before
 		world->addChild( ptLight );
 		world->addChild( patchTranslate ); 
+		world->addChild( skyBoxScale );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
-
-		waterPatch->setShader( shader ); // This patch should have a shader
-
-		// Sky box needs to be in a separate scene graph so we can bind differeny shaders
 		skyBoxScale->addChild( sky );
+
+		// Affix shaders to individual scene graph nodes
+		waterPatch->setShader( shader ); // This patch should have a shader
 
 	};
 	// Deallocate all kinds of stuff
@@ -183,13 +196,6 @@ void Window::reshapeCallback(int w, int h)
   double aspectRatio = ((double)(width))/(double)height;
   double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
 
-  // Calculate the height and width of the near and far clipping planes
-
-  double hNear = 2 * tan( fovRadians ) * Scene::znear;
-  double wNear = hNear * aspectRatio;
-  double hFar = 2 * tan(fovRadians) * Scene::zfar;
-  double wFar = hNear * aspectRatio;
-
 };
 
 //----------------------------------------------------------------------------
@@ -197,8 +203,7 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
-  long err = glGetError();
-  if (err != GL_NO_ERROR) cerr << gluErrorString( err ) << endl;
+  printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
@@ -212,8 +217,9 @@ void Window::displayCallback()
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
-  Vector3 camPos3 = Scene::camera->getPos();
-  Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
+  // Vector3 camPos3 = Scene::camera->getPos();
+  // Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
+  // ^ this needed to be passed in as a uniform for the reflection shader, and is no longer necessary
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -221,20 +227,14 @@ void Window::displayCallback()
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
 		Scene::waterPatch->enableShader( Scene::shaderOn );
-		glBindTexture(GL_TEXTURE_2D, Scene::sky->front);
 	}
 	else if ( Scene::waterPatch != nullptr ) {
 		Scene::waterPatch->enableShader( Scene::shaderOn );
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	// Draw the patch et al
-	Matrix4 invCam2 = Scene::camera->getGLMatrix();
-	Scene::world->draw( invCam2 );
+	// Draw the scene graph
+	Scene::world->draw( invCam );
 
-	// Draw the skybox without shader interference
-	Scene::skyBoxScale->draw(invCam);
-	
   }
 
   glFlush();  
@@ -269,32 +269,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
-/**
-  case 'x': // moving camera in -x direction, requires moving world in +x
-	  transformation = Matrix4::translate(1.0, 0.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'X':
-	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'y':
-	  transformation = Matrix4::translate(0.0, +1.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'Y':
-	  transformation = Matrix4::translate(0.0, -1.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'z':
-	  transformation = Matrix4::scale(0.9, 0.9, 0.9);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'Z':
-	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-*/
   case 'w':
       Scene::camera->lookAt(1, 1);
       break;
@@ -397,35 +371,11 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 
 	// Set this texture to be the one we are working with
 	//glBindTexture(GL_TEXTURE_2D, texture[0]);
-	
-	GLuint texLoc;
-	switch (texID) {
-		case 0: texLoc = glGetUniformLocationARB(Scene::shader->pid,"right"); break;
-		case 1: texLoc = glGetUniformLocationARB(Scene::shader->pid,"left"); break;
-		case 2: texLoc = glGetUniformLocationARB(Scene::shader->pid,"front"); break;
-		case 3: texLoc = glGetUniformLocationARB(Scene::shader->pid,"back"); break;
-		case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
-		case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
-	}
 
-	int err = glGetError();
-	if (err != GL_NO_ERROR) cerr <<  "in loadPPM: after get uniform location: " << gluErrorString( err ) << endl;
-
-	glUniform1i( texLoc, 0 );
-
-	err = glGetError();
-	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
+	printGLError("GL Error in loadPPM: "); // Print a GL error if one occurred
 		
 	glActiveTexture(GL_TEXTURE0);
-	// switch (texID) {
-	// 	case 0: glActiveTexture( GL_TEXTURE0 ); break; // right
-	// 	case 1: glActiveTexture( GL_TEXTURE1 ); break; // left
-	// 	case 2: glActiveTexture( GL_TEXTURE2 ); break; // front
-	// 	case 3: glActiveTexture( GL_TEXTURE3 ); break; // back
-	// 	case 4: glActiveTexture( GL_TEXTURE4 ); break; // top
-	// 	case 5: glActiveTexture( GL_TEXTURE5 ); break; // base
-	// }
-	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]);
+	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]); // This is the critical line!
 
 	// Generate the texture
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
@@ -446,7 +396,7 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 
 	// cerr << filename << " has tex ID: " << texture[0] << endl;
 	// return texture[0];
-	cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
+	//cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
 	return Scene::textures[texID];
 }
 
@@ -460,11 +410,18 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 //    See main.cpp line 56
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
-  case GLUT_KEY_F1: // Load Bunny
+  case GLUT_KEY_F1:
 	  cout << "Pressed F1" << endl;
 	  break;
   default:
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
 	  break;
   }
+};
+
+// Checks to see if a GL error has occurred, and if so it prints out
+// the gluErrorString
+void Window::printGLError(string str) {
+	int err = glGetError();
+	if (err != GL_NO_ERROR) cerr << str << gluErrorString( err ) << endl;
 };
