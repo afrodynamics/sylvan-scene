@@ -34,6 +34,7 @@ void Geode::draw(Matrix4& C) {
 	if ( useShader && shader != nullptr ) {
 		shader->bind();
 	}
+  mat.apply();        // Apply the Material
 	render();
 	if ( useShader && shader != nullptr ) {
 		shader->unbind();
@@ -53,4 +54,9 @@ void Geode::enableShader(bool shad) {
 
 void Geode::setShader(Shader* shad) {
 	shader = shad;
+}
+
+// Set the Material for the Geode
+void Geode::setMat(Material m) {
+	mat = m;
 }

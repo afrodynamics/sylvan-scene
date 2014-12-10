@@ -1,8 +1,12 @@
 #pragma once
 #include "node.h"
+#include "Material.h"
 class Geode :
 	public Node
 {
+protected:
+  Material mat;
+
 public:
 	Geode();
 	~Geode();
@@ -11,4 +15,5 @@ public:
 	void showBoundingBox(bool);
 	void setShader(Shader*); // Attach shader to this node
 	void enableShader(bool); // Enable/disable shader
+  void setMat(Material);   // Set the material for the object
 };
