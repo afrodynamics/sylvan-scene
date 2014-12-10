@@ -2,7 +2,11 @@
 #define MATERIAL_H
 
 #include <stdlib.h>
+#ifndef __APPLE__
 #include <GL/glut.h>
+#else
+#include <GLUT/glut.h>
+#endif
 
 class Material {
   public:
