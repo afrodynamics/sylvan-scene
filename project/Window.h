@@ -35,6 +35,9 @@ class Window	  // OpenGL output window related routines
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
 
+    // Utility
+    static void printGLError(); // Prints a glError() with gluErrorString() if a glError has occurred
+
     // Draw Methods
     static void displayCallback(void);
 

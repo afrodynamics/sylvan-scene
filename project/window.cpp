@@ -81,10 +81,10 @@ namespace Scene
 		
 		sky = new SkyBox();
 
-		shader = new Shader("reflection_map.vert", "reflection_map.frag", true);
+		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
 		shader->printLog("LOADING SHADER: ");
 
-		glGenTextures(6, textures);
+		glGenTextures(6, textures); // This needs to be made OOP
 
 		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
 		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
@@ -269,32 +269,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
-/**
-  case 'x': // moving camera in -x direction, requires moving world in +x
-	  transformation = Matrix4::translate(1.0, 0.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'X':
-	  transformation = Matrix4::translate(-1.0, 0.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'y':
-	  transformation = Matrix4::translate(0.0, +1.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'Y':
-	  transformation = Matrix4::translate(0.0, -1.0, 0.0);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'z':
-	  transformation = Matrix4::scale(0.9, 0.9, 0.9);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-  case 'Z':
-	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
-	  Scene::world->getMatrix().transformWorld(transformation);
-	  break;
-*/
   case 'w':
       Scene::camera->lookAt(1, 1);
       break;
@@ -413,19 +387,10 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 
 	glUniform1i( texLoc, 0 );
 
-	err = glGetError();
-	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
+	printGLError(); // Print a GL error if one occurred
 		
 	glActiveTexture(GL_TEXTURE0);
-	// switch (texID) {
-	// 	case 0: glActiveTexture( GL_TEXTURE0 ); break; // right
-	// 	case 1: glActiveTexture( GL_TEXTURE1 ); break; // left
-	// 	case 2: glActiveTexture( GL_TEXTURE2 ); break; // front
-	// 	case 3: glActiveTexture( GL_TEXTURE3 ); break; // back
-	// 	case 4: glActiveTexture( GL_TEXTURE4 ); break; // top
-	// 	case 5: glActiveTexture( GL_TEXTURE5 ); break; // base
-	// }
-	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]);
+	glBindTexture(GL_TEXTURE_2D, Scene::textures[texID]); // This is the critical line!
 
 	// Generate the texture
 	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, rawData);
@@ -467,4 +432,11 @@ void Window::functionKeysCallback(int key, int x, int y) {
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
 	  break;
   }
+};
+
+// Checks to see if a GL error has occurred, and if so it prints out
+// the gluErrorString
+void Window::printGLError() {
+	int err = glGetError();
+	if (err != GL_NO_ERROR) cerr << "in loadPPM: after uniform1i: " << gluErrorString( err ) << endl;
 };
