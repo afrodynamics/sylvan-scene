@@ -1,4 +1,4 @@
-NAME = water
+NAME = final
 ECHO = @echo
 CC = @clang++
 LIBS = -framework GLUT -framework OpenGL -framework Cocoa
