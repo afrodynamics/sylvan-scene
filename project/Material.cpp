@@ -24,20 +24,8 @@ Material Material::setShine(float s) {
   shininess = s;
   return *this;
 }
-// Set diffuse values
-Material Material::setDiffuse(float d[], int length) {
-  for( int i = 0; i < length; i++ ) {
-    if( d[i] < 0 ) d[i] = 0;
-    if( d[i] > 1 ) d[i] = 1;
-    diffuse[i] = d[i];
-  }
-  for( int i = length; i < 4; i++ )
-    diffuse[i] = 1;
 
-  return *this;
-}
-
-// Set diffuse values
+// Set ambient values.  Length is the length of array a
 Material Material::setAmbient(float a[], int length) {
   for( int i = 0; i < length; i++ ) {
     if( a[i] < 0 ) a[i] = 0;
@@ -55,7 +43,7 @@ Material Material::setAmbient(float a[], int length) {
   return *this;
 }
 
-// Set diffuse values
+// Set diffuse values.  Length is the length of array d
 Material Material::setDiffuse(float d[], int length) {
   for( int i = 0; i < length; i++ ) {
     if( d[i] < 0 ) d[i] = 0;
@@ -73,7 +61,7 @@ Material Material::setDiffuse(float d[], int length) {
   return *this;
 }
 
-// Set specular values
+// Set specular values.  Length is the length of array s
 Material Material::setSpecular(float s[], int length) {
   for( int i = 0; i < length; i++ ) {
     if( s[i] < 0 ) s[i] = 0;
@@ -92,7 +80,7 @@ Material Material::setSpecular(float s[], int length) {
 }
 
 
-// Set color of material
+// Set color of material.  Length is the length of array c
 Material Material::setColor(float c[], int length) {
   for( int i = 0; i < length; i++ ) {
     if( c[i] < 0 ) c[i] = 0;
