@@ -163,3 +163,7 @@ double Vector4::getY() { return y; };
 double Vector4::getZ() { return z; };
 double Vector4::getW() { return w; };
 
+/** get Vector3 from Vector4 */
+Vector3 Vector4::getVector3() {
+    return Vector3(x, y, z);
+}

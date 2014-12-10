@@ -2,6 +2,7 @@
 #define _VECTOR4_H_  // Don't doubly include the Vector4 class
 
 #include <string>
+#include "Vector3.h"
 
 class Vector4 {
 private:
@@ -23,6 +24,7 @@ public:
     void negate();
     void normalize();
     void scale(double s);
+    Vector3 getVector3();
 
     // Might be useful in the future
     bool isPoint();  // Returns true if this Vector4 represents a point (w = 1)

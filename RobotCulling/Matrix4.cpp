@@ -258,6 +258,24 @@ void Matrix4::makeTranslate(double tx, double ty, double tz) {
   m[2][3] = tz;
 };
 
+void Matrix4::createMatrix(const Vector3& x, const Vector3& y, const Vector3& z, const Vector3& w) {
+    identity();
+    m[0][0] = x.x;
+    m[0][1] = y.x;
+    m[0][2] = z.x;
+    m[0][3] = w.x;
+    
+    m[1][0] = x.y;
+    m[1][1] = y.y;
+    m[1][2] = z.y;
+    m[1][3] = w.y;
+    
+    m[2][0] = x.z;
+    m[2][1] = y.z;
+    m[2][2] = z.z;
+    m[2][3] = w.z;
+}
+
 /**
  * Multiplies the supplied transformation matrix on the
  * left hand side, thereby making the transformation apply
@@ -360,3 +378,9 @@ Matrix4 Matrix4::transpose( const Matrix4& other ) {
   transpose.transpose();
   return transpose;
 }
+Matrix4 Matrix4::create(const Vector3& x, const Vector3& y, const Vector3& z, const Vector3& w) {
+  Matrix4 creation;
+  creation.createMatrix(x, y, z, w);
+  return creation;
+}
+

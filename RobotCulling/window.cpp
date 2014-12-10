@@ -210,7 +210,7 @@ void Window::displayCallback()
   invCam.identity();
   ident.identity();
   if ( Scene::camera != nullptr) 
-  	invCam = Scene::camera->getInverseMatrix();
+  	invCam = Scene::camera->getGLMatrix();
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
@@ -231,7 +231,7 @@ void Window::displayCallback()
 	}
 
 	// Draw the patch et al
-	Matrix4 invCam2 = Scene::camera->getInverseMatrix();
+	Matrix4 invCam2 = Scene::camera->getGLMatrix();
 	Scene::world->draw( invCam2 );
 	if ( Scene::shaderOn ) {
 		Scene::shader->unbind(); // Unbind after drawing here
@@ -279,6 +279,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
+/**
   case 'x': // moving camera in -x direction, requires moving world in +x
 	  transformation = Matrix4::translate(1.0, 0.0, 0.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -303,6 +304,25 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  transformation = Matrix4::scale(1.1, 1.1, 1.1);
 	  Scene::world->getMatrix().transformWorld(transformation);
 	  break;
+*/
+  case 'w':
+      Scene::camera->lookAt(1, 1);
+      break;
+  case 'a':
+      Scene::camera->lookAt(1, 0);
+      break;
+  case 's':
+      Scene::camera->lookAt(0, 1);
+      break;
+  case 'd':
+      Scene::camera->lookAt(0, 0);
+      break;
+  case 'z':
+      Scene::camera->moveForward();
+      break;
+  case 'x':
+      Scene::camera->moveBackward();
+      break;
   case 'o':
 	  transformation = Matrix4::rotY(-5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
