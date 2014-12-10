@@ -12,6 +12,7 @@
 #include "SpotLight.h"
 #include "SkyBox.h"
 #include "BezierPatch.h"
+#include "Particles.h"
 
 using namespace std;
 
@@ -33,9 +34,11 @@ namespace Scene
 	Shader *shader;
 	BezierPatch *waterPatch;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
+    Particles *rain;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
+    bool raining = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	GLuint textures[6];
@@ -73,6 +76,7 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
+        rain = new Particles(50, 50, 50);
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
@@ -234,7 +238,8 @@ void Window::displayCallback()
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
-
+    Scene::rain->render();
+    Scene::rain->update();
   }
 
   glFlush();  
@@ -298,6 +303,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'r':
 	  Scene::world->getMatrix().identity();
 	  break;
+  case '1':
+      Scene::raining = !Scene::raining;
+      Scene::rain->setActive(Scene::raining);
+      cerr << (Scene::raining ? "It is" : "It is not") << " raining" << endl;
+      break;
   default:
       cerr << "Pressed: " << key << endl;
       break;
