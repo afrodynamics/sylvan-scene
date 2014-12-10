@@ -80,6 +80,7 @@
     <ClInclude Include="GLee.h" />
     <ClInclude Include="Group.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="MatrixTransform.h" />
     <ClInclude Include="node.h" />
@@ -106,6 +107,7 @@
     <ClCompile Include="GLee.c" />
     <ClCompile Include="Group.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Matrix4.cpp" />
     <ClCompile Include="MatrixTransform.cpp" />
     <ClCompile Include="node.cpp" />

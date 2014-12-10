@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #ifndef __APPLE__
+#include "glee.h"
 #include <GL/glut.h>
 #else
 #include <GLUT/glut.h>
