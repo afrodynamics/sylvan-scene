@@ -24,6 +24,7 @@ void Particles::reincarnation(int index) {
 }
 
 void Particles::render() {
+    glColor3f(1.0, 1.0, 1.0);
     for(int i = 0; i < MAX_PARTICLES;i++) {
         glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
         glEnable(GL_POINT_SPRITE);
