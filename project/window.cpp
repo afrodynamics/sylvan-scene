@@ -97,8 +97,8 @@ namespace Scene
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
 		
-		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
-		shader->printLog(">>> reflection_map shader >>>");
+		shader = new Shader("shaders/test.vert", "shaders/test.frag", true);
+		shader->printLog("Shader Compiler: ");
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
 			switch (texID) {
@@ -109,7 +109,6 @@ namespace Scene
 				case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
 				case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
 			}
-
 			glUniform1i( texLoc, 0 ); // The zero here determines what kind of texture this is
 		}
 
@@ -178,7 +177,6 @@ void Window::idleCallback()
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-  cerr << "Window::reshapeCallback called" << endl;
   width = w;
   height = h;
   glViewport(0, 0, w, h);  // set new viewport size
