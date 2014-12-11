@@ -8,7 +8,7 @@ using namespace std;
 Terrain::Terrain() {
 
 	// Seed the RNG
-	srand(198723);
+	srand(time(0)); // 198723
 
 	// Prepare the resolution of the heightmap
 	subdivisions = 6; // Be careful, exponential time going on here!
@@ -32,10 +32,42 @@ void Terrain::generateHeightmap() {
 	heightmap.resize( tesselX * tesselZ );
 	for ( int i = 0; i < tesselX - 1; ++i ) {
 		for ( int j = 0; j < tesselZ - 1; ++j ) {
-			heightmap[ j * tesselX + i ] = 0.0;
+			setHeightmap(i,j,(float)rand()/(float)RAND_MAX);
 		}
 	}
-	heightmap[ tesselZ / 2 * tesselX + tesselZ / 2 ] = diamondSquare(0,0,tesselX,tesselZ,.5);
+	
+	// Let's see what happens
+	for ( int i = 0; i < tesselZ; ++i ) {
+		midpointDisplacement(0, i, tesselX, i, .5, .8, subdivisions );
+	}
+	//diamondSquare(0, 0, tesselX, tesselZ, .5 );
+};
+
+// Getters and setters for the heightmap array
+void Terrain::setHeightmap(int x, int y, double d) {
+   heightmap[ y * tesselX + x ] = d;
+};
+
+double Terrain::getHeightmap(int x,int y) {
+   return heightmap[ y * tesselX + x ];
+};
+
+// Midpoint Displacement algorithm
+// takes line segment (x1, y1, x2, y2) and initial random range
+void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRange, double rough, int iterations ) {
+	int xDist = x2 - x1;
+	int yDist = y2 - y1;
+	int xMid = xDist/2;
+	int yMid = yDist/2;
+	double avgHeight = lerp( 0.5, getHeightmap(x1, y1), getHeightmap(x2, y2) );
+	double h = clamp( (float)rand()/(float)RAND_MAX, -randRange, randRange) + avgHeight;
+	rough = clamp(rough, 0, 1.0);
+	setHeightmap(xMid, yMid, h);
+	iterations--;
+	if ( iterations > 0 ) {
+		midpointDisplacement( x1, y1, xMid, yMid, randRange * rough, rough, iterations );
+		midpointDisplacement( xMid, yMid, x2, y2, randRange * rough, rough, iterations );
+	}
 };
 
 /**
@@ -50,25 +82,40 @@ void Terrain::generateHeightmap() {
  * @return           height value at the midpoint in the square
  */
 double Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange) {
-	int midX = (bottom - top) / 2;
-	int midY = (right - left) / 2;
-	int quartX = midX / 2;
-	int quartY = midY / 2;
-	double displacement = clamp(rand() % 256, -randRange, randRange);
+	
+	int sideWidth = (bottom - top) / 2;
+	while (sideWidth > 0) {
 
-	// Recurse so long as we have space
-	if ( randRange > .125 ) {
-		// Top left square
-		heightmap[ quartX * tesselX + quartY ] = diamondSquare(top, left, midY, midX, randRange / 2.0);
-		// Top right square
-		heightmap[ (midX + quartX) * tesselX + quartY ] = diamondSquare(top, midX, midY, right, randRange / 2.0);
-		// Bottom left square
-		heightmap[ (quartX) * tesselX + quartY + midY ] = diamondSquare(midY, left, bottom, midX, randRange / 2.0);
-		// Bottom right square
-		heightmap[ (midX + quartX) * tesselX + quartY + midY ] = diamondSquare(midY, midX, bottom, right, randRange / 2.0);
+		// Do the square step for each square
+		for (int i = 0; i < tesselX; i+=sideWidth) {
+			for (int j = 0; j < tesselZ; j+=sideWidth) {
+				int rightOffset = i + sideWidth;
+				int botOffset = j + sideWidth;
+				int midX = (rightOffset - i) / 2;
+				int midY = (botOffset - j) / 2;
+				double displacement = clamp(rand() / (double)RAND_MAX, -randRange, randRange);
+				setHeightmap(midX, midY, displacement);
+			}
+		}
+
+		// Do the diamond step for each square
+		for (int i = sideWidth / 2; i < tesselX; i+=sideWidth) {
+			for (int j = sideWidth / 2; j < tesselZ; j+=sideWidth) {
+				int rightOffset = i + sideWidth;
+				int botOffset = j + sideWidth;
+				int midX = (rightOffset - i) / 2;
+				int midY = (botOffset - j) / 2;
+				double displacement = clamp(rand() / (double)RAND_MAX, -randRange, randRange);
+				setHeightmap(midX, midY, displacement);
+			}
+		}
+
+		// Perform the diamond step
+		randRange /= 2;
+		sideWidth /= 2; // Divide by two
 	}
 
-	return heightmap[ midY * tesselX + midX ] + displacement;
+	return 0.0;
 }
 
 void Terrain::generateVerts() {
@@ -83,11 +130,10 @@ void Terrain::generateVerts() {
 		for ( int z = 0; z < tesselZ; ++z ) {
 			double tx = (double)x / (double)tesselX;
 	 		double tz = (double)z / (double)tesselZ;
-			double yRand = heightmap[ x * tesselZ + z ];
+			double yRand = getHeightmap(x, z); // row major
 			vertices.push_back( Vector3( lerp(tx, minX, maxX), yRand, lerp(tz, minZ, maxZ) ) );
 		}
 	}
-
 }
 
 void Terrain::render() {
@@ -120,7 +166,7 @@ double Terrain::lerp(double t, double p0, double p1) {
 };
 
 // Keeps a number between the max/min values
-double Terrain::clamp(double val, double valMax, double valMin) {
+double Terrain::clamp(double val, double valMin, double valMax) {
 	if ( val < valMin ) {
 		return valMin;
 	}
