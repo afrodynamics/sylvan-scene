@@ -40,6 +40,10 @@ public:
     void lookAt(int rotation, int direction);
     void moveForward();
     void moveBackward();
+    void moveLeft();
+    void moveRight();
+    void moveUp();
+    void moveDown();
     Vector3 getPos();
     void reset();
 };

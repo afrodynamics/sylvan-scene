@@ -271,24 +271,40 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
+
+  // Allow wasd movement control of camera
   case 'w':
-      Scene::camera->lookAt(1, 1);
-      break;
+    Scene::camera->moveForward();
+    break;
   case 'a':
-      Scene::camera->lookAt(1, 0);
-      break;
+    Scene::camera->moveLeft();
+    break;
   case 's':
-      Scene::camera->lookAt(0, 1);
-      break;
+    Scene::camera->moveBackward();
+    break;
   case 'd':
-      Scene::camera->lookAt(0, 0);
-      break;
+    Scene::camera->moveRight();
+    break;
+  case ' ':
+    Scene::camera->moveUp();
+    break;
   case 'z':
-      Scene::camera->moveForward();
-      break;
-  case 'x':
-      Scene::camera->moveBackward();
-      break;
+    Scene::camera->moveDown();
+    break;
+    
+  // Allow WASD rotation control of camera
+  case 'W':
+    Scene::camera->lookAt(1, 1);
+    break;
+  case 'A':
+    Scene::camera->lookAt(1, 0);
+    break;
+  case 'S':
+    Scene::camera->lookAt(0, 1);
+    break;
+  case 'D':
+    Scene::camera->lookAt(0, 0);
+    break;
   case 'o':
 	  transformation = Matrix4::rotY(-5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -299,11 +315,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-      Scene::camera->reset();
+    Scene::camera->reset();
 	  break;
   default:
-      cerr << "Pressed: " << key << endl;
-      break;
+    cerr << "Pressed: " << key << endl;
+    break;
   }
 
 };

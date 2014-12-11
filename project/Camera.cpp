@@ -109,6 +109,38 @@ void Camera::moveBackward() {
     updateAxisVectors();
 }
 
+void Camera::moveLeft() {
+    Vector3 copy = left;
+    copy.scale(1.5);
+    e = e + copy;
+    d = d + copy;
+    updateAxisVectors();
+}
+
+void Camera::moveRight() {
+    Vector3 copy = right;
+    copy.scale(1.5);
+    e = e + copy;
+    d = d + copy;
+    updateAxisVectors();
+}
+
+void Camera::moveUp() {
+    Vector3 copy = up;
+    copy.scale(1.5);
+    e = e + copy;
+    d = d + copy;
+    updateAxisVectors();
+}
+
+void Camera::moveDown() {
+    Vector3 copy = down;
+    copy.scale(1.5);
+    e = e + copy;
+    d = d + copy;
+    updateAxisVectors();
+}
+
 void Camera::reset() {
     e = initialEVector;
     d = initialDVector;
