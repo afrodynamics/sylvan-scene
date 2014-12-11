@@ -90,12 +90,12 @@ namespace Scene
 
 		glGenTextures(6, textures); // This needs to be made OOP
 
-		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
-		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
-		sky->front = Window::loadPPM("tex/front.ppm",1024,1024,2);
-		sky->back = Window::loadPPM("tex/back.ppm",1024,1024,3);
-		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
-		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
+		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
+		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
+		sky->front = Window::loadPPM("tex/front1.ppm",1024,1024,2);
+		sky->back = Window::loadPPM("tex/back1.ppm",1024,1024,3);
+		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
+		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
@@ -278,24 +278,40 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
+
+  // Allow wasd movement control of camera
   case 'w':
-      Scene::camera->lookAt(1, 1);
-      break;
+    Scene::camera->moveForward();
+    break;
   case 'a':
-      Scene::camera->lookAt(1, 0);
-      break;
+    Scene::camera->moveLeft();
+    break;
   case 's':
-      Scene::camera->lookAt(0, 1);
-      break;
+    Scene::camera->moveBackward();
+    break;
   case 'd':
-      Scene::camera->lookAt(0, 0);
-      break;
+    Scene::camera->moveRight();
+    break;
+  case ' ':
+    Scene::camera->moveUp();
+    break;
   case 'z':
-      Scene::camera->moveForward();
-      break;
-  case 'x':
-      Scene::camera->moveBackward();
-      break;
+    Scene::camera->moveDown();
+    break;
+    
+  // Allow WASD rotation control of camera
+  case 'W':
+    Scene::camera->lookAt(1, 1);
+    break;
+  case 'A':
+    Scene::camera->lookAt(1, 0);
+    break;
+  case 'S':
+    Scene::camera->lookAt(0, 1);
+    break;
+  case 'D':
+    Scene::camera->lookAt(0, 0);
+    break;
   case 'o':
 	  transformation = Matrix4::rotY(-5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -306,15 +322,15 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-      Scene::camera->reset();
+    Scene::camera->reset();
 	  break;
   case '1':
       Scene::isRaining = !Scene::isRaining;
       cerr << (Scene::isRaining ? "It is" : "It is not") << " raining" << endl;
       break;
   default:
-      cerr << "Pressed: " << key << endl;
-      break;
+    cerr << "Pressed: " << key << endl;
+    break;
   }
 
 };
