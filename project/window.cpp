@@ -13,6 +13,8 @@
 #include "SpotLight.h"
 #include "SkyBox.h"
 #include "BezierPatch.h"
+#include "Cylinder.h"
+#include "Cone.h"
 
 using namespace std;
 
@@ -70,14 +72,17 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		Matrix4 scl = Matrix4::scale(50,50,50);
+		Matrix4 sc2 = Matrix4::scale(5,5,5);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
+    MatrixTransform * cyScale = new MatrixTransform(sc2);
 		patchTranslate = new MatrixTransform( trn );
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
+
 
 		// Load a bind the textures
 		
@@ -115,9 +120,12 @@ namespace Scene
 		world->addChild( ptLight );
 		world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
+    world->addChild( cyScale );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
+    Cylinder * cyl = new Cylinder();
+    cyScale->addChild(cyl);
 
 		// Affix shaders to individual scene graph nodes
 		waterPatch->setShader( shader ); // This patch should have a shader
