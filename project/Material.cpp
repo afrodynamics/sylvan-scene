@@ -43,6 +43,12 @@ Material Material::setAmbient(float a[], int length) {
   return *this;
 }
 
+// Set ambient values.  Length is the length of array a
+Material Material::setAmbient(float r, float g, float b, float a) {
+  float ambient[4] = {r,g,b,a};
+  return setAmbient(ambient, 4);
+}
+
 // Set diffuse values.  Length is the length of array d
 Material Material::setDiffuse(float d[], int length) {
   for( int i = 0; i < length; i++ ) {
@@ -59,6 +65,12 @@ Material Material::setDiffuse(float d[], int length) {
   }
 
   return *this;
+}
+
+// Set ambient values.  Length is the length of array a
+Material Material::setDiffuse(float r, float g, float b, float a) {
+  float diffuse[4] = {r,g,b,a};
+  return setDiffuse(diffuse, 4);
 }
 
 // Set specular values.  Length is the length of array s
@@ -79,6 +91,12 @@ Material Material::setSpecular(float s[], int length) {
   return *this;
 }
 
+// Set ambient values.  Length is the length of array a
+Material Material::setSpecular(float r, float g, float b, float a) {
+  float specular[4] = {r,g,b,a};
+  return setSpecular(specular, 4);
+}
+
 
 // Set color of material.  Length is the length of array c
 Material Material::setColor(float c[], int length) {
@@ -96,6 +114,12 @@ Material Material::setColor(float c[], int length) {
   }
 
   return *this;
+}
+
+// Set ambient values.  Length is the length of array a
+Material Material::setColor(float r, float g, float b, float a) {
+  float color[4] = {r,g,b,a};
+  return setColor(color, 4);
 }
 
 // Apply the material before drawing
