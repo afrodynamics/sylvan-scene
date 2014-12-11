@@ -78,6 +78,7 @@ namespace Scene
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
+		ptLight->enableMat(true); // Turn on material for the light
 
 		// Load a bind the textures
 		

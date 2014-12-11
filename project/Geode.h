@@ -5,7 +5,8 @@ class Geode :
 	public Node
 {
 protected:
-  Material mat;
+  Material mat, defaultMat;
+  bool useMaterial;
 
 public:
 	Geode();
@@ -15,5 +16,6 @@ public:
 	void showBoundingBox(bool);
 	void setShader(Shader*); // Attach shader to this node
 	void enableShader(bool); // Enable/disable shader
-  void setMat(Material);   // Set the material for the object
+    void setMat(Material);   // Set the material for the object
+    void enableMat(bool);
 };

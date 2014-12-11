@@ -1,5 +1,4 @@
-#ifndef _WINDOW_H_
-#define _WINDOW_H_
+#pragma once
 #include <vector>
 #include <string>
 #include "Matrix4.h"
@@ -43,6 +42,3 @@ class Window	  // OpenGL output window related routines
     static void displayCallback(void);
 
 };
-
-#endif
-
