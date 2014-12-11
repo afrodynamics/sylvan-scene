@@ -1,6 +1,7 @@
 #include <iostream>
 
 #ifndef __APPLE__
+#include "glee.h"
 #include <GL/glut.h>
 #else
 #include <GLUT/glut.h>
@@ -71,15 +72,17 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		terrain = new Terrain(); // Procedural generator FTW
-		Matrix4 scl = Matrix4::scale(50,50,50);
+		Matrix4 scl = Matrix4::scale(60,1.5,60);
+		Matrix4 skyScale = Matrix4::scale(250,250,250);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
-		skyBoxScale = new MatrixTransform( scl );
+		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
+		ptLight->enableMat(true); // Turn on material for the light
 
 		// Load a bind the textures
 		
@@ -87,12 +90,12 @@ namespace Scene
 
 		glGenTextures(6, textures); // This needs to be made OOP
 
-		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
-		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
-		sky->front = Window::loadPPM("tex/front.ppm",1024,1024,2);
-		sky->back = Window::loadPPM("tex/back.ppm",1024,1024,3);
-		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
-		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
+		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
+		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
+		sky->front = Window::loadPPM("tex/front1.ppm",1024,1024,2);
+		sky->back = Window::loadPPM("tex/back1.ppm",1024,1024,3);
+		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
+		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
@@ -122,6 +125,7 @@ namespace Scene
 
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
+		terrain->enableMat(false);
 
 	};
 	// Deallocate all kinds of stuff
@@ -141,6 +145,7 @@ namespace Scene
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
 		ptLight = nullptr;
+		cerr << "Dealloc called!" << endl;
 	};
 };
 
@@ -258,6 +263,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   transformation.identity(); // Make sure the Matrix isn't utter garbage
 
   switch (key) {
+  case 27:
+      // Close gracefully and dealloc stuff. Should help with the malloc errors
+      Scene::dealloc();
+      exit(0); 
+      break;
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
 	  Scene::world->showBoundingBox(Scene::showBounds);
@@ -271,24 +281,40 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
 	  break;
+
+  // Allow wasd movement control of camera
   case 'w':
-      Scene::camera->lookAt(1, 1);
-      break;
+    Scene::camera->moveForward();
+    break;
   case 'a':
-      Scene::camera->lookAt(1, 0);
-      break;
+    Scene::camera->moveLeft();
+    break;
   case 's':
-      Scene::camera->lookAt(0, 1);
-      break;
+    Scene::camera->moveBackward();
+    break;
   case 'd':
-      Scene::camera->lookAt(0, 0);
-      break;
+    Scene::camera->moveRight();
+    break;
+  case ' ':
+    Scene::camera->moveUp();
+    break;
   case 'z':
-      Scene::camera->moveForward();
-      break;
-  case 'x':
-      Scene::camera->moveBackward();
-      break;
+    Scene::camera->moveDown();
+    break;
+    
+  // Allow WASD rotation control of camera
+  case 'W':
+    Scene::camera->lookAt(1, 1);
+    break;
+  case 'A':
+    Scene::camera->lookAt(1, 0);
+    break;
+  case 'S':
+    Scene::camera->lookAt(0, 1);
+    break;
+  case 'D':
+    Scene::camera->lookAt(0, 0);
+    break;
   case 'o':
 	  transformation = Matrix4::rotY(-5.0);
 	  Scene::world->getMatrix().transformWorld(transformation);
@@ -299,10 +325,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
+    Scene::camera->reset();
 	  break;
   default:
-      cerr << "Pressed: " << key << endl;
-      break;
+    cerr << "Pressed: " << key << endl;
+    break;
   }
 
 };

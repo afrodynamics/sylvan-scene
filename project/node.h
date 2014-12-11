@@ -5,6 +5,7 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>  // Include GLUT header for Mac OS X
 #else
+#include "glee.h"
 #include <GL/glut.h>    // Windows and Linux are normal
 #endif
 #include <vector>

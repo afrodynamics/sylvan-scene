@@ -8,7 +8,8 @@ using namespace std;
 // Constructor
 Geode::Geode()
 {
-	drawBoundingSphere = false;
+	drawBoundingSphere = useShader = false;
+	useMaterial = true; // Use materials by default
 	scale = Vector4(0, 0, 0, 1);
 	centerPos = Vector4(0, 0, 0, 1);
 }
@@ -31,10 +32,21 @@ void Geode::draw(Matrix4& C) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd( tmp.getPointer() );
 
+	// Shaders & Materials don't work well together
 	if ( useShader && shader != nullptr ) {
+		glDisable(GL_COLOR_MATERIAL);
 		shader->bind();
 	}
+    else if ( useMaterial == true ) {
+    	// Apply the Material if we want to
+    	mat.apply();   
+    }
+    else {
+    	defaultMat.apply();
+    }
+
 	render();
+
 	if ( useShader && shader != nullptr ) {
 		shader->unbind();
 	}
@@ -49,8 +61,24 @@ void Geode::showBoundingBox(bool show) {
 // Toggle shader
 void Geode::enableShader(bool shad) {
 	useShader = shad;
+	if ( shad == true && useMaterial ) {
+		useMaterial = false; // Disable materials if we're using a shader
+	}
 }
 
 void Geode::setShader(Shader* shad) {
 	shader = shad;
+}
+
+// Set the Material for the Geode
+void Geode::setMat(Material m) {
+	mat = m;
+}
+
+// Toggle material
+void Geode::enableMat(bool mat) {
+	useMaterial = mat;
+	if ( mat == true && useShader ) {
+		useShader = false; // Disable shaders if we're using a material instead
+	}
 }

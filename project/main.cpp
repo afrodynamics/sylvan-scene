@@ -6,6 +6,7 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>  // Include GLUT header for Mac OS X
 #else
+#include "glee.h"
 #include <GL/glut.h>    // Windows and Linux are normal
 #endif
 
@@ -21,7 +22,8 @@ int main(int argc, char *argv[])
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(Window::width, Window::height);      // set initial window size
-  glutCreateWindow("CSE 167 Project 6");    	      // open window and set window title
+  glutCreateWindow("A Sylvan Setting");    	      // open window and set window title
+  glutFullScreen();
 
   // Initialize the scene
   Scene::setup();

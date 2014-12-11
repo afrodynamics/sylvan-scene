@@ -16,6 +16,9 @@
 
 class Camera{
 private:
+    Vector3 initialEVector;
+    Vector3 initialDVector;
+    Vector3 initialUpVector;
     Vector3 e;
     Vector3 d;
     Vector3 up;
@@ -37,6 +40,11 @@ public:
     void lookAt(int rotation, int direction);
     void moveForward();
     void moveBackward();
+    void moveLeft();
+    void moveRight();
+    void moveUp();
+    void moveDown();
     Vector3 getPos();
+    void reset();
 };
 #endif /* defined(__Project2__Camera__) */
