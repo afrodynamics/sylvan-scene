@@ -42,7 +42,7 @@ namespace Scene
     bool isRaining = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
-	GLuint textures[6];
+	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
 	// Create a new robot at the given position in world coordinates
@@ -88,7 +88,7 @@ namespace Scene
 		
 		sky = new SkyBox(); // Still don't have a good texture class here
 
-		glGenTextures(6, textures); // This needs to be made OOP
+		glGenTextures(7, textures); // This needs to be made OOP
 
 		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
 		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
@@ -96,6 +96,8 @@ namespace Scene
 		sky->back = Window::loadPPM("tex/back1.ppm",1024,1024,3);
 		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
+
+		rain->textureID = Window::loadPPM("tex/rain.ppm", 1024, 1024, 6);
 
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
@@ -229,6 +231,10 @@ void Window::displayCallback()
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
+	if(Scene::isRaining) {
+        Scene::rain->render();
+        Scene::rain->update();
+    } 
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
@@ -240,10 +246,6 @@ void Window::displayCallback()
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
-    if(Scene::isRaining) {
-        Scene::rain->render();
-        Scene::rain->update();
-    }
   }
 
   glFlush();  

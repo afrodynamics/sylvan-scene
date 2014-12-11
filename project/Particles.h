@@ -23,8 +23,8 @@ private:
     std::vector<Particle> particles;
 
 public:
+    GLuint textureID;
     Particles(int width, int height, int depth);
-    void create();
     void update();
     void reincarnation(int index);
     void render();
