@@ -11,6 +11,7 @@
 #include "Window.h"
 #include "SpotLight.h"
 #include "SkyBox.h"
+#include "Terrain.h"
 #include "BezierPatch.h"
 
 using namespace std;
@@ -32,6 +33,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
+	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
 	bool showBounds = false;
 	bool showFps = false;
@@ -68,6 +70,7 @@ namespace Scene
 		p2 = Vector4(2.5,7,0,1);
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
+		terrain = new Terrain(); // Procedural generator FTW
 		Matrix4 scl = Matrix4::scale(50,50,50);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
@@ -115,11 +118,11 @@ namespace Scene
 		world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
 		patchTranslate->addChild( patchScale );
-		patchScale->addChild( waterPatch );
+		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
 		// Affix shaders to individual scene graph nodes
-		waterPatch->setShader( shader ); // This patch should have a shader
+		terrain->setShader( shader ); // This patch should have a shader
 
 	};
 	// Deallocate all kinds of stuff
@@ -134,6 +137,7 @@ namespace Scene
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
 		delete sky;
+		delete terrain; terrain = nullptr;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
@@ -225,11 +229,11 @@ void Window::displayCallback()
   if ( Scene::camera && Scene::world ) {
 
 	// Enable environment mapping on our patch
-	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	if (Scene::shaderOn && Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-	else if ( Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	else if ( Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
 
 	// Draw the scene graph
