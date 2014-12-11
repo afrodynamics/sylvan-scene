@@ -15,6 +15,7 @@
 #include "BezierPatch.h"
 #include "Cylinder.h"
 #include "Cone.h"
+#include "Material.h"
 
 using namespace std;
 
@@ -43,6 +44,7 @@ namespace Scene
 	double zfar = 1000; //1000.0;
 	GLuint textures[6];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
+  Material woodMat;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -72,18 +74,27 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		Matrix4 scl = Matrix4::scale(50,50,50);
-		Matrix4 sc2 = Matrix4::scale(5,5,5);
+		Matrix4 sc2 = Matrix4::scale(3,15,3);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
+		Matrix4 trn2 = Matrix4::translate(0.0,-5.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
+
     MatrixTransform * cyScale = new MatrixTransform(sc2);
+    MatrixTransform * cyTrans = new MatrixTransform(trn2);
+
 		patchTranslate = new MatrixTransform( trn );
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
-
+    // Wood-y color
+    woodMat.setColor(0.54509803921, 0.45098039215, 1/3.0, 1)
+           .setShine(0)
+           .setAmbient(0.2,0.2,0.2,1)
+           .setDiffuse(1,1,1,1)
+           .setSpecular({},0);
 
 		// Load a bind the textures
 		
@@ -121,11 +132,13 @@ namespace Scene
 		world->addChild( ptLight );
 		world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
-    world->addChild( cyScale );
+    world->addChild( cyTrans );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
+    cyTrans->addChild(cyScale);
     Cylinder * cyl = new Cylinder();
+    cyl->setMat(woodMat);
     cyScale->addChild(cyl);
 
 		// Affix shaders to individual scene graph nodes
