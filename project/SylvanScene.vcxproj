@@ -79,6 +79,7 @@
     <ClInclude Include="Geode.h" />
     <ClInclude Include="GLee.h" />
     <ClInclude Include="Group.h" />
+    <ClInclude Include="Cylinder.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Matrix4.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="Robot.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="SkyBox.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Vector3.cpp" />
