@@ -24,7 +24,4 @@ public:
 	void midpointDisplacement(int, int, int, int, double, double, int);
 	double diamondSquare(int, int, int, int, double);
 
-	// Misc Util
-	double lerp(double, double, double); // Lerp between two pts
-	double clamp(double, double, double); // Lerp between two pts
 };

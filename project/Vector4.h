@@ -12,6 +12,7 @@ public:
 	Vector4(double x, double y, double z, double w); // Constructor
 	Vector4 operator+(const Vector4&); // Overload + operator for addition
 	Vector4 operator-(const Vector4&); // Overlaod - operator for subtraction
+    Vector4 operator* (double); // Overload operator * for scale
 	void dehomogenize();        // Scale the vector so that the fourth component (w) is equal to 1
 	void print(std::string comment); // Print x, y, z, w components of the vector after a comment string
 	void printAsMatlab();       // Prints vector out as a column vector in MATLAB. [x; y; z; w]

@@ -57,6 +57,19 @@ Vector4 Vector4::operator-(const Vector4& other) {
 };
 
 /**
+ * Scale Operator: 
+ *   Uniformly scales the Vector4 by the given double
+ */
+Vector4 Vector4::operator*(double scalar) {
+	return Vector4(
+		this->x * scalar,
+		this->y * scalar,
+		this->z * scalar,
+		this->w * scalar
+		);
+};
+
+/**
  * Dehomogenize:
  *   Scales this Vector4 so that the fourth component is equal to one.
  * This is achieved simply by dividing each component by w, where w is nonzero.

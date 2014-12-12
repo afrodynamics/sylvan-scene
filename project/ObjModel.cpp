@@ -1,3 +1,4 @@
+#include "Util.h"
 #include "ObjModel.h"
 #include <string>
 #include <sstream>
@@ -361,9 +362,9 @@ bool ObjModel::cppParseFile(string fname) {
 	double yMiddle = (yMin + yMax) / 2.0;
 	double zMiddle = (zMin + zMax) / 2.0;
 
-	double scaleX = windowWidth / ABS(ABS(xMax) + ABS(xMin));
-	double scaleY = windowWidth / ABS(ABS(yMax) + ABS(yMin));
-	double scaleZ = windowWidth / ABS(ABS(zMax) + ABS(zMin));
+	double scaleX = windowWidth / Util::abs(Util::abs(xMax) + Util::abs(xMin));
+	double scaleY = windowWidth / Util::abs(Util::abs(yMax) + Util::abs(yMin));
+	double scaleZ = windowWidth / Util::abs(Util::abs(zMax) + Util::abs(zMin));
 
 #ifdef __APPLE__
 	double scaleFactor = std::min( std::min(scaleX, scaleY), std::min(scaleY, scaleZ) );

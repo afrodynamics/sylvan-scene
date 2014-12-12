@@ -9,8 +9,4 @@ Node::Node()
 	useShader = false;
 }
 
-Node::~Node() {
-	if (shader != nullptr) {
-		delete shader;
-	}
-}
+Node::~Node() {}

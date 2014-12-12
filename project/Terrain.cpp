@@ -1,9 +1,10 @@
 #include <iostream>
 #include <cstdlib>
-#include <cmath>
+#include "Util.h"
 #include "Terrain.h"
 
 using namespace std;
+using namespace Util;
 
 Terrain::Terrain() {
 
@@ -159,21 +160,3 @@ void Terrain::render() {
 	glEnd();
 
 }
-
-// Linear interpolation
-double Terrain::lerp(double t, double p0, double p1) {
-	return ((1 - t) * p0 + t * p1);
-};
-
-// Keeps a number between the max/min values
-double Terrain::clamp(double val, double valMin, double valMax) {
-	if ( val < valMin ) {
-		return valMin;
-	}
-	else if ( val > valMax ) {
-		return valMax;
-	}
-	else {
-		return val;
-	}
-};
