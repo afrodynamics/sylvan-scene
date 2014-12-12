@@ -28,16 +28,20 @@ void Particles::render() {
     glEnable(GL_POINT_SPRITE);
     glBegin(GL_POINTS);
     for(int i = 0; i < MAX_PARTICLES;i++) {
+        glColor3f(1.0f, 1.0f, 1.0f);
         glVertex3f(particles[i].xPos, particles[i].yPos, particles[i].zPos);
     }
     glEnd();
     glDisable(GL_POINT_SPRITE);
     glDisable(GL_TEXTURE_2D);
+    update();
 }
 
 void Particles::update() {
     for(int i = 0; i < MAX_PARTICLES; i++) {
-        particles[i].yPos -= 10;
+        particles[i].xPos -= (rand() % 3);
+        particles[i].yPos -= (rand() % 10);
+        particles[i].zPos -= (rand() % 3);
         if(particles[i].yPos <= -25) {
             reincarnation(i);
         }

@@ -233,7 +233,6 @@ void Window::displayCallback()
   if ( Scene::camera && Scene::world ) {
 	if(Scene::isSnowing) {
         Scene::snow->render();
-        Scene::snow->update();
     } 
 
 	// Enable environment mapping on our patch
