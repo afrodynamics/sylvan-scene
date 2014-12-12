@@ -9,7 +9,7 @@ using namespace Util;
 Terrain::Terrain() {
 
 	// Seed the RNG
-	srand(time(0)); // 198723
+	srand(time(NULL)); // 198723
 
 	// Prepare the resolution of the heightmap
 	subdivisions = 6; // Be careful, exponential time going on here!
@@ -33,15 +33,12 @@ void Terrain::generateHeightmap() {
 	heightmap.resize( tesselX * tesselZ );
 	for ( int i = 0; i < tesselX - 1; ++i ) {
 		for ( int j = 0; j < tesselZ - 1; ++j ) {
-			setHeightmap(i,j,(float)rand()/(float)RAND_MAX);
+			setHeightmap(i,j,0.0);
 		}
 	}
 	
-	// Let's see what happens
-	for ( int i = 0; i < tesselZ; ++i ) {
-		midpointDisplacement(0, i, tesselX, i, .5, .8, subdivisions );
-	}
-	//diamondSquare(0, 0, tesselX, tesselZ, .5 );
+	diamondSquare(0,0,tesselX,tesselZ,.125);
+
 };
 
 // Getters and setters for the heightmap array
@@ -50,7 +47,9 @@ void Terrain::setHeightmap(int x, int y, double d) {
 };
 
 double Terrain::getHeightmap(int x,int y) {
-   return heightmap[ y * tesselX + x ];
+	int index = y * tesselX + x;
+	index %= heightmap.size(); // idgaf anymore
+	return heightmap[ y * tesselX + x ];
 };
 
 // Midpoint Displacement algorithm
@@ -61,7 +60,7 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
 	int xMid = xDist/2;
 	int yMid = yDist/2;
 	double avgHeight = lerp( 0.5, getHeightmap(x1, y1), getHeightmap(x2, y2) );
-	double h = clamp( (float)rand()/(float)RAND_MAX, -randRange, randRange) + avgHeight;
+	double h = drandRange(-randRange,randRange) + avgHeight;
 	rough = clamp(rough, 0, 1.0);
 	setHeightmap(xMid, yMid, h);
 	iterations--;
@@ -74,7 +73,11 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
 /**
  * An implementation of the diamond-square terrain generation algorithm.
  * Described in great detail here: http://www.gameprogrammer.com/fractal.html
- * A 2D application of the midpoint displacement algorithm
+ * A 2D application of the midpoint displacement algorithm.
+ *
+ * I referred to some other sources to verify my understanding of the algorithm:
+ * http://www.paulboxley.com/blog/2011/03/terrain-generation-mark-one
+ * 
  * @param  top       y coordinate of the current square
  * @param  left      x coordinate of the current square
  * @param  bottom    bottom y coordinate of the current square
@@ -82,41 +85,50 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
  * @param  randRange positive double which clamps our random displacement
  * @return           height value at the midpoint in the square
  */
-double Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange) {
+void Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange) {
 	
-	int sideWidth = (bottom - top) / 2;
-	while (sideWidth > 0) {
+	int centerX = (top + bottom) / 2;
+	int centerY = (left + right) / 2;
 
-		// Do the square step for each square
-		for (int i = 0; i < tesselX; i+=sideWidth) {
-			for (int j = 0; j < tesselZ; j+=sideWidth) {
-				int rightOffset = i + sideWidth;
-				int botOffset = j + sideWidth;
-				int midX = (rightOffset - i) / 2;
-				int midY = (botOffset - j) / 2;
-				double displacement = clamp(rand() / (double)RAND_MAX, -randRange, randRange);
-				setHeightmap(midX, midY, displacement);
-			}
-		}
-
-		// Do the diamond step for each square
-		for (int i = sideWidth / 2; i < tesselX; i+=sideWidth) {
-			for (int j = sideWidth / 2; j < tesselZ; j+=sideWidth) {
-				int rightOffset = i + sideWidth;
-				int botOffset = j + sideWidth;
-				int midX = (rightOffset - i) / 2;
-				int midY = (botOffset - j) / 2;
-				double displacement = clamp(rand() / (double)RAND_MAX, -randRange, randRange);
-				setHeightmap(midX, midY, displacement);
-			}
-		}
-
-		// Perform the diamond step
-		randRange /= 2;
-		sideWidth /= 2; // Divide by two
+	// Check out of bounds conditions
+	if ( top < 0 || top > tesselZ || 
+		 left < 0 || left > tesselX || 
+		 right < 0 || right > tesselX || 
+		 bottom < 0 || bottom > tesselZ || 
+		 centerX < 0 || centerX > tesselX || 
+		 centerY < 0 || centerY > tesselZ ) {
+		return;
 	}
 
-	return 0.0;
+	// During the diamond step, we set the center point to the
+	// average of the four corner heights +/- some random delta
+	
+	double centerH = 
+		( getHeightmap(left, top)
+		+ getHeightmap(left, bottom)
+		+ getHeightmap(right, bottom)
+		+ getHeightmap(right, top)) / 4.0
+	    + drandRange( -randRange, randRange );
+
+	setHeightmap(centerX, centerY, centerH);
+
+	// The square step uses the newly found center point to divide
+	// the region into four quadrants. We fill in the heights for
+	// the missing corners of the smaller squares, then recurse
+	
+	setHeightmap(centerX, top,     (getHeightmap(left,  top)    + getHeightmap(right, top)   ) / 2 + ((drand() - 0.5) * centerH));
+	setHeightmap(centerX, bottom,  (getHeightmap(left,  bottom) + getHeightmap(right, bottom)) / 2 + ((drand() - 0.5) * centerH));
+	setHeightmap(left,    centerY, (getHeightmap(left,  top)    + getHeightmap(left,  bottom)) / 2 + ((drand() - 0.5) * centerH));
+	setHeightmap(right,   centerY, (getHeightmap(right, top)    + getHeightmap(right, bottom)) / 2 + ((drand() - 0.5) * centerH));
+
+	// Loop condition
+	if ((right - left) > 2 && (bottom - top) > 2) {
+		diamondSquare( top, left, centerY, centerX, randRange );
+		diamondSquare( top, centerX, centerY, right, randRange );
+		diamondSquare( centerY, left, bottom, centerX, randRange );
+		diamondSquare( centerY, centerX, bottom, right, randRange );
+	}
+
 }
 
 void Terrain::generateVerts() {
@@ -131,8 +143,11 @@ void Terrain::generateVerts() {
 		for ( int z = 0; z < tesselZ; ++z ) {
 			double tx = (double)x / (double)tesselX;
 	 		double tz = (double)z / (double)tesselZ;
-			double yRand = getHeightmap(x, z); // row major
-			vertices.push_back( Vector3( lerp(tx, minX, maxX), yRand, lerp(tz, minZ, maxZ) ) );
+			vertices.push_back( Vector3( 
+				lerp(tx, minX, maxX), 
+				getHeightmap(x, z), 
+				lerp(tz, minZ, maxZ) ) 
+			);
 		}
 	}
 }

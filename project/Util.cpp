@@ -36,3 +36,11 @@ double Util::abs(double d) {
     return -d;
   }
 }
+
+// Get a random double between 0.0 and 1.0
+double Util::drand() { return (double)rand()/(double)RAND_MAX; }
+
+// Get a random double between low and high, inclusive
+double Util::drandRange( double low, double high ) { 
+	return Util::lerp( Util::drand(), low, high ); // Lerp is love, lerp is life
+};

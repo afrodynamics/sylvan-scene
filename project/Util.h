@@ -5,6 +5,7 @@
  * class per se. Not supposed to be instantiated
  */
 #pragma once
+#include <cstdlib>
 #include <cmath>
 #include "Vector3.h"
 #include "Vector4.h"
@@ -18,6 +19,11 @@ namespace Util {
 
 	// Clamp a number between max & min
 	double clamp(double val, double valMin, double valMax); 
+
+	// Get a random double between 0.0 and 1.0
+	double drand();
+	// Get a random double between an arbitrary range (inclusive)
+	double drandRange(double low, double high);
 
 	// Returns absolute value of a number
 	double abs(double d);

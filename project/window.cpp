@@ -72,7 +72,7 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		terrain = new Terrain(); // Procedural generator FTW
-		Matrix4 scl = Matrix4::scale(60,1.5,60);
+		Matrix4 scl = Matrix4::scale(10,10,10); //Matrix4::scale(60,1.5,60); // Good hacky numbers if all else fails
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
@@ -265,7 +265,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   switch (key) {
   case 27:
       // Close gracefully and dealloc stuff. Should help with the malloc errors
-      Scene::dealloc();
+      //Scene::dealloc(); // <--- this causes closing segfaults, and it's irritating,
+      //                          so for now we're accepting memory leaks. :(
       exit(0); 
       break;
   case 'b':
@@ -301,7 +302,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'z':
     Scene::camera->moveDown();
     break;
-    
   // Allow WASD rotation control of camera
   case 'W':
     Scene::camera->lookAt(1, 1);
@@ -331,7 +331,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
     cerr << "Pressed: " << key << endl;
     break;
   }
-
 };
 
 /** Load a ppm file from disk, then loads it into OpenlGL.
