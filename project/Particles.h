@@ -1,4 +1,4 @@
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 10000
 #include "Vector3.h"
 #include <vector>
 #include <stdlib.h>

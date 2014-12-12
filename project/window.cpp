@@ -35,11 +35,11 @@ namespace Scene
 	Shader *shader;
 	BezierPatch *waterPatch;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
-    Particles *rain;
+    Particles *snow;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
-    bool isRaining = false;
+    bool isSnowing = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	GLuint textures[7];
@@ -77,7 +77,7 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 		patchTranslate = new MatrixTransform( trn );
-        rain = new Particles(50, 50, 50);
+        snow = new Particles(50, 50, 50);
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
@@ -97,7 +97,7 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
-		rain->textureID = Window::loadPPM("tex/rain.ppm", 1024, 1024, 6);
+		snow->textureID = Window::loadPPM("tex/snow.ppm", 1024, 1024, 6);
 
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
@@ -231,9 +231,9 @@ void Window::displayCallback()
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
-	if(Scene::isRaining) {
-        Scene::rain->render();
-        Scene::rain->update();
+	if(Scene::isSnowing) {
+        Scene::snow->render();
+        Scene::snow->update();
     } 
 
 	// Enable environment mapping on our patch
@@ -327,8 +327,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
     Scene::camera->reset();
 	  break;
   case '1':
-      Scene::isRaining = !Scene::isRaining;
-      cerr << (Scene::isRaining ? "It is" : "It is not") << " raining" << endl;
+      Scene::isSnowing = !Scene::isSnowing;
+      cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
       break;
   default:
     cerr << "Pressed: " << key << endl;
