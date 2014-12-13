@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 #include "Util.h"
 #include "Terrain.h"
 
@@ -12,16 +13,52 @@ Terrain::Terrain() {
 	srand(time(NULL)); // 198723
 
 	// Prepare the resolution of the heightmap
-	subdivisions = 6; // Be careful, exponential time going on here!
+	subdivisions = 8; // Be careful, exponential time going on here!
 	tesselX = tesselZ = pow(2, subdivisions) + 1; // This will be important later
 
-	// Do all the computation
-	generateHeightmap();
-	generateVerts(); // Generate vertices for the terrain
+	// And then, in an instant, a new world was born
+	generate();
 };
 
 Terrain::~Terrain() {
 	// Nothing to destruct
+}
+
+/**
+ * Calls all the subroutines needed to generate new terrain
+ */
+void Terrain::generate() {
+	generateHeightmap();
+	generateVerts(); // Generate vertices for the terrain
+	generateColorsFromHeightmap(Vector3(0.25, 0.75, 0.0), Vector3(.95, .95, .95));
+}
+
+/**
+ * Generates the vertices of the terrain, filling in the y coordinate
+ * with the value in the heightmap. Call this ***after*** generateHeightmap()
+ */
+void Terrain::generateVerts() {
+	// Definitions
+	double minX, minZ;
+	double maxX, maxZ;
+	minX = minZ = -1.0;
+	maxX = maxZ = 1.0;
+
+	// If we're calling this function again
+	vertices.clear();
+
+	// Fill the vertices array
+	for (int x = 0; x < tesselX; ++x) {
+		for (int z = 0; z < tesselZ; ++z) {
+			double tx = (double)x / (double)tesselX;
+			double tz = (double)z / (double)tesselZ;
+			vertices.push_back(Vector3(
+				lerp(tx, minX, maxX),
+				getHeightmap(x, z),
+				lerp(tz, minZ, maxZ))
+				);
+		}
+	}
 }
 
 /**
@@ -30,25 +67,76 @@ Terrain::~Terrain() {
  *     heightmap[ Y * tesselX + X ]
  */
 void Terrain::generateHeightmap() {
-	//heightmap.resize( tesselX * tesselZ );
+
+	// Make sure we have enough memory
+	if (heightmap.size() < tesselX * tesselZ) {
+		heightmap.resize( tesselX * tesselZ );
+	}
+		
 	for ( int i = 0; i < tesselX; ++i ) {
 		for ( int j = 0; j < tesselZ; ++j ) {
-			//setHeightmap(i,j,0.0);
-            heightmap.push_back(0.0);
+			setHeightmap(i,j,0.0);
 		}
 	}
+
+	// Four corners should be set to something random though
+	setHeightmap(0, 0, drandRange(0.0, 0.5));
+	setHeightmap(0, tesselZ - 1, drandRange(-.125, 0.125));
+	setHeightmap(tesselX - 1, 0, drandRange(-.125, 0.125));
+	setHeightmap(tesselX - 1, tesselZ - 1, drandRange(0.0, 0.5));
 	
-	diamondSquare(0,0,tesselX - 1,tesselZ - 1,.125);
+	double roughness = .5;
+	double random = drand(); // default .0625
+	diamondSquare(0,0,tesselX - 1,tesselZ - 1, random, roughness);
 
 };
 
-// Getters and setters for the heightmap array
+// Generates vertex colors for each vertex based on the height of
+// the given vertex in the heightmap. Takes two Vector3s which are
+// the RGB values (respectively) of the low altitude & high altitude
+// vertices. (Essentially the endpoints of a lerp.)
+void Terrain::generateColorsFromHeightmap(Vector3 valley, Vector3 peak) {
+	// Definitions
+	double minX, minZ;
+	double maxX, maxZ;
+	minX = minZ = -1.0;
+	maxX = maxZ = 1.0;
+
+	// If we're calling this function again
+	colors.clear();
+
+	// Fill the colors array
+	for (int x = 0; x < tesselX; ++x) {
+		for (int z = 0; z < tesselZ; ++z) {
+			double tx = (double)x / (double)tesselX;
+			double tz = (double)z / (double)tesselZ;
+			//double t = abs(getHeightmap(x, z) / (maxH - minH) ); // We should normalize heightmaps
+			double t = Util::abs(getHeightmap(x, z));
+			if (getHeightmap(x, z) > 0) {
+				colors.push_back(lerp(t, valley, peak));
+			}
+			else {
+				colors.push_back(valley); // If it's too low or negative, just use valley color
+			}
+		}
+	}
+}
+
+// Getters and setters for the various vectors
 void Terrain::setHeightmap(int x, int y, double d) {
    heightmap[ y * tesselZ + x ] = d;
 };
 
 double Terrain::getHeightmap(int x,int y) {
 	return heightmap.at(y * tesselZ + x);
+};
+
+void Terrain::setColor(int x, int y, Vector3 d) {
+	colors[y * tesselZ + x] = d;
+};
+
+Vector3 Terrain::getColor(int x, int y) {
+	return colors.at(y * tesselZ + x);
 };
 
 // Midpoint Displacement algorithm
@@ -82,12 +170,14 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
  * @param  bottom    bottom y coordinate of the current square
  * @param  right     right x coordinate of the current square
  * @param  randRange positive double which clamps our random displacement
+ * @param  roughness constant between 0.0 and 1.0 that erodes our random range (roughest is 1, smoother toward 0)
  * @return           height value at the midpoint in the square
  */
-void Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange) {
+void Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange, double roughness) {
 	
-	int centerX = (top + bottom) / 2;
-	int centerY = (left + right) / 2;
+	// Stack overflow was happening because these values were swapped
+	int centerX = (left + right) / 2;
+	int centerY = (top + bottom) / 2;
 
 	// Check out of bounds conditions
 	if ( top < 0 || top > tesselZ || 
@@ -107,7 +197,8 @@ void Terrain::diamondSquare(int top, int left, int bottom, int right, double ran
 		+ getHeightmap(left, bottom)
 		+ getHeightmap(right, bottom)
 		+ getHeightmap(right, top)) / 4.0
-	    + drandRange( -randRange, randRange );
+	    //+ drandRange( -randRange, randRange );
+		- drandRange(-randRange, randRange);
 
 	setHeightmap(centerX, centerY, centerH);
 
@@ -115,47 +206,28 @@ void Terrain::diamondSquare(int top, int left, int bottom, int right, double ran
 	// the region into four quadrants. We fill in the heights for
 	// the missing corners of the smaller squares, then recurse
 	
-	setHeightmap(centerX, top,     (getHeightmap(left,  top)    + getHeightmap(right, top)   ) / 2 + ((drand() - 0.5) * centerH));
-	setHeightmap(centerX, bottom,  (getHeightmap(left,  bottom) + getHeightmap(right, bottom)) / 2 + ((drand() - 0.5) * centerH));
-	setHeightmap(left,    centerY, (getHeightmap(left,  top)    + getHeightmap(left,  bottom)) / 2 + ((drand() - 0.5) * centerH));
-	setHeightmap(right,   centerY, (getHeightmap(right, top)    + getHeightmap(right, bottom)) / 2 + ((drand() - 0.5) * centerH));
+	setHeightmap(centerX, top,    (getHeightmap(left, top) + getHeightmap(right, top)) / 2 + (drandRange(-randRange, randRange) /* * centerH */));
+	setHeightmap(centerX, bottom, (getHeightmap(left, bottom) + getHeightmap(right, bottom)) / 2 + (drandRange(-randRange, randRange) /* * centerH */));
+	setHeightmap(left, centerY,   (getHeightmap(left, top) + getHeightmap(left, bottom)) / 2 + (drandRange(-randRange, randRange) /* * centerH */));
+	setHeightmap(right, centerY,  (getHeightmap(right, top) + getHeightmap(right, bottom)) / 2 + (drandRange(-randRange, randRange) /* * centerH */));
 
-	// Loop condition
+	// If the next squares will have side lengths smaller than 2, we've covered all of the vertices
 	if ((right - left) > 2 && (bottom - top) > 2) {
-		diamondSquare( top, left, centerY, centerX, randRange );
-		diamondSquare( top, centerX, centerY, right, randRange );
-		diamondSquare( centerY, left, bottom, centerX, randRange );
-		diamondSquare( centerY, centerX, bottom, right, randRange );
+		// Lower the randRange
+		randRange *= roughness;
+		diamondSquare(top, left, centerY, centerX, randRange, roughness );
+		diamondSquare(top, centerX, centerY, right, randRange, roughness);
+		diamondSquare(centerY, left, bottom, centerX, randRange, roughness);
+		diamondSquare(centerY, centerX, bottom, right, randRange, roughness);
 	}
 
-}
-
-void Terrain::generateVerts() {
-	// Definitions
-	double minX, minZ;
-	double maxX, maxZ;
-	minX = minZ = -.5;
-	maxX = maxZ = .5;
-
-	// Fill the vertices array
-	for ( int x = 0; x < tesselX; ++x ) {
-		for ( int z = 0; z < tesselZ; ++z ) {
-			double tx = (double)x / (double)tesselX;
-	 		double tz = (double)z / (double)tesselZ;
-			vertices.push_back( Vector3( 
-				lerp(tx, minX, maxX), 
-				getHeightmap(x, z), 
-				lerp(tz, minZ, maxZ) ) 
-			);
-		}
-	}
 }
 
 void Terrain::render() {
 
 	// Draw the terrain
 	glBegin(GL_QUADS);
-	Vector3 p0, p1, p2, p3, p4, p5;
+	Vector3 p0, p1, p2, p3, c0, c1, c2, c3;
 	for ( int i = 0; i < tesselX - 1; ++i ) {
 		for ( int j = 0; j < tesselZ - 1; ++j ) {
 			
@@ -163,10 +235,21 @@ void Terrain::render() {
 			p1 = vertices.at( j * tesselX + i + 1 );
 			p2 = vertices.at( (j+1) * tesselX + i );
 			p3 = vertices.at( (j+1) * tesselX + (i+1) );
+			c0 = colors.at(j * tesselX + i);
+			c1 = colors.at(j * tesselX + i + 1);
+			c2 = colors.at((j + 1) * tesselX + i);
+			c3 = colors.at((j + 1) * tesselX + (i + 1));
 
+			glColor3f(c0.getX(), c0.getY(), c0.getZ());
 			glVertex3f(p0.getX(), p0.getY(), p0.getZ());
+
+			glColor3f(c1.getX(), c1.getY(), c1.getZ());
 			glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+
+			glColor3f(c3.getX(), c3.getY(), c3.getZ());
 			glVertex3f(p3.getX(), p3.getY(), p3.getZ());
+
+			glColor3f(c2.getX(), c2.getY(), c2.getZ());
 			glVertex3f(p2.getX(), p2.getY(), p2.getZ());
 
 		}
