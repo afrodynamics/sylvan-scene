@@ -30,26 +30,25 @@ Terrain::~Terrain() {
  *     heightmap[ Y * tesselX + X ]
  */
 void Terrain::generateHeightmap() {
-	heightmap.resize( tesselX * tesselZ );
-	for ( int i = 0; i < tesselX - 1; ++i ) {
-		for ( int j = 0; j < tesselZ - 1; ++j ) {
-			setHeightmap(i,j,0.0);
+	//heightmap.resize( tesselX * tesselZ );
+	for ( int i = 0; i < tesselX; ++i ) {
+		for ( int j = 0; j < tesselZ; ++j ) {
+			//setHeightmap(i,j,0.0);
+            heightmap.push_back(0.0);
 		}
 	}
 	
-	diamondSquare(0,0,tesselX,tesselZ,.125);
+	diamondSquare(0,0,tesselX - 1,tesselZ - 1,.125);
 
 };
 
 // Getters and setters for the heightmap array
 void Terrain::setHeightmap(int x, int y, double d) {
-   heightmap[ y * tesselX + x ] = d;
+   heightmap[ y * tesselZ + x ] = d;
 };
 
 double Terrain::getHeightmap(int x,int y) {
-	int index = y * tesselX + x;
-	index %= heightmap.size(); // idgaf anymore
-	return heightmap[ y * tesselX + x ];
+	return heightmap.at(y * tesselZ + x);
 };
 
 // Midpoint Displacement algorithm
@@ -160,10 +159,10 @@ void Terrain::render() {
 	for ( int i = 0; i < tesselX - 1; ++i ) {
 		for ( int j = 0; j < tesselZ - 1; ++j ) {
 			
-			p0 = vertices[ j * tesselX + i ];
-			p1 = vertices[ j * tesselX + i + 1 ];
-			p2 = vertices[ (j+1) * tesselX + i ];
-			p3 = vertices[ (j+1) * tesselX + (i+1) ];
+			p0 = vertices.at( j * tesselX + i );
+			p1 = vertices.at( j * tesselX + i + 1 );
+			p2 = vertices.at( (j+1) * tesselX + i );
+			p3 = vertices.at( (j+1) * tesselX + (i+1) );
 
 			glVertex3f(p0.getX(), p0.getY(), p0.getZ());
 			glVertex3f(p1.getX(), p1.getY(), p1.getZ());

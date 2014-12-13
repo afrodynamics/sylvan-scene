@@ -197,12 +197,6 @@ void Window::reshapeCallback(int w, int h)
   Window::width = w;
   Window::height = h;
 
-  // Do some important calculations
-
-  double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
-  double aspectRatio = ((double)(width))/(double)height;
-  double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
-
 };
 
 //----------------------------------------------------------------------------
