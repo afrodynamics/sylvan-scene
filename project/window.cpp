@@ -7,6 +7,8 @@
 #include <GLUT/glut.h>
 #endif
 
+#include <string>
+#include <sstream>
 #include <math.h>
 #include "main.h"
 #include "Window.h"
@@ -22,6 +24,7 @@ int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
+int Window::currentFPS = 60; // we hope
 
 namespace Scene
 {
@@ -171,8 +174,10 @@ void Window::idleCallback()
 	if (time - timebase > 1000) {
 		// Always calculate delta time
 		deltaTime = (time - timebase) - 1000;
-		if ( Scene::showFps ) 
-			cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
+		// if ( Scene::showFps ) {
+			//cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
+			Window::currentFPS = frame * 1000 / (time - timebase);
+		// }
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
@@ -205,6 +210,7 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
+  double const aspect = (double)Window::width/(double)Window::height;
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
@@ -236,6 +242,41 @@ void Window::displayCallback()
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
+  }
+
+  // Show FPS on screen if the flag is set
+  if ( Scene::showFps ) {
+
+  	// Build the string
+	stringstream fpsCounter;
+	double scale = 1.0;
+	fpsCounter << "FPS: " << Window::currentFPS << endl;
+	string built = fpsCounter.str();
+
+	// Clear the zbuffer, set matrix mode to projection
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0.0, Window::width, 0.0, Window::height );
+
+	// Push an identity matrix onto the stack
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	// OpenGL's bottom left corner is (0,0) in screen coordinates
+	glRasterPos2i( 0, Window::height - 24 );
+	for( int i = 0; i < built.size(); i++ ) {
+	  glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, built.at(i) );
+	}
+
+	// Pop the extra matrices we created off of their respective stacks
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix(); // pop GL_MODELVIEW
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
   }
 
   glFlush();  
