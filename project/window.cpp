@@ -14,6 +14,7 @@
 #include "SkyBox.h"
 #include "Terrain.h"
 #include "BezierPatch.h"
+#include "Particles.h"
 
 using namespace std;
 
@@ -36,13 +37,15 @@ namespace Scene
 	BezierPatch *waterPatch;
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
+    Particles *snow;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
 	bool fullscreen = false;
+    bool isSnowing = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
-	GLuint textures[6];
+	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
 	// Create a new robot at the given position in world coordinates
@@ -64,17 +67,12 @@ namespace Scene
 			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
-		world = new MatrixTransform();
-
-		Vector4 p0, p1, p2, p3;
-		p0 = Vector4(-5,0,0,1);
-		p1 = Vector4(-2.5,-7,0,1);
-		p2 = Vector4(2.5,7,0,1);
-		p3 = Vector4(5,0,0,1);
+		world = new MatrixTransform(); // Top level of the scene graph
 		waterPatch = new BezierPatch();
 		terrain = new Terrain(); // Procedural generator FTW
-		Matrix4 scl = Matrix4::scale(100,100,100); //Matrix4::scale(60,1.5,60); // Good hacky numbers if all else fails
+		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
+        snow = new Particles(250, 250, 250);
 		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
@@ -89,7 +87,7 @@ namespace Scene
 		
 		sky = new SkyBox(); // Still don't have a good texture class here
 
-		glGenTextures(6, textures); // This needs to be made OOP
+		glGenTextures(7, textures); // This needs to be made OOP
 
 		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
 		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
@@ -98,10 +96,12 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
+		snow->textureID = Window::loadPPM("tex/snow.ppm", 1024, 1024, 6);
+
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
 		
-		shader = new Shader("shaders/test.vert", "shaders/test.frag", true);
+		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
 		shader->printLog("Shader Compiler: ");
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
@@ -219,12 +219,12 @@ void Window::displayCallback()
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
-  // Vector3 camPos3 = Scene::camera->getPos();
-  // Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
-  // ^ this needed to be passed in as a uniform for the reflection shader, and is no longer necessary
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
+	if (Scene::isSnowing) {
+        Scene::snow->render();
+    } 
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -236,7 +236,6 @@ void Window::displayCallback()
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
-
   }
 
   glFlush();  
@@ -327,6 +326,10 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().identity();
     Scene::camera->reset();
 	  break;
+  case '1':
+      Scene::isSnowing = !Scene::isSnowing;
+      cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
+      break;
   default:
     cerr << "Pressed: " << key << endl;
     break;

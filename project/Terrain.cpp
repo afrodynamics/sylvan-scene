@@ -33,8 +33,8 @@ void Terrain::generate() {
 	generateVerts(); // Generate vertices for the terrain
 	generateNormals();
 	//generateColorsFromHeightmap(Vector3(0.25, 0.9, 0.0), Vector3(.95, .95, .95)); // trying to look like earth
-	//generateColorsFromHeightmap(Vector3(0.0, 1.0, 1.0), Vector3(1.0, 0.0, 0.0)); // blue - red
-	generateColorsFromHeightmap(Vector3(0.0, 0.0, 0.0), Vector3(1.0, 1.0, 1.0)); // grayscale
+	generateColorsFromHeightmap(Vector3(0.85, 0.85, 0.85), Vector3(1.0, 1.0, 1.0)); // white - gray
+	//generateColorsFromHeightmap(Vector3(0.0, 0.0, 0.0), Vector3(1.0, 1.0, 1.0)); // grayscale
 }
 
 /**
@@ -90,7 +90,7 @@ void Terrain::generateHeightmap() {
 	// setHeightmap(tesselX - 1, tesselZ - 1, drandRange(0.0, 0.5));
 	
 	double roughness = drandRange(.5,.55);
-	double random = drand(); // default .0625
+	double random = drandRange(.25,1.0); // default .0625
 	//diamondSquare(0,0,tesselX - 1,tesselZ - 1, random, roughness);
 	diamondSquare(0,0,tesselX - 1, tesselZ - 1, random, tesselX - 1);
 
@@ -118,13 +118,13 @@ void Terrain::generateColorsFromHeightmap(Vector3 valley, Vector3 peak) {
 			double tx = (double)x / (double)tesselX;
 			double tz = (double)z / (double)tesselZ;
 			double t = Util::abs(getHeightmap(x, z) / (maxH - minH) ); // We should normalize heightmaps
-			// if (getHeightmap(x, z) > 0) {
-			// 	colors.push_back(lerp(t, valley, peak));
-			// }
-			// else {
-			// 	colors.push_back(valley); // If it's too low or negative, just use valley color
-			// }
-			colors.push_back( normals[ z * tesselX + x ] );
+			if (getHeightmap(x, z) > 0) {
+				colors.push_back(lerp(t, valley, peak));
+			}
+			else {
+				colors.push_back(valley); // If it's too low or negative, just use valley color
+			}
+			//colors.push_back( normals[ z * tesselX + x ] );
 		}
 	}
 }
