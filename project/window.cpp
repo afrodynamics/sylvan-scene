@@ -39,6 +39,7 @@ namespace Scene
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
+	bool fullscreen = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	GLuint textures[6];
@@ -72,9 +73,9 @@ namespace Scene
 		p3 = Vector4(5,0,0,1);
 		waterPatch = new BezierPatch();
 		terrain = new Terrain(); // Procedural generator FTW
-		Matrix4 scl = Matrix4::scale(50,50,50); //Matrix4::scale(60,1.5,60); // Good hacky numbers if all else fails
+		Matrix4 scl = Matrix4::scale(100,100,100); //Matrix4::scale(60,1.5,60); // Good hacky numbers if all else fails
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
-		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
+		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
@@ -270,7 +271,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'e':
 	  Scene::shaderOn = !Scene::shaderOn;
-	  cerr << "Environment mapping is " << (Scene::shaderOn == true ? "on" : "off") << endl;
+	  cerr << "Shader is " << (Scene::shaderOn == true ? "on" : "off") << " for the terrain." << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
@@ -438,7 +439,14 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
   case GLUT_KEY_F1:
-	  cout << "Pressed F1" << endl;
+	  Scene::fullscreen = !Scene::fullscreen;
+	  if ( Scene::fullscreen ) {
+	  	  glutFullScreen();
+	  }
+	  else {
+	  	glutReshapeWindow(640,480);
+	  	// glutRepositionWindow(0,0)
+	  }
 	  break;
   default:
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;

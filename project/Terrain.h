@@ -4,16 +4,17 @@
 
 class Terrain : public Geode {
 private:
-	std::vector<Vector3> vertices;
+	std::vector<Vector3> vertices, normals;
 	std::vector<Vector3> colors;
 	std::vector<double> heightmap;
 	int tesselX, tesselZ;
 	int subdivisions;
-	//double maxH, minH; // Maximum and Minimum y values in heightmap
+	double maxH, minH; // Maximum and Minimum y values in heightmap
 
 	/** Internal Methods **/
 	void generateHeightmap(); // Generates the heightmap
 	void generateVerts(); // Generates vertices from heightmap
+	void generateNormals(); // Generates normals for each vertex
 	// Generates colors for vertices based on values from heightmap
 	void generateColorsFromHeightmap(Vector3 valley, Vector3 peak);
 
