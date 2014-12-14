@@ -10,6 +10,17 @@ public:
 	BezierCurve(Vector4, Vector4, Vector4, Vector4);
 	~BezierCurve();
 	void updateControlPoints(Vector4*,Vector4*,Vector4*,Vector4*);
-	void draw(double); // Draws Bez. curve as linestrip with given # of samples
+	void draw(int); // Draws Bez. curve as linestrip with given # of samples
+
+	// Returns true if this BezierCurve is C1 continuous with the beginning
+	// of another BezierCurve (checks continuity at the end of this curve)
+	bool c1Continuous(BezierCurve& next); 
+
+	// Ensures that this BezierCurve is C1 continuous with the given BezierCurve
+	// "next". The algorithm will try to preserve both curves, but expect both
+	// to be modified!
+	void makeContinuous(BezierCurve& next);
+
+	// Calculates the point along the curve at t between [0.0, 1.0]
 	Vector4 calcPoint(double t);
 };

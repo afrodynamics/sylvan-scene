@@ -209,8 +209,8 @@ void BezierPatch::render() {
 	else {
 		// Draw "wireframe" of patch
 		updateCurves();
-		uCurve0.draw(samples); uCurve1.draw(samples); uCurve2.draw(samples); uCurve3.draw(samples);
-		vCurve0.draw(samples); vCurve1.draw(samples); vCurve2.draw(samples); vCurve3.draw(samples);
+		uCurve0.draw((int)samples); uCurve1.draw((int)samples); uCurve2.draw((int)samples); uCurve3.draw((int)samples);
+		vCurve0.draw((int)samples); vCurve1.draw((int)samples); vCurve2.draw((int)samples); vCurve3.draw((int)samples);
 	}
 
 	animate();
