@@ -85,9 +85,9 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
-		ptLight = new PointLight(0, 2, 0);
+		ptLight = new PointLight(0, 20, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
-		ptLight->setSpecular(0, 0, 1, 1);
+		ptLight->setSpecular(.5, .5, .5, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
 
@@ -135,7 +135,6 @@ namespace Scene
         eagle->cppParseFile("objectmodels/eagle.obj");
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
-		terrain->enableMat(false);
 
 	};
 	// Deallocate all kinds of stuff
@@ -166,10 +165,14 @@ namespace Scene
 void Window::idleCallback()
 {
 
-	static int frame = 0, time, timebase = 0;
+	static long frame = 0, time, timebase = 0;
 
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
+
+	// Update the particle system
+	if (Scene::snow != nullptr)
+	  Scene::snow->update();
 
 	/* FPS Counter courtesy of Lighthouse3D */
 
@@ -181,10 +184,7 @@ void Window::idleCallback()
 	if (time - timebase > 1000) {
 		// Always calculate delta time
 		deltaTime = (time - timebase) - 1000;
-		// if ( Scene::showFps ) {
-			//cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
-			Window::currentFPS = frame * 1000 / (time - timebase);
-		// }
+		Window::currentFPS = frame * 1000 / (time - timebase);
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
@@ -195,8 +195,7 @@ void Window::idleCallback()
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-  width = w;
-  height = h;
+
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -217,20 +216,22 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
-  double const aspect = (double)Window::width/(double)Window::height;
+  // No reason to allocate a new mat4 every call, just update it if necessary
+  static Matrix4 invCam = Matrix4();
+
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
   
-  Matrix4 ident = Matrix4();
-  Matrix4 invCam = Matrix4();
   invCam.identity();
-  ident.identity();
-  if ( Scene::camera != nullptr) 
+  if ( Scene::camera != nullptr && Scene::world != nullptr ) {
   	invCam = Scene::camera->getGLMatrix();
+  }
+  else
+  	return; // With no camera matrix, there's no point trying to draw
 
-  // Used by the skybox
+  // Scene graph is now
   invCam = invCam * Scene::world->getMatrix();
 
 
@@ -267,7 +268,7 @@ void Window::displayCallback()
 
   	// Build the string
 	stringstream fpsCounter;
-	double scale = 1.0;
+    double const aspect = (double)Window::width/(double)Window::height;
 	fpsCounter << "FPS: " << Window::currentFPS << endl;
 	string built = fpsCounter.str();
 
@@ -317,9 +318,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 
   switch (key) {
   case 27:
-      // Close gracefully and dealloc stuff. Should help with the malloc errors
-      //Scene::dealloc(); // <--- this causes closing segfaults, and it's irritating,
-      //                          so for now we're accepting memory leaks. :(
+      // Close gracefully and dealloc stuff.
+      Scene::dealloc(); 
       exit(0); 
       break;
   case 'b':
@@ -485,9 +485,6 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// cerr << filename << " has tex ID: " << texture[0] << endl;
-	// return texture[0];
-	//cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
 	return Scene::textures[texID];
 }
 
