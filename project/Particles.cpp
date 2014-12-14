@@ -26,17 +26,21 @@ void Particles::reincarnation(int index) {
 void Particles::render() {
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glPointSize(2.5);
+
     glTexEnvf(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
     glEnable(GL_POINT_SPRITE);
+
+    glPointSize(2.5);
+
     glBegin(GL_POINTS);
     for(int i = 0; i < MAX_PARTICLES;i++) {
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(1.0, 1.0, 1.0);
         glVertex3f(particles[i].xPos, particles[i].yPos, particles[i].zPos);
     }
     glEnd();
+
+   // glDisable(GL_TEXTURE_2D);
     glDisable(GL_POINT_SPRITE);
-    glDisable(GL_TEXTURE_2D);
     update();
 }
 

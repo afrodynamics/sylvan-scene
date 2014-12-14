@@ -1,5 +1,6 @@
 #define MAX_PARTICLES 1000
 #include "Vector3.h"
+#include "shader.h"
 #include <vector>
 #include <stdlib.h>
 #ifndef __APPLE__
@@ -20,6 +21,7 @@ private:
     int world_height;
     int world_width;
     int world_depth;
+    Shader *shader;
     std::vector<Particle> particles;
 
 public:
