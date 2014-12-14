@@ -30,7 +30,7 @@ namespace Scene
 {
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr; // Top level of the scene graph
-	ObjModel *bunny, *dragon, *bear = nullptr;
+	ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
 	PointLight *ptLight;
 	SkyBox *sky;
 	vector<Node*> nodeList;
@@ -76,6 +76,7 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
+        eagle = new ObjModel();
 		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
@@ -127,6 +128,7 @@ namespace Scene
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
+        eagle->cppParseFile("objectmodels/eagle.obj");
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
 		terrain->enableMat(false);
@@ -139,7 +141,7 @@ namespace Scene
 			*iter = nullptr;
 		}
 		delete world; world = nullptr;
-		delete bunny, dragon, bear;
+		delete bunny, dragon, bear, eagle;
 		delete ptLight;
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
@@ -147,7 +149,7 @@ namespace Scene
 		delete terrain; terrain = nullptr;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
-		bunny = dragon = bear = nullptr;
+		bunny = dragon = bear = eagle = nullptr;
 		ptLight = nullptr;
 		cerr << "Dealloc called!" << endl;
 	};
@@ -225,12 +227,16 @@ void Window::displayCallback()
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
+    Matrix4 temp = Matrix4();
+    temp = invCam * Matrix4::translate(0, 5.5, 0);
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 	if (Scene::isSnowing) {
         Scene::snow->render();
     } 
+
+    Scene::eagle->draw(temp);
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -239,7 +245,7 @@ void Window::displayCallback()
 	else if ( Scene::terrain != nullptr ) {
 		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-
+      
 	// Draw the scene graph
 	Scene::world->draw( invCam );
   }

@@ -45,6 +45,7 @@ void ObjModel::printInfo(string comment)
 {
 	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
+		<< "\tTextures: " << uvwCoords.size() << endl
 		<< "\tFaces: " << faces << endl;
 }
 
@@ -99,6 +100,12 @@ bool ObjModel::cParseFile(string fname) {
 				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
 			}
 		}
+        else if (strncmp(buf, "vt", 2) == 0) {
+            symbolsRead = fscanf(fp, "%lf %lf %lf", &vx, &vy, &vz);
+            if (symbolsRead == 3) {
+                uvwCoords.push_back(Vector4(vx, vy, vz, 1.0));
+            }
+        }
 		else if (strncmp(buf, "f", 2) == 0) {
 			fscanf(fp, "%d %[/] %d %d %[/] %d %d %[/] %d",
 				&t1, &s1, &n1, &t2, &s2, &n2, &t3, &s3, &n3);
@@ -161,7 +168,7 @@ bool ObjModel::cppParseFile(string fname) {
 	xMax = yMax = zMax = -DBL_MAX;
 
 	while (ifs.good()) {
-		
+        
 		// Grabs a line from ifs and drops it
 		// into string line
 		getline(ifs, line);
@@ -179,7 +186,7 @@ bool ObjModel::cppParseFile(string fname) {
 		// So the TAs know stuff is actually going on and it isn't hanging
 		if (lineNumber % 4096 == 0) {
 			float progress = (float)filePos / (float)fileSize;
-			printf("  %.2f%% \t%.16s                        \r", 
+			printf("  %.2f%% \t%.30s                        \r", 
 				   progress * 100, fname.c_str() );
 			fflush(stdout);
 		}
@@ -305,6 +312,7 @@ bool ObjModel::cppParseFile(string fname) {
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
 				vtz = std::stod(tokens.at(3));
+                uvwCoords.push_back(Vector4(vtx, vty, vtz, 0));
 				//normalList.push_back(Vector4(vtx, vty, vtz, 0));
 			}
 			else if (symbolsRead == 3) {
@@ -340,11 +348,12 @@ bool ObjModel::cppParseFile(string fname) {
 		}
 	}
 
+    /**
 	if (ifs.fail()) {
 		std::cerr << "Parsing failed: " << strerror(errno) << endl;
 		ifs.close();
 		return false;
-	}
+	} */
 
 	ifs.close();
 
@@ -413,12 +422,14 @@ void ObjModel::draw(Matrix4& C) {
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
 
+    /**
+    
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
-	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL); */
 
 	if (!fileLoaded * !printWarn) {
 		// Print a warning letting the user know what's up, use stringstreams so it's thread safe
@@ -431,9 +442,10 @@ void ObjModel::draw(Matrix4& C) {
 
 	// Draw *this* object, then the children
 
-	Vector4 vtx, nrm, clr;
+	Vector4 vtx, nrm, clr, tex;
 	unsigned int normSize = normalList.size();
 	unsigned int vertSize = vertexList.size();
+    unsigned int uvwSize = uvwCoords.size();
 	unsigned int colorSize = vertexList.size();
 
 	Matrix4 tmp = lastC;
@@ -441,6 +453,7 @@ void ObjModel::draw(Matrix4& C) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(tmp.getPointer());
+
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
@@ -449,10 +462,12 @@ void ObjModel::draw(Matrix4& C) {
 
 		// Grab the normal and vertex indices in their respective arrays
 		unsigned int vtxIndex = triangleList[i++] - 1;
-		unsigned int nrmIndex = triangleList[i++] - 1;
+		//unsigned int nrmIndex = triangleList[i++] - 1;
+        unsigned int uvwIndex = triangleList[i++] - 1;
 
 		if (vtxIndex >= vertSize) break;
-		if (nrmIndex >= normSize) break;
+        if (uvwIndex >= uvwSize) break;
+		//if (nrmIndex >= normSize) break;
 		if (vtxIndex >= colorSize) {
 			glColor3f(1.0, 1.0, 1.0); // Default to color white
 			lookupColor = false;
@@ -464,23 +479,22 @@ void ObjModel::draw(Matrix4& C) {
 
 		// Grab the information we need from our std::vectors (in Vector4 format)
 		/* Vertex 1 */
-		
-		if (faceType == VERTEX_SS_NORMAL) {
+		//if (faceType == VERTEX_SS_NORMAL) {
 			vtx = vertexList[vtxIndex];
-			nrm = normalList[nrmIndex];
+			//nrm = normalList[nrmIndex];
+            tex = uvwCoords[uvwIndex];
 			clr;
-		}
-		else {
+		//}
+		/**else {
 			break; // Unsupported face type right now
-		}
-				
-		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
-		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());	
-
+		} */
+		
+		//glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+        glTexCoord3f(tex.getX(), tex.getY(), tex.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
 	}
 
 	glEnd();
-
 	// Call draw on the children, if we have any
 	Group::draw(lastC);
 

@@ -16,7 +16,7 @@ Particles::Particles(int width, int height, int depth) {
     }
 }
 
-/** rain drop is recreated once it hits the ground */
+/** snow particle is recreated once it hits the ground */
 void Particles::reincarnation(int index) {
     particles[index].xPos = (rand() % world_width / 2) * ( Util::drand() > .5 ? -1 : 1 );// - world_width / 4;
     particles[index].yPos = (rand() % world_height / 2) * ( Util::drand() ); // - world_height / 4;
@@ -39,7 +39,6 @@ void Particles::render() {
     }
     glEnd();
 
-   // glDisable(GL_TEXTURE_2D);
     glDisable(GL_POINT_SPRITE);
     update();
 }
