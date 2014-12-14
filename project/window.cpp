@@ -16,6 +16,7 @@
 #include "SkyBox.h"
 #include "Terrain.h"
 #include "BezierPatch.h"
+#include "BezierCurve.h"
 #include "Particles.h"
 
 using namespace std;
@@ -38,6 +39,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
+	BezierCurve *eagleTrajectory;
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
@@ -48,6 +50,7 @@ namespace Scene
     bool isSnowing = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
+	float t = 0.0;
 	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
@@ -76,6 +79,7 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
+        eagleTrajectory = new BezierCurve(Vector4(0, 5.5, -20, 1), Vector4 (-10, 1, 0, 1), Vector4(9, 10, -15, 1), Vector4(-9, 5, -5, 1));
         eagle = new ObjModel();
 		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
@@ -142,6 +146,7 @@ namespace Scene
 		}
 		delete world; world = nullptr;
 		delete bunny, dragon, bear, eagle;
+		delete eagleTrajectory;
 		delete ptLight;
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
@@ -227,8 +232,7 @@ void Window::displayCallback()
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
-    Matrix4 temp = Matrix4();
-    temp = invCam * Matrix4::translate(0, 5.5, 0);
+
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -236,7 +240,15 @@ void Window::displayCallback()
         Scene::snow->render();
     } 
 
-    Scene::eagle->draw(temp);
+    Vector4 trajectory;
+    if(Scene::t <= 1.0) {
+    	trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
+    	Scene::t += 0.01;
+	}
+
+    Matrix4 eagleMatrix = Matrix4();
+    eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ());
+    Scene::eagle->draw(eagleMatrix);
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -371,7 +383,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-    Scene::camera->reset();
+      Scene::camera->reset();
+      Scene::t = 0.0;
 	  break;
   case '1':
       Scene::isSnowing = !Scene::isSnowing;
