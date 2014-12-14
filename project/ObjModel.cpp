@@ -150,8 +150,8 @@ bool ObjModel::cppParseFile(string fname) {
 	symbolsRead = 0;
 	stringstream s;
 
-	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;;
-	cout << s.str();;
+	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;
+	cout << s.str();
 
 	ifs.seekg(0); // Seek to start of file
 

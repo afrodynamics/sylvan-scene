@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>5FBB8139-E526-4653-8068-20E4EB146E44</string>
+	<key>IDESourceControlProjectName</key>
+	<string>XcodeFinalProject</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>14680C892A243A3764008FCE3B494C1DBA79626E</key>
+		<string>https://github.com/afrodynamics/sylvan-scene.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>XcodeFinalProject/XcodeFinalProject.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>14680C892A243A3764008FCE3B494C1DBA79626E</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/afrodynamics/sylvan-scene.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>14680C892A243A3764008FCE3B494C1DBA79626E</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>14680C892A243A3764008FCE3B494C1DBA79626E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>sylvan-scene</string>
+		</dict>
+	</array>
+</dict>
+</plist>

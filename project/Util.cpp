@@ -3,10 +3,13 @@
  */
 #include "Util.h"
 
+/** Math **/
+
 // Linear interpolation
 double Util::lerp(double t, double p0, double p1) {
 	return ((1 - t) * p0 + t * p1);
 };
+// Component-wise linear interpolation
 Vector3 Util::lerp(double t, Vector3 p0, Vector3 p1) {
 	return ( p0 * (1 - t) + p1 * t);
 };
@@ -36,6 +39,26 @@ double Util::abs(double d) {
     return -d;
   }
 }
+
+/** Data Structures **/
+
+// Utilities for getting values from a row-major std::vector
+// template <typename T>
+// T Util::getItemFromRowMajorVector(std::vector<T>& array, int x, int y, int rows, int cols) {
+// 	return array.at(y * rows + x);
+// };
+
+// template <typename T>
+// void Util::setItemFromRowMajorVector(std::vector<T>& array, int x, int y, int rows, int cols, T item) {
+// 	if ( y * rows + x < array.size()) {
+// 		array.size[ y * rows + x ] = item;
+// 	}
+// };
+
+/** Random **/
+
+// Set the RNG seed. If parameter is zero, seed with time(NULL)
+void Util::seed(int s) { ( s ? srand(s) : srand(time(NULL)) ); }
 
 // Get a random double between 0.0 and 1.0
 double Util::drand() { return (double)rand()/(double)RAND_MAX; }

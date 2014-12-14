@@ -86,7 +86,7 @@ void PointLight::setSpecular(float r, float g, float b, float a) {
 
 void PointLight::render() {
 
-	GLenum lightId;
+	GLenum lightId = GL_LIGHT0; // By default
 	switch (lightIndex) {
 	case 0: lightId = GL_LIGHT0; break;
 	case 1: lightId = GL_LIGHT1; break;
