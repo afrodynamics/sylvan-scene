@@ -7,11 +7,14 @@
 #include <GLUT/glut.h>
 #endif
 
+#include <string>
+#include <sstream>
 #include <math.h>
 #include "main.h"
 #include "Window.h"
 #include "SpotLight.h"
 #include "SkyBox.h"
+#include "Terrain.h"
 #include "BezierPatch.h"
 #include "Particles.h"
 
@@ -21,6 +24,7 @@ int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
+int Window::currentFPS = 60; // we hope
 
 namespace Scene
 {
@@ -33,13 +37,14 @@ namespace Scene
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
-	Shader *bumpShader;
 	BezierPatch *waterPatch;
+	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
+	bool fullscreen = false;
     bool isSnowing = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
@@ -65,20 +70,16 @@ namespace Scene
 			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
 		);
 
-		world = new MatrixTransform();
-
-		Vector4 p0, p1, p2, p3;
-		p0 = Vector4(-5,0,0,1);
-		p1 = Vector4(-2.5,-7,0,1);
-		p2 = Vector4(2.5,7,0,1);
-		p3 = Vector4(5,0,0,1);
+		world = new MatrixTransform(); // Top level of the scene graph
 		waterPatch = new BezierPatch();
-		Matrix4 scl = Matrix4::scale(50,50,50);
-		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
+		terrain = new Terrain(); // Procedural generator FTW
+		Matrix4 scl = Matrix4::scale(125,125,125);
+		Matrix4 skyScale = Matrix4::scale(250,250,250);
+        snow = new Particles(250, 250, 250);
+		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
-		skyBoxScale = new MatrixTransform( scl );
+		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
-        snow = new Particles(50, 50, 50);
 		ptLight = new PointLight(0, 2, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(0, 0, 1, 1);
@@ -104,11 +105,9 @@ namespace Scene
 		// This did not belong inside of loadPPM
 		
 		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
-		shader->printLog(">>> reflection_map shader >>>");
-
-		bumpShader = new Shader("shaders/bump_mapping.vert", "shaders/bump_mapping.frag", true);
-		bumpShader->printLog(">>> bump_mapping shader >>>");
-
+<<<<<<< HEAD
+		shader->printLog("Shader Compiler: ");
+>>>>>>> master
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
 			switch (texID) {
@@ -119,7 +118,6 @@ namespace Scene
 				case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
 				case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
 			}
-
 			glUniform1i( texLoc, 0 ); // The zero here determines what kind of texture this is
 		}
 
@@ -128,11 +126,12 @@ namespace Scene
 		world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
 		patchTranslate->addChild( patchScale );
-		patchScale->addChild( waterPatch );
+		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
 		// Affix shaders to individual scene graph nodes
-		waterPatch->setShader( shader ); // This patch should have a shader
+		terrain->setShader( shader ); // This patch should have a shader
+		terrain->enableMat(false);
 
 	};
 	// Deallocate all kinds of stuff
@@ -148,10 +147,12 @@ namespace Scene
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
 		delete sky;
+		delete terrain; terrain = nullptr;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = nullptr;
 		ptLight = nullptr;
+		cerr << "Dealloc called!" << endl;
 	};
 };
 
@@ -176,8 +177,10 @@ void Window::idleCallback()
 	if (time - timebase > 1000) {
 		// Always calculate delta time
 		deltaTime = (time - timebase) - 1000;
-		if ( Scene::showFps ) 
-			cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
+		// if ( Scene::showFps ) {
+			//cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
+			Window::currentFPS = frame * 1000 / (time - timebase);
+		// }
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
@@ -188,7 +191,6 @@ void Window::idleCallback()
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-  cerr << "Window::reshapeCallback called" << endl;
   width = w;
   height = h;
   glViewport(0, 0, w, h);  // set new viewport size
@@ -204,12 +206,6 @@ void Window::reshapeCallback(int w, int h)
   Window::width = w;
   Window::height = h;
 
-  // Do some important calculations
-
-  double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
-  double aspectRatio = ((double)(width))/(double)height;
-  double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
-
 };
 
 //----------------------------------------------------------------------------
@@ -217,6 +213,7 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
+  double const aspect = (double)Window::width/(double)Window::height;
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
@@ -231,26 +228,58 @@ void Window::displayCallback()
 
   // Used by the skybox
   invCam = invCam * Scene::world->getMatrix();
-  // Vector3 camPos3 = Scene::camera->getPos();
-  // Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
-  // ^ this needed to be passed in as a uniform for the reflection shader, and is no longer necessary
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
-	if(Scene::isSnowing) {
+	if (Scene::isSnowing) {
         Scene::snow->render();
     } 
     
 	// Enable environment mapping on our patch
-	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	if (Scene::shaderOn && Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-	else if ( Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	else if ( Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
 
 	// Draw the scene graph
 	Scene::world->draw( invCam );
+  }
+
+  // Show FPS on screen if the flag is set
+  if ( Scene::showFps ) {
+
+  	// Build the string
+	stringstream fpsCounter;
+	double scale = 1.0;
+	fpsCounter << "FPS: " << Window::currentFPS << endl;
+	string built = fpsCounter.str();
+
+	// Clear the zbuffer, set matrix mode to projection
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0.0, Window::width, 0.0, Window::height );
+
+	// Push an identity matrix onto the stack
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	// OpenGL's bottom left corner is (0,0) in screen coordinates
+	glRasterPos2i( 0, Window::height - 24 );
+	for( int i = 0; i < built.size(); i++ ) {
+	  glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, built.at(i) );
+	}
+
+	// Pop the extra matrices we created off of their respective stacks
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix(); // pop GL_MODELVIEW
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
   }
 
   glFlush();  
@@ -258,56 +287,6 @@ void Window::displayCallback()
 
 };
 
-void Window::drawCube() {
-	//Scene::bumpShader->bind();
-	// Draw all six faces of the cube:
-  glBegin(GL_QUADS);
-    glColor3f(0.0, 1.0, 0.0);		// This makes the cube green; the parameters are for red, green and blue. 
-                                // To change the color of the other faces you will need to repeat this call before each face is drawn.
-    // Draw front face:
-    glNormal3f(0.0, 0.0, 1.0);   
-    glVertex3f(-5.0,  5.0,  5.0);
-    glVertex3f( 5.0,  5.0,  5.0);
-    glVertex3f( 5.0, -5.0,  5.0);
-    glVertex3f(-5.0, -5.0,  5.0);
-    
-    // Draw left side:
-    glNormal3f(-1.0, 0.0, 0.0);
-    glVertex3f(-5.0,  5.0,  5.0);
-    glVertex3f(-5.0,  5.0, -5.0);
-    glVertex3f(-5.0, -5.0, -5.0);
-    glVertex3f(-5.0, -5.0,  5.0);
-    
-    // Draw right side:
-    glNormal3f(1.0, 0.0, 0.0);
-    glVertex3f( 5.0,  5.0,  5.0);
-    glVertex3f( 5.0,  5.0, -5.0);
-    glVertex3f( 5.0, -5.0, -5.0);
-    glVertex3f( 5.0, -5.0,  5.0);
-  
-    // Draw back face:
-    glNormal3f(0.0, 0.0, -1.0);
-    glVertex3f(-5.0,  5.0, -5.0);
-    glVertex3f( 5.0,  5.0, -5.0);
-    glVertex3f( 5.0, -5.0, -5.0);
-    glVertex3f(-5.0, -5.0, -5.0);
-  
-    // Draw top side:
-    glNormal3f(0.0, 1.0, 0.0);
-    glVertex3f(-5.0,  5.0,  5.0);
-    glVertex3f( 5.0,  5.0,  5.0);
-    glVertex3f( 5.0,  5.0, -5.0);
-    glVertex3f(-5.0,  5.0, -5.0);
-  
-    // Draw bottom side:
-    glNormal3f(0.0, -1.0, 0.0);
-    glVertex3f(-5.0, -5.0, -5.0);
-    glVertex3f( 5.0, -5.0, -5.0);
-    glVertex3f( 5.0, -5.0,  5.0);
-    glVertex3f(-5.0, -5.0,  5.0);
-  glEnd();
-	//Scene::bumpShader->unbind();
-}
 //----------------------------------------------------------------------------
 // Callback method called by GLUT when keys are pressed
 //    char * key     - the key pressed
@@ -322,6 +301,12 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   transformation.identity(); // Make sure the Matrix isn't utter garbage
 
   switch (key) {
+  case 27:
+      // Close gracefully and dealloc stuff. Should help with the malloc errors
+      //Scene::dealloc(); // <--- this causes closing segfaults, and it's irritating,
+      //                          so for now we're accepting memory leaks. :(
+      exit(0); 
+      break;
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
 	  Scene::world->showBoundingBox(Scene::showBounds);
@@ -329,11 +314,16 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'e':
 	  Scene::shaderOn = !Scene::shaderOn;
-	  cerr << "Environment mapping is " << (Scene::shaderOn == true ? "on" : "off") << endl;
+	  cerr << "Shader is " << (Scene::shaderOn == true ? "on" : "off") << " for the terrain." << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
+	  break;
+  // Regenerate the terrain
+  case 't':
+	  Scene::terrain->generate();
+	  cout << "New terrain generated!" << endl;
 	  break;
 
   // Allow wasd movement control of camera
@@ -355,7 +345,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'z':
     Scene::camera->moveDown();
     break;
-    
   // Allow WASD rotation control of camera
   case 'W':
     Scene::camera->lookAt(1, 1);
@@ -389,7 +378,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
     cerr << "Pressed: " << key << endl;
     break;
   }
-
 };
 
 /** Load a ppm file from disk, then loads it into OpenlGL.
@@ -498,7 +486,14 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
   case GLUT_KEY_F1:
-	  cout << "Pressed F1" << endl;
+	  Scene::fullscreen = !Scene::fullscreen;
+	  if ( Scene::fullscreen ) {
+	  	  glutFullScreen();
+	  }
+	  else {
+	  	glutReshapeWindow(640,480);
+	  	// glutRepositionWindow(0,0)
+	  }
 	  break;
   default:
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;

@@ -50,9 +50,6 @@ void Geode::draw(Matrix4& C) {
 	if ( useShader && shader != nullptr ) {
 		shader->unbind();
 	}
-	else {
-		defaultMat.apply();
-	}
 
 }
 
