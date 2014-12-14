@@ -84,14 +84,15 @@ void Terrain::generateHeightmap() {
 	}
 
 	// Four corners should be set to something random though
-	setHeightmap(0, 0, drandRange(0.0, 0.5));
-	setHeightmap(0, tesselZ - 1, drandRange(-.125, 0.125));
-	setHeightmap(tesselX - 1, 0, drandRange(-.125, 0.125));
-	setHeightmap(tesselX - 1, tesselZ - 1, drandRange(0.0, 0.5));
+	// setHeightmap(0, 0, drandRange(0.0, 0.5));
+	// setHeightmap(0, tesselZ - 1, drandRange(-.125, 0.125));
+	// setHeightmap(tesselX - 1, 0, drandRange(-.125, 0.125));
+	// setHeightmap(tesselX - 1, tesselZ - 1, drandRange(0.0, 0.5));
 	
 	double roughness = drandRange(.5,.55);
 	double random = drand(); // default .0625
-	diamondSquare(0,0,tesselX - 1,tesselZ - 1, random, roughness);
+	//diamondSquare(0,0,tesselX - 1,tesselZ - 1, random, roughness);
+	diamondSquare(0,0,tesselX - 1, tesselZ - 1, random, tesselX - 1);
 
 	// Make sure everything is averaged out
 
@@ -117,13 +118,13 @@ void Terrain::generateColorsFromHeightmap(Vector3 valley, Vector3 peak) {
 			double tx = (double)x / (double)tesselX;
 			double tz = (double)z / (double)tesselZ;
 			double t = Util::abs(getHeightmap(x, z) / (maxH - minH) ); // We should normalize heightmaps
-			//double t = Util::abs(getHeightmap(x, z));
-			if (getHeightmap(x, z) > 0) {
-				colors.push_back(lerp(t, valley, peak));
-			}
-			else {
-				colors.push_back(valley); // If it's too low or negative, just use valley color
-			}
+			// if (getHeightmap(x, z) > 0) {
+			// 	colors.push_back(lerp(t, valley, peak));
+			// }
+			// else {
+			// 	colors.push_back(valley); // If it's too low or negative, just use valley color
+			// }
+			colors.push_back( normals[ z * tesselX + x ] );
 		}
 	}
 }
@@ -206,87 +207,42 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
  *
  * I referred to some other sources to verify my understanding of the algorithm:
  * http://www.paulboxley.com/blog/2011/03/terrain-generation-mark-one
- * 
- * @param  top       y coordinate of the current square
- * @param  left      x coordinate of the current square
- * @param  bottom    bottom y coordinate of the current square
- * @param  right     right x coordinate of the current square
- * @param  randRange positive double which clamps our random displacement
- * @param  roughness constant between 0.0 and 1.0 that erodes our random range (roughest is 1, smoother toward 0)
- * @return           height value at the midpoint in the square
+ * http://gamedev.stackexchange.com/questions/37389/diamond-square-terrain-generation-problem
+ *
+ * (x1,y1) and (x2,y2) represent the top left and bottom right corners of the heightmap,
+ * range is the maximum random displacement, and level is the depth of the recursion
  */
-void Terrain::diamondSquare(int top, int left, int bottom, int right, double randRange, double roughness) {
-	
-	// Stack overflow was happening because these values were swapped
-	int centerX = (left + right) / 2;
-	int centerY = (top + bottom) / 2;
+void Terrain::diamondSquare(int x1, int y1, int x2, int y2, double range, int level ) {
+	if (level < 1) return;
 
-	// Check out of bounds conditions
-	if ( top < 0 || top > tesselZ || 
-		 left < 0 || left > tesselX || 
-		 right < 0 || right > tesselX || 
-		 bottom < 0 || bottom > tesselZ || 
-		 centerX < 0 || centerX > tesselX || 
-		 centerY < 0 || centerY > tesselZ ) {
-		return;
-	}
+    // Diamond Step:    
+    //   Average the four corners of a square and add a random offset to the centerpoint.
+    for (unsigned int i = x1 + level; i < x2; i += level) {
+        for (unsigned int j = y1 + level; j < y2; j += level) {
+            float botLeft = getHeightmap( i - level, j - level );
+            float botRight = getHeightmap( i, j - level );
+            float topLeft = getHeightmap( i - level, j );
+            float topRight = getHeightmap( i, j );
+            setHeightmap( i - level / 2, j - level / 2, (topLeft + topRight + botLeft + botRight) / 4 + drand() * range );
+        }
+    }
 
-	// During the diamond step, we set the center point to the
-	// average of the four corner heights +/- some random delta
-	
-	double centerH = 
-		( getHeightmap(left, top)
-		+ getHeightmap(left, bottom)
-		+ getHeightmap(right, bottom)
-		+ getHeightmap(right, top)) / 4.0
-	    //+ drandRange( -randRange, randRange );
-		- drandRange(-randRange, randRange);
+    // Square Step:
+    //    Set the heightmap values of the midpoints along each edge of each square in the heightmap (with side length = level)
+    for (unsigned int i = x1 + 2 * level; i < x2; i += level) {
+        for (unsigned int j = y1 + 2 * level; j < y2; j += level) {
+            float a = getHeightmap(i - level, j - level);
+            float b = getHeightmap(i, j - level);
+            float c = getHeightmap(i - level, j);
+            float d = getHeightmap(i, j);
+            float e = getHeightmap(i - level / 2, j - level / 2);
 
-	// Experiment: clamp height between 0 and 1
-	centerH = clamp( centerH, 0.0, 1.0 );
+            setHeightmap( i - level, j - level / 2, (a + c + e + getHeightmap( i - 3 * level / 2, j - level / 2)) / 4 + drand() * range );
+            setHeightmap( i - level / 2, j - level, (a + b + e + getHeightmap( i - level / 2, j - 3 * level / 2)) / 4 + drand() * range );
+        }
+    }
 
-	if ( centerH > maxH ) {
-		maxH = centerH;
-	}
-	else if ( centerH < minH ) {
-		minH = centerH;
-	}
-
-	setHeightmap(centerX, centerY, centerH);
-
-	// Apply roughness
-	randRange *= roughness;
-
-	// The square step uses the newly found center point to divide
-	// the region into four quadrants. We fill in the heights for
-	// the missing corners of the smaller squares, then recurse
-	
-	setHeightmap(centerX, top, clamp(
-		(getHeightmap(left, top) + getHeightmap(right, top)) / 2 + drandRange(-randRange, randRange), /* * centerH */
-		0.0, 1.0 )
-	);
-	setHeightmap(centerX, bottom, clamp(
-		(getHeightmap(left, bottom) + getHeightmap(right, bottom)) / 2 + drandRange(-randRange, randRange), /* * centerH */
-		0.0, 1.0 )
-	);
-	setHeightmap(left, centerY, clamp(
-		(getHeightmap(left, top) + getHeightmap(left, bottom)) / 2 + drandRange(-randRange, randRange), /* * centerH */
-		0.0, 1.0 )
-	);
-	setHeightmap(right, centerY, clamp(
-		(getHeightmap(right, top) + getHeightmap(right, bottom)) / 2 + drandRange(-randRange, randRange), /* * centerH */
-		0.0, 1.0 )
-	);
-
-	// If the next squares will have side lengths smaller than 2, we've covered all of the vertices
-	if ((right - left) > 2) {
-		// Lower the randRange
-		diamondSquare(top, left, centerY, centerX, randRange, roughness );
-		diamondSquare(top, centerX, centerY, right, randRange, roughness);
-		diamondSquare(centerY, left, bottom, centerX, randRange, roughness);
-		diamondSquare(centerY, centerX, bottom, right, randRange, roughness);
-	}
-
+    diamondSquare(x1, y1, x2, y2, range / 2, level / 2);
 }
 
 void Terrain::render() {
