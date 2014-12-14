@@ -13,6 +13,10 @@ Particles::Particles(int width, int height, int depth) {
     }
 }
 
+Particles::~Particles() {
+    std::vector<Particle> tempVector;
+    particles.swap(tempVector);
+}
 /** rain drop is recreated once it hits the ground */
 void Particles::reincarnation(int index) {
     particles[index].xPos = (rand() % 50) - 25;

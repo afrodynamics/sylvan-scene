@@ -33,6 +33,7 @@ namespace Scene
 	vector<Robot*> robotList;
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
+	Shader *bumpShader;
 	BezierPatch *waterPatch;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
@@ -104,6 +105,10 @@ namespace Scene
 		
 		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
 		shader->printLog(">>> reflection_map shader >>>");
+
+		bumpShader = new Shader("shaders/bump_mapping.vert", "shaders/bump_mapping.frag", true);
+		bumpShader->printLog(">>> bump_mapping shader >>>");
+
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
 			switch (texID) {
@@ -136,6 +141,7 @@ namespace Scene
 			delete *iter;
 			*iter = nullptr;
 		}
+		delete snow;
 		delete world; world = nullptr;
 		delete bunny, dragon, bear;
 		delete ptLight;
@@ -234,7 +240,7 @@ void Window::displayCallback()
 	if(Scene::isSnowing) {
         Scene::snow->render();
     } 
-
+    
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
 		Scene::waterPatch->enableShader( Scene::shaderOn );
@@ -252,6 +258,56 @@ void Window::displayCallback()
 
 };
 
+void Window::drawCube() {
+	//Scene::bumpShader->bind();
+	// Draw all six faces of the cube:
+  glBegin(GL_QUADS);
+    glColor3f(0.0, 1.0, 0.0);		// This makes the cube green; the parameters are for red, green and blue. 
+                                // To change the color of the other faces you will need to repeat this call before each face is drawn.
+    // Draw front face:
+    glNormal3f(0.0, 0.0, 1.0);   
+    glVertex3f(-5.0,  5.0,  5.0);
+    glVertex3f( 5.0,  5.0,  5.0);
+    glVertex3f( 5.0, -5.0,  5.0);
+    glVertex3f(-5.0, -5.0,  5.0);
+    
+    // Draw left side:
+    glNormal3f(-1.0, 0.0, 0.0);
+    glVertex3f(-5.0,  5.0,  5.0);
+    glVertex3f(-5.0,  5.0, -5.0);
+    glVertex3f(-5.0, -5.0, -5.0);
+    glVertex3f(-5.0, -5.0,  5.0);
+    
+    // Draw right side:
+    glNormal3f(1.0, 0.0, 0.0);
+    glVertex3f( 5.0,  5.0,  5.0);
+    glVertex3f( 5.0,  5.0, -5.0);
+    glVertex3f( 5.0, -5.0, -5.0);
+    glVertex3f( 5.0, -5.0,  5.0);
+  
+    // Draw back face:
+    glNormal3f(0.0, 0.0, -1.0);
+    glVertex3f(-5.0,  5.0, -5.0);
+    glVertex3f( 5.0,  5.0, -5.0);
+    glVertex3f( 5.0, -5.0, -5.0);
+    glVertex3f(-5.0, -5.0, -5.0);
+  
+    // Draw top side:
+    glNormal3f(0.0, 1.0, 0.0);
+    glVertex3f(-5.0,  5.0,  5.0);
+    glVertex3f( 5.0,  5.0,  5.0);
+    glVertex3f( 5.0,  5.0, -5.0);
+    glVertex3f(-5.0,  5.0, -5.0);
+  
+    // Draw bottom side:
+    glNormal3f(0.0, -1.0, 0.0);
+    glVertex3f(-5.0, -5.0, -5.0);
+    glVertex3f( 5.0, -5.0, -5.0);
+    glVertex3f( 5.0, -5.0,  5.0);
+    glVertex3f(-5.0, -5.0,  5.0);
+  glEnd();
+	//Scene::bumpShader->unbind();
+}
 //----------------------------------------------------------------------------
 // Callback method called by GLUT when keys are pressed
 //    char * key     - the key pressed

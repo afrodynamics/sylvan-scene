@@ -27,6 +27,7 @@ private:
 public:
     GLuint textureID;
     Particles(int width, int height, int depth);
+    ~Particles();
     void update();
     void reincarnation(int index);
     void render();
