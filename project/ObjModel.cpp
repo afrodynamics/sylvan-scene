@@ -423,15 +423,13 @@ void ObjModel::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
-
-    /**
     
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
-	glEnable(GL_COLOR_MATERIAL); */
+	glEnable(GL_COLOR_MATERIAL);
 
 	if (!fileLoaded * !printWarn) {
 		// Print a warning letting the user know what's up, use stringstreams so it's thread safe

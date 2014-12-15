@@ -49,6 +49,7 @@ namespace Scene
 	bool shaderOn = false;
 	bool fullscreen = false;
     bool isSnowing = false;
+    bool stopEagle = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	float t = 0.0;
@@ -71,7 +72,7 @@ namespace Scene
 
 		// Scene setup
 		camera = new Camera(
-			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 25, 100), Vector3(0, 25, 0), Vector3(0, 1, 0)
 		);
 
 		world = new MatrixTransform(); // Top level of the scene graph
@@ -80,9 +81,9 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
-        BezierCurve curve1 = BezierCurve(Vector4(0, 5.5, -20, 1), Vector4 (-10, 1, 0, 1), Vector4(9, 10, -15, 1), Vector4(-9, 5, -5, 1));
-        BezierCurve curve2 = BezierCurve(Vector4(-9, 5, -5, 1), Vector4 (-1, 10, 3, 1), Vector4(5, 15, 20, 1), Vector4(5, -10, 0, 1));
-        BezierCurve curve3 = BezierCurve(Vector4(5, -10, 0, 1), Vector4(20, -20, -20, 1), Vector4(10, -5, 10, 1), Vector4(0, 5.5, -20, 1));
+        BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
+        BezierCurve curve2 = BezierCurve(Vector4(-10, 0, 10, 1), Vector4 (0, -25, 100, 1), Vector4(5, -5, 20, 1), Vector4(100, 10, 0, 1));
+        BezierCurve curve3 = BezierCurve(Vector4(100, 10, 0, 1), Vector4(75, 20, -20, 1), Vector4(10, 75, 10, 1), Vector4(0, 75, 0, 1));
      	eagleTrajectory = new BezierSpline();
      	eagleTrajectory->push(curve1);
      	eagleTrajectory->push(curve2);
@@ -141,6 +142,7 @@ namespace Scene
 		skyBoxScale->addChild( sky );
 
         eagle->cppParseFile("objectmodels/eagle.obj");
+        eagle->setMaterial(Vector4(0.5, 0.2, 0.4, 1), Vector4(0.5, 0.3, 0.2, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
 
@@ -182,6 +184,17 @@ void Window::idleCallback()
 	if (Scene::snow != nullptr)
 	  Scene::snow->update();
 
+    //update t for Bezier spline (eagle's trajectory)
+    if(!Scene::stopEagle) {
+        if(Scene::t < 0.9975) {
+            Scene::t += 0.0025;
+        }
+        else {
+            Scene::t = 0.0;
+        }
+    }
+    //printf("t: %f\n", Scene::t);
+
 	/* FPS Counter courtesy of Lighthouse3D */
 
 	frame++; // Increment the number of frames we've drawn
@@ -196,15 +209,6 @@ void Window::idleCallback()
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
-    
-    //update t for Bezier spline
-    if(Scene::t < 0.995) {
-        Scene::t += 0.005;
-    }
-    else {
-        Scene::t = 0.0;
-    }
-
 };
 
 //----------------------------------------------------------------------------
@@ -258,10 +262,12 @@ void Window::displayCallback()
     }
 
 
-    Matrix4 eagleMatrix = Matrix4();
-    Vector4 trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
-    eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ()); 
+    double angle = Scene::eagleTrajectory->getAngle(Scene::t);
+    angle += 90; //eagle should be facing to the right by default
+    Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::t);
+    Matrix4 eagleMatrix = invCam * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
     Scene::eagle->draw(eagleMatrix);
+    //Scene::eagleTrajectory->draw(100); //drawing bezier spline
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -396,11 +402,16 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'r':
 	  Scene::world->getMatrix().identity();
       Scene::camera->reset();
-      Scene::t = 0.0;
 	  break;
   case '1':
       Scene::isSnowing = !Scene::isSnowing;
       cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
+      break;
+  case '2':
+      Scene::t = 0.0;
+      break;
+  case '3':
+      Scene::stopEagle = !Scene::stopEagle;
       break;
   default:
     cerr << "Pressed: " << key << endl;

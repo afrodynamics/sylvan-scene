@@ -22,4 +22,5 @@ public:
 	void pop();
 	void closeLoop(); // Prevent adding
     Vector4 calcPoint(double t);
+    double getAngle(double t);
 };
