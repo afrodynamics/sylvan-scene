@@ -212,9 +212,11 @@ bool ObjModel::cppParseFile(string fname) {
 			for (int i = 1; i < symbolsRead; ++i) {
 				
 				split(tokens.at(i), '/', vertexLine);
+                
 				unsigned int sz = vertexLine.size();
 				unsigned int verticesPushed = 0;
 				for (int j = 0; j < sz; ++j) {
+                    
 					if (vertexLine.at(j).compare("") == 0) {
 						continue; // An empty string between slashes can be ignored
 					}
@@ -222,7 +224,6 @@ bool ObjModel::cppParseFile(string fname) {
 						triangleList.push_back(std::stoi(vertexLine.at(j)));
 						verticesPushed++;
 					}
-					
 				}
 				if (verticesPushed == 1) faceType = VERTEX_ONLY;
 				else if (verticesPushed == 2) faceType = VERTEX_SS_NORMAL;
@@ -319,6 +320,7 @@ bool ObjModel::cppParseFile(string fname) {
 				/*  vt u v */
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
+                uvwCoords.push_back(Vector4(vtx, vty, 0, 0));
 				//normalList.push_back(Vector4(vtx, vty, 0, 0));
 			}
 
@@ -457,7 +459,6 @@ void ObjModel::draw(Matrix4& C) {
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
-
 	for (int i = 0; i < triangleList.size(); ) {
 
 		// Grab the normal and vertex indices in their respective arrays
