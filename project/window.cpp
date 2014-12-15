@@ -196,6 +196,14 @@ void Window::idleCallback()
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
+    
+    //update t for Bezier spline
+    if(Scene::t < 0.995) {
+        Scene::t += 0.005;
+    }
+    else {
+        Scene::t = 0.0;
+    }
 
 };
 
@@ -249,16 +257,9 @@ void Window::displayCallback()
         Scene::snow->render();
     }
 
-    Vector4 trajectory = Vector4(0, 5.5, -20, 1);
-    if(Scene::t <= 1.0) {
-    	trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
-    	Scene::t += 0.005;
-	}
-    else {
-        Scene::t = 0.0;
-    }
-    	
+
     Matrix4 eagleMatrix = Matrix4();
+    Vector4 trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
     eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ()); 
     Scene::eagle->draw(eagleMatrix);
 

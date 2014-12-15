@@ -68,7 +68,6 @@ Vector4 BezierSpline::calcPoint(double t) {
     if ( t < 0 || t > 1 ) {
         throw std::runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");
     }
-    
     double scaledT = t * curves.size();
     BezierCurve curveToDraw;
     
