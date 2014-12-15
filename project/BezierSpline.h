@@ -16,8 +16,10 @@ private:
 		         // pushing any further curves.)
 public:
 	BezierSpline() : loop(false), closed(false) {};   // Splines don't loop by default
+    ~BezierSpline();
 	void draw(int); // Draw the curve in its entirety, given samples
 	void push(BezierCurve&);
 	void pop();
 	void closeLoop(); // Prevent adding
+    Vector4 calcPoint(double t);
 };

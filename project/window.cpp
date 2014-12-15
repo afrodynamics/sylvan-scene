@@ -17,6 +17,7 @@
 #include "Terrain.h"
 #include "BezierPatch.h"
 #include "BezierCurve.h"
+#include "BezierSpline.h"
 #include "Particles.h"
 
 using namespace std;
@@ -39,7 +40,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
-	BezierCurve *eagleTrajectory;
+	BezierSpline* eagleTrajectory;
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
@@ -79,7 +80,14 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
-        eagleTrajectory = new BezierCurve(Vector4(0, 5.5, -20, 1), Vector4 (-10, 1, 0, 1), Vector4(9, 10, -15, 1), Vector4(-9, 5, -5, 1));
+        BezierCurve curve1 = BezierCurve(Vector4(0, 5.5, -20, 1), Vector4 (-10, 1, 0, 1), Vector4(9, 10, -15, 1), Vector4(-9, 5, -5, 1));
+        BezierCurve curve2 = BezierCurve(Vector4(-9, 5, -5, 1), Vector4 (-1, 10, 3, 1), Vector4(5, 15, 20, 1), Vector4(5, -10, 0, 1));
+        BezierCurve curve3 = BezierCurve(Vector4(5, -10, 0, 1), Vector4(20, -20, -20, 1), Vector4(10, -5, 10, 1), Vector4(0, 5.5, -20, 1));
+     	eagleTrajectory = new BezierSpline();
+     	eagleTrajectory->push(curve1);
+     	eagleTrajectory->push(curve2);
+        eagleTrajectory->push(curve3);
+     	eagleTrajectory->closeLoop();
         eagle = new ObjModel();
 		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
@@ -239,16 +247,19 @@ void Window::displayCallback()
   if ( Scene::camera && Scene::world ) {
 	if (Scene::isSnowing) {
         Scene::snow->render();
-    } 
+    }
 
     Vector4 trajectory;
     if(Scene::t <= 1.0) {
     	trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
     	Scene::t += 0.01;
 	}
-
+    else {
+        Scene::t = 0.0;
+    }
+    	
     Matrix4 eagleMatrix = Matrix4();
-    eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ());
+    eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ()); 
     Scene::eagle->draw(eagleMatrix);
 
 	// Enable environment mapping on our patch

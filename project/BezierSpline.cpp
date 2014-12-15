@@ -1,4 +1,7 @@
 #include "BezierSpline.h"
+#include <exception>
+
+BezierSpline::~BezierSpline() {}
 
 // Draw all the curves using uniform sampling
 void BezierSpline::draw(int samples) {
@@ -13,15 +16,20 @@ void BezierSpline::draw(int samples) {
 // the next-to-last curve to loop with the first curve if we delete 
 // the last curve. Adding curves to the end of a closed loop is weird.
 void BezierSpline::push(BezierCurve& newCurve) {
-	if (closed) return;
-	BezierCurve& lastCurve = curves.at( curves.size() - 1 );
-	if ( lastCurve.c1Continuous( newCurve ) ) {
-		curves.push_back( newCurve );
-	}
-	else {
-		lastCurve.makeContinuous( newCurve );
-		curves.push_back( newCurve );
-	}
+    if(curves.size() == 0) {
+        curves.push_back(newCurve);
+    }
+    else {
+        if (closed) return;
+        BezierCurve& lastCurve = curves.at( curves.size() - 1 );
+        if ( lastCurve.c1Continuous( newCurve ) ) {
+            curves.push_back( newCurve );
+        }
+        else {
+            lastCurve.makeContinuous( newCurve );
+            curves.push_back( newCurve );
+        }
+    }
 }
 
 // Pop a BezierCurve off the end of the spline. If the spline is in
@@ -53,4 +61,23 @@ void BezierSpline::closeLoop() {
 		// withough becoming a line.
 		loop = closed = false;
 	}
+}
+
+//calcuate point
+Vector4 BezierSpline::calcPoint(double t) {
+    if ( t < 0 || t > 1 ) {
+        throw std::runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");
+    }
+    
+    double scaledT = t * curves.size();
+    BezierCurve curveToDraw;
+    
+    int i = 0;
+    for(i = 0; i < curves.size(); i++) {
+        if(scaledT >= i && scaledT <= (i+1)) {
+            curveToDraw = curves.at(i);
+            break;
+        }
+    }
+    return curveToDraw.calcPoint(scaledT - i);
 }
