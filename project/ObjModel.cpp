@@ -457,7 +457,7 @@ void ObjModel::draw(Matrix4& C) {
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
-
+    printf("triangle list size: %d\n", triangleList.size());
 	for (int i = 0; i < triangleList.size(); ) {
 
 		// Grab the normal and vertex indices in their respective arrays
