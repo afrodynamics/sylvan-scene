@@ -21,6 +21,7 @@ private:
     int world_height;
     int world_width;
     int world_depth;
+    int world_floor;
     Shader *shader;
     std::vector<Particle> particles;
 

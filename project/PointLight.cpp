@@ -124,7 +124,7 @@ void PointLight::render() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(tmp.getPointer());	
-	positionSphere->render(); // Geode would've loaded the appropriate matrix
+	//positionSphere->render(); // Geode would've loaded the appropriate matrix
 	glEnable(lightId);
 	
 	if (spotAngle != 180.0) {

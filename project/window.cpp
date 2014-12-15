@@ -16,6 +16,8 @@
 #include "SkyBox.h"
 #include "Terrain.h"
 #include "BezierPatch.h"
+#include "BezierCurve.h"
+#include "BezierSpline.h"
 #include "Particles.h"
 
 using namespace std;
@@ -30,7 +32,7 @@ namespace Scene
 {
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr; // Top level of the scene graph
-	ObjModel *bunny, *dragon, *bear = nullptr;
+	ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
 	PointLight *ptLight;
 	SkyBox *sky;
 	vector<Node*> nodeList;
@@ -38,6 +40,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
+	BezierSpline* eagleTrajectory;
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
@@ -48,6 +51,7 @@ namespace Scene
     bool isSnowing = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
+	float t = 0.0;
 	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
@@ -76,13 +80,22 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
+        BezierCurve curve1 = BezierCurve(Vector4(0, 5.5, -20, 1), Vector4 (-10, 1, 0, 1), Vector4(9, 10, -15, 1), Vector4(-9, 5, -5, 1));
+        BezierCurve curve2 = BezierCurve(Vector4(-9, 5, -5, 1), Vector4 (-1, 10, 3, 1), Vector4(5, 15, 20, 1), Vector4(5, -10, 0, 1));
+        BezierCurve curve3 = BezierCurve(Vector4(5, -10, 0, 1), Vector4(20, -20, -20, 1), Vector4(10, -5, 10, 1), Vector4(0, 5.5, -20, 1));
+     	eagleTrajectory = new BezierSpline();
+     	eagleTrajectory->push(curve1);
+     	eagleTrajectory->push(curve2);
+        eagleTrajectory->push(curve3);
+     	eagleTrajectory->closeLoop();
+        eagle = new ObjModel();
 		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
-		ptLight = new PointLight(0, 2, 0);
+		ptLight = new PointLight(0, 20, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
-		ptLight->setSpecular(0, 0, 1, 1);
+		ptLight->setSpecular(.5, .5, .5, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
 
@@ -105,9 +118,8 @@ namespace Scene
 		// This did not belong inside of loadPPM
 		
 		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
-<<<<<<< HEAD
 		shader->printLog("Shader Compiler: ");
->>>>>>> master
+		
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
 			switch (texID) {
@@ -129,9 +141,9 @@ namespace Scene
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
+        eagle->cppParseFile("objectmodels/eagle.obj");
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
-		terrain->enableMat(false);
 
 	};
 	// Deallocate all kinds of stuff
@@ -142,7 +154,8 @@ namespace Scene
 		}
 		delete snow;
 		delete world; world = nullptr;
-		delete bunny, dragon, bear;
+		delete bunny, dragon, bear, eagle;
+		delete eagleTrajectory;
 		delete ptLight;
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
@@ -150,7 +163,7 @@ namespace Scene
 		delete terrain; terrain = nullptr;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
-		bunny = dragon = bear = nullptr;
+		bunny = dragon = bear = eagle = nullptr;
 		ptLight = nullptr;
 		cerr << "Dealloc called!" << endl;
 	};
@@ -162,10 +175,14 @@ namespace Scene
 void Window::idleCallback()
 {
 
-	static int frame = 0, time, timebase = 0;
+	static long frame = 0, time, timebase = 0;
 
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
+
+	// Update the particle system
+	if (Scene::snow != nullptr)
+	  Scene::snow->update();
 
 	/* FPS Counter courtesy of Lighthouse3D */
 
@@ -177,13 +194,18 @@ void Window::idleCallback()
 	if (time - timebase > 1000) {
 		// Always calculate delta time
 		deltaTime = (time - timebase) - 1000;
-		// if ( Scene::showFps ) {
-			//cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
-			Window::currentFPS = frame * 1000 / (time - timebase);
-		// }
+		Window::currentFPS = frame * 1000 / (time - timebase);
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
+    
+    //update t for Bezier spline
+    if(Scene::t < 0.995) {
+        Scene::t += 0.005;
+    }
+    else {
+        Scene::t = 0.0;
+    }
 
 };
 
@@ -191,8 +213,7 @@ void Window::idleCallback()
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-  width = w;
-  height = h;
+
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -213,28 +234,38 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
-  double const aspect = (double)Window::width/(double)Window::height;
+  // No reason to allocate a new mat4 every call, just update it if necessary
+  static Matrix4 invCam = Matrix4();
+
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
   
-  Matrix4 ident = Matrix4();
-  Matrix4 invCam = Matrix4();
   invCam.identity();
-  ident.identity();
-  if ( Scene::camera != nullptr) 
+  if ( Scene::camera != nullptr && Scene::world != nullptr ) {
   	invCam = Scene::camera->getGLMatrix();
+  }
+  else
+  	return; // With no camera matrix, there's no point trying to draw
 
-  // Used by the skybox
+  // Scene graph is now
   invCam = invCam * Scene::world->getMatrix();
+
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
 	if (Scene::isSnowing) {
         Scene::snow->render();
-    } 
-    
+    	} 
+    }
+
+
+    Matrix4 eagleMatrix = Matrix4();
+    Vector4 trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
+    eagleMatrix = invCam * Matrix4::translate(trajectory.getX(), trajectory.getY(), trajectory.getZ()); 
+    Scene::eagle->draw(eagleMatrix);
+
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
 		Scene::terrain->enableShader( Scene::shaderOn );
@@ -242,7 +273,7 @@ void Window::displayCallback()
 	else if ( Scene::terrain != nullptr ) {
 		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-
+      
 	// Draw the scene graph
 	Scene::world->draw( invCam );
   }
@@ -252,7 +283,7 @@ void Window::displayCallback()
 
   	// Build the string
 	stringstream fpsCounter;
-	double scale = 1.0;
+    double const aspect = (double)Window::width/(double)Window::height;
 	fpsCounter << "FPS: " << Window::currentFPS << endl;
 	string built = fpsCounter.str();
 
@@ -302,9 +333,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 
   switch (key) {
   case 27:
-      // Close gracefully and dealloc stuff. Should help with the malloc errors
-      //Scene::dealloc(); // <--- this causes closing segfaults, and it's irritating,
-      //                          so for now we're accepting memory leaks. :(
+      // Close gracefully and dealloc stuff.
+      Scene::dealloc(); 
       exit(0); 
       break;
   case 'b':
@@ -368,7 +398,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-    Scene::camera->reset();
+      Scene::camera->reset();
+      Scene::t = 0.0;
 	  break;
   case '1':
       Scene::isSnowing = !Scene::isSnowing;
@@ -469,9 +500,6 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// cerr << filename << " has tex ID: " << texture[0] << endl;
-	// return texture[0];
-	//cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
 	return Scene::textures[texID];
 }
 

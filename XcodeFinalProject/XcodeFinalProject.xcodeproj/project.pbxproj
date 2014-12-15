@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD5200EC1A3E66C7007DA384 /* BezierSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */; };
 		CD7517921A3BACC600A8E1C3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517911A3BACC600A8E1C3 /* OpenGL.framework */; };
 		CD7517941A3BACCA00A8E1C3 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517931A3BACCA00A8E1C3 /* GLUT.framework */; };
 		CD7517961A3BACFF00A8E1C3 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517951A3BACFF00A8E1C3 /* BezierCurve.cpp */; };
@@ -36,6 +37,7 @@
 		CD7517FB1A3BAD4D00A8E1C3 /* Vector4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517F21A3BAD4D00A8E1C3 /* Vector4.cpp */; };
 		CD7517FC1A3BAD4D00A8E1C3 /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517F41A3BAD4D00A8E1C3 /* window.cpp */; };
 		CD7517FD1A3BAD4D00A8E1C3 /* Wiresphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517F61A3BAD4D00A8E1C3 /* Wiresphere.cpp */; };
+		CDBABC691A3E28A4003A08B1 /* Particles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDBABC671A3E28A4003A08B1 /* Particles.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +53,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BezierSpline.cpp; path = ../../project/BezierSpline.cpp; sourceTree = "<group>"; };
+		CD5200EB1A3E66C7007DA384 /* BezierSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BezierSpline.h; path = ../../project/BezierSpline.h; sourceTree = "<group>"; };
 		CD7517871A3BACAB00A8E1C3 /* XcodeFinalProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = XcodeFinalProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7517911A3BACC600A8E1C3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		CD7517931A3BACCA00A8E1C3 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -111,7 +115,7 @@
 		CD7517E21A3BAD4D00A8E1C3 /* back.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = back.ppm; sourceTree = "<group>"; };
 		CD7517E31A3BAD4D00A8E1C3 /* back1.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = back1.ppm; sourceTree = "<group>"; };
 		CD7517E41A3BAD4D00A8E1C3 /* base.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base.ppm; sourceTree = "<group>"; };
-		CD7517E51A3BAD4D00A8E1C3 /* base1.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = base1.ppm; sourceTree = "<group>"; };
+		CD7517E51A3BAD4D00A8E1C3 /* base1.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = base1.ppm; sourceTree = "<group>"; };
 		CD7517E61A3BAD4D00A8E1C3 /* front.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = front.ppm; sourceTree = "<group>"; };
 		CD7517E71A3BAD4D00A8E1C3 /* front1.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = front1.ppm; sourceTree = "<group>"; };
 		CD7517E81A3BAD4D00A8E1C3 /* left.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = left.ppm; sourceTree = "<group>"; };
@@ -130,6 +134,9 @@
 		CD7517F51A3BAD4D00A8E1C3 /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Window.h; path = ../../project/Window.h; sourceTree = "<group>"; };
 		CD7517F61A3BAD4D00A8E1C3 /* Wiresphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Wiresphere.cpp; path = ../../project/Wiresphere.cpp; sourceTree = "<group>"; };
 		CD7517F71A3BAD4D00A8E1C3 /* Wiresphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Wiresphere.h; path = ../../project/Wiresphere.h; sourceTree = "<group>"; };
+		CDBABC671A3E28A4003A08B1 /* Particles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Particles.cpp; path = ../../project/Particles.cpp; sourceTree = "<group>"; };
+		CDBABC681A3E28A4003A08B1 /* Particles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Particles.h; path = ../../project/Particles.h; sourceTree = "<group>"; };
+		CDBABC6B1A3E2A9B003A08B1 /* eagle.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = eagle.obj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +173,11 @@
 		CD7517891A3BACAB00A8E1C3 /* XcodeFinalProject */ = {
 			isa = PBXGroup;
 			children = (
+				CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */,
+				CD5200EB1A3E66C7007DA384 /* BezierSpline.h */,
+				CDBABC6A1A3E2A9B003A08B1 /* objectmodels */,
+				CDBABC671A3E28A4003A08B1 /* Particles.cpp */,
+				CDBABC681A3E28A4003A08B1 /* Particles.h */,
 				CD7517DF1A3BAD4D00A8E1C3 /* Terrain.cpp */,
 				CD7517E01A3BAD4D00A8E1C3 /* Terrain.h */,
 				CD7517E11A3BAD4D00A8E1C3 /* tex */,
@@ -264,6 +276,15 @@
 			path = ../../project/tex;
 			sourceTree = "<group>";
 		};
+		CDBABC6A1A3E2A9B003A08B1 /* objectmodels */ = {
+			isa = PBXGroup;
+			children = (
+				CDBABC6B1A3E2A9B003A08B1 /* eagle.obj */,
+			);
+			name = objectmodels;
+			path = ../../project/objectmodels;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -321,6 +342,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD7517961A3BACFF00A8E1C3 /* BezierCurve.cpp in Sources */,
+				CD5200EC1A3E66C7007DA384 /* BezierSpline.cpp in Sources */,
+				CDBABC691A3E28A4003A08B1 /* Particles.cpp in Sources */,
 				CD7517F91A3BAD4D00A8E1C3 /* Util.cpp in Sources */,
 				CD7517D91A3BAD3D00A8E1C3 /* PointLight.cpp in Sources */,
 				CD7517B11A3BAD1700A8E1C3 /* GLee.c in Sources */,

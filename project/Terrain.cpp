@@ -91,7 +91,6 @@ void Terrain::generateHeightmap() {
 	
 	double roughness = drandRange(.5,.55);
 	double random = drandRange(.25,1.0); // default .0625
-	//diamondSquare(0,0,tesselX - 1,tesselZ - 1, random, roughness);
 	diamondSquare(0,0,tesselX - 1, tesselZ - 1, random, tesselX - 1);
 
 	// Make sure everything is averaged out

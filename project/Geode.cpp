@@ -22,15 +22,8 @@ Geode::~Geode()
 // Polymorphic draw method, updates lastC and sets the modelview
 // matrix in OpenGL. Assumes C is a row major matrix
 void Geode::draw(Matrix4& C) {
-	
-	Matrix4 tmp = C;
-	lastC = C;
-	centerPos = C * Vector4(0,0,0,1);
 
-	// If we aren't culling, just pass in everything to OpenGL
-	tmp.transpose();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixd( tmp.getPointer() );
+	// Let MatrixTransform nodes load matrices
 
 	// Shaders & Materials don't work well together
 	if ( useShader && shader != nullptr ) {
@@ -50,6 +43,9 @@ void Geode::draw(Matrix4& C) {
 	if ( useShader && shader != nullptr ) {
 		shader->unbind();
 	}
+
+	lastC = C;
+	// centerPos = C * Vector4(0,0,0,1);
 
 }
 

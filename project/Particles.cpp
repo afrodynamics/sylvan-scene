@@ -7,6 +7,7 @@ Particles::Particles(int width, int height, int depth) {
     world_height = height;
     world_width = width;
     world_depth = depth;
+    world_floor = -height / 2;
     for(int i = 0; i < MAX_PARTICLES; i++) {
         Particle p;
         p.xPos = (rand() % world_width) - world_width / 2;
@@ -16,11 +17,7 @@ Particles::Particles(int width, int height, int depth) {
     }
 }
 
-Particles::~Particles() {
-    std::vector<Particle> tempVector;
-    particles.swap(tempVector);
-}
-/** rain drop is recreated once it hits the ground */
+/** snow particle is recreated once it hits the ground */
 void Particles::reincarnation(int index) {
     particles[index].xPos = (rand() % world_width / 2) * ( Util::drand() > .5 ? -1 : 1 );// - world_width / 4;
     particles[index].yPos = (rand() % world_height / 2) * ( Util::drand() ); // - world_height / 4;
@@ -35,17 +32,16 @@ void Particles::render() {
     glEnable(GL_POINT_SPRITE);
 
     glPointSize(2.5);
-
+    glColor3f(1.0, 1.0, 1.0);
+    
     glBegin(GL_POINTS);
-    for(int i = 0; i < MAX_PARTICLES;i++) {
-        glColor3f(1.0, 1.0, 1.0);
+    for(int i = 0; i < MAX_PARTICLES; i++) {
         glVertex3f(particles[i].xPos, particles[i].yPos, particles[i].zPos);
     }
     glEnd();
 
-   // glDisable(GL_TEXTURE_2D);
     glDisable(GL_POINT_SPRITE);
-    update();
+    // update(); // This is now being done in Window::idlecallback()
 }
 
 void Particles::update() {
@@ -53,7 +49,7 @@ void Particles::update() {
         particles[i].xPos -= (rand() % 3);
         particles[i].yPos -= (rand() % 10);
         particles[i].zPos -= (rand() % 3);
-        if(particles[i].yPos <= -world_height / 2) {
+        if (particles[i].yPos <= world_floor) {
             reincarnation(i);
         }
     }
