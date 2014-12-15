@@ -249,10 +249,10 @@ void Window::displayCallback()
         Scene::snow->render();
     }
 
-    Vector4 trajectory;
+    Vector4 trajectory = Vector4(0, 5.5, -20, 1);
     if(Scene::t <= 1.0) {
     	trajectory = Scene::eagleTrajectory->calcPoint(Scene::t);
-    	Scene::t += 0.01;
+    	Scene::t += 0.005;
 	}
     else {
         Scene::t = 0.0;
