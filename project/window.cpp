@@ -102,12 +102,12 @@ namespace Scene
 
 		glGenTextures(6, textures); // This needs to be made OOP
 
-		sky->right = Window::loadPPM("tex/right.ppm",1024,1024,0);		
-		sky->left = Window::loadPPM("tex/left.ppm",1024,1024,1);
-		sky->front = Window::loadPPM("tex/front.ppm",1024,1024,2);
-		sky->back = Window::loadPPM("tex/back.ppm",1024,1024,3);
-		sky->top = Window::loadPPM("tex/top.ppm",1024,1024,4);
-		sky->base = Window::loadPPM("tex/base.ppm",1024,1024,5);
+		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
+		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
+		sky->front = Window::loadPPM("tex/front1.ppm",1024,1024,2);
+		sky->back = Window::loadPPM("tex/back1.ppm",1024,1024,3);
+		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
+		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
