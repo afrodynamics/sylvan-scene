@@ -428,7 +428,7 @@ void ObjModel::draw(Matrix4& C) {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
+	//glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
 	glEnable(GL_COLOR_MATERIAL);
 
 	if (!fileLoaded * !printWarn) {
@@ -468,7 +468,7 @@ void ObjModel::draw(Matrix4& C) {
         if (uvwIndex >= uvwSize) break;
 		//if (nrmIndex >= normSize) break;
 		if (vtxIndex >= colorSize) {
-			glColor3f(1.0, 1.0, 1.0); // Default to color white
+			glColor3f(0.0, 0.0, 0.0); // Default to color black
 			lookupColor = false;
 		}
 		else if (lookupColor) {
