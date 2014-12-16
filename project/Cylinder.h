@@ -9,11 +9,12 @@ class Cylinder :
 	public Geode
 {
 private:
-	double latitude, longitude, radius, height;
+	double latitude, longitude, top_r, bot_r, height;
   GLUquadricObj * quad;
 
 public:
 	Cylinder();
+	Cylinder(double b, double t, double h);
 	~Cylinder();
 	void render();
 };
