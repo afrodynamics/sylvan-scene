@@ -6,7 +6,7 @@ class MatrixTransform :
 protected:
 	
 public:
-	Matrix4 *mtx;
+	Matrix4 mtx;
 	MatrixTransform();
 	MatrixTransform(Matrix4&); // Copies the given Matrix4 into this Node
 	~MatrixTransform();

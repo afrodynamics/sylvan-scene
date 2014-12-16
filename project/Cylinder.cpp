@@ -1,10 +1,11 @@
 #include "Cylinder.h"
+#include "Util.h"
 
 Cylinder::Cylinder(GLUquadricObj * q)
 {
   top_r = bot_r = 0.5;
 	height = 1;
-	boundingRadius = max(max(top_r,bot_r), height/2.0);
+	boundingRadius = Util::max(Util::max(top_r,bot_r), height/2.0);
 	longitude = latitude = 32;
   quad = q;
 }
@@ -14,7 +15,7 @@ Cylinder::Cylinder(GLUquadricObj * q, double b, double t, double h)
   bot_r = b;
   top_r = t;
 	height = h;
-	boundingRadius = max(max(top_r,bot_r), height/2.0);
+	boundingRadius = Util::max(Util::max(top_r,bot_r), height/2.0);
 	longitude = latitude = 32;
   quad = q;
 }

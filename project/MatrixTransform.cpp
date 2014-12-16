@@ -7,27 +7,23 @@ using namespace std;
 // Default constructor
 MatrixTransform::MatrixTransform()
 {
-	mtx = new Matrix4();
-	mtx->identity();
+	mtx.identity();
 }
 
 // Constructor: copies the given matrix, allowing us to easily pass in temporaries
 MatrixTransform::MatrixTransform(Matrix4& matrix)
 {
-	mtx = new Matrix4(matrix);
+	mtx = Matrix4(matrix);
 }
 
 // destructor
-MatrixTransform::~MatrixTransform()
-{
-	delete mtx;
-}
+MatrixTransform::~MatrixTransform() {}
 
 // Applies the transformation stored in this Node and calls
 // draw on all the children with the resulting matrix
 void MatrixTransform::draw(Matrix4& C) {
 
-	lastC = C * *mtx;
+	lastC = C * mtx;
 	lastC.transpose();
 
 	glMatrixMode(GL_MODELVIEW);
@@ -41,5 +37,5 @@ void MatrixTransform::draw(Matrix4& C) {
 
 // Returns a reference to the matrix stored in this node
 Matrix4& MatrixTransform::getMatrix() {
-	return *mtx;
+	return mtx;
 }
