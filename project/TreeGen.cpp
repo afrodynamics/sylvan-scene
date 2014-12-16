@@ -1,6 +1,6 @@
 #include "TreeGen.h"
 
-string TreeGen::axiom = "TX";
+string TreeGen::axiom = "tTX";
 const double TreeGen::BRANCH_SCALE = 0.75;
 const double TreeGen::TOP_SCALE = 0.9;
 const double TreeGen::TOT_DEG = 360.0;
@@ -59,14 +59,15 @@ void TreeGen::initialize() {
   addRule('T', "TTXz","","",0.15);
   addRule('T', "t","","",0.40);
   addRule('t', "t","","",1);
-  addRule('F',"FF","","",0.65);
-  addRule('F',"FYF","","",0.35);
+  addRule('F',"YFF","","",0.30);
+  addRule('F',"FYF","","",0.50);
+  addRule('F',"FF","","",0.20);
   //addRule('F',"F","","",0.20);
   addRule('X',"[srFFYL]T[ssrFFYYFL]TX","","",0.50);
   addRule('X',"[ssrFFYL][ssrFFYL]TXX","","",0.30);
   addRule('X',"[ssrFFYL]T[sssrFFYL]TX","","",0.20);
-  addRule('Y',"LL[rLFLLFLY]FLLLFY","","",0.40);
-  addRule('Y',"L[rFLFYFLL][rFLLFLLYF]FY","","",0.40);
+  addRule('Y',"LL[srLFLLFLY]FLLLFY","","",0.40);
+  addRule('Y',"L[srFLFYFLL][srFLLFLLYF]FY","","",0.40);
   addRule('Y',"L[srFLFYFLL]F[srFLLFLLYF]FY","","",0.20);
 }
 
@@ -122,8 +123,6 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
   int length = treeStr.length();
   double topRad, baseRad = topRad = r;
 
-  cerr << "Tree string: " << treeStr << endl;
-
   for(int i = 0; i < length; ++i) {
     char c = treeStr.at(i);
     switch(c) {
@@ -152,9 +151,9 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'Y':   // Use leaf where a branch would have been
       case 'L':
         {
-        MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,0.5));
+        MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,baseRad+0.5));
         MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*rnd()));
-        Sphere * leaf = new Sphere();
+        Sphere * leaf = new Sphere(0.5);
         leaf->setMat(leafMat);
 
         // Add leaf to curr position

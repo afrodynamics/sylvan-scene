@@ -19,6 +19,7 @@
  * 
  * Alphabet:
  *    T - forward (trunk)
+ *    t - forward (non-replacing)
  *    F - forward (branches)
  *    L - rotate + Leaf
  *    X - Branching (trunk)
@@ -35,8 +36,9 @@
  *    T -> TT (38%)
  *    T -> TTz (7%)
  *    T -> TXzT (15%)
- *    T -> T (40%)
- *    F -> FF (30%)
+ *    T -> t (40%)
+ *    t -> t (100%)
+ *    F -> FF (10%)
  *    F -> FYF (10%)
  *    F -> F (60%)
  *    X -> [srFYL]T[ssrFYYFL]TX (50%)
