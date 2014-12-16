@@ -19,6 +19,7 @@
 #include "BezierCurve.h"
 #include "BezierSpline.h"
 #include "Particles.h"
+#include "Cabin.h"
 
 using namespace std;
 
@@ -44,6 +45,7 @@ namespace Scene
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
+    Cabin *cabin;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
@@ -115,6 +117,8 @@ namespace Scene
 
 		snow->textureID = Window::loadPPM("tex/snow.ppm", 1024, 1024, 6);
 
+        cabin = new Cabin();
+        
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
 		
@@ -155,6 +159,7 @@ namespace Scene
 		}
 		delete world; world = nullptr;
 		delete bunny, dragon, bear, eagle;
+        delete cabin;
 		delete eagleTrajectory;
 		delete ptLight;
 		delete waterPatch;
@@ -261,11 +266,15 @@ void Window::displayCallback()
         Scene::snow->render();
     }
 
-
+ Scene::cabin->draw(invCam ); //* Matrix4::translate(0, 20, 0) * Matrix4::rotY(180));
+      
     double angle = Scene::eagleTrajectory->getAngle(Scene::t);
     angle += 90; //eagle should be facing to the right by default
     Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::t);
     Matrix4 eagleMatrix = invCam * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+    
+    //brown eagle
+    glColor3f(0.35, 0.25, 0.1);
     Scene::eagle->draw(eagleMatrix);
     //Scene::eagleTrajectory->draw(100); //drawing bezier spline
 

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CD5200EC1A3E66C7007DA384 /* BezierSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */; };
+		CD5200F61A3FE72E007DA384 /* Cabin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD5200F41A3FE72E007DA384 /* Cabin.cpp */; };
 		CD7517921A3BACC600A8E1C3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517911A3BACC600A8E1C3 /* OpenGL.framework */; };
 		CD7517941A3BACCA00A8E1C3 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517931A3BACCA00A8E1C3 /* GLUT.framework */; };
 		CD7517961A3BACFF00A8E1C3 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517951A3BACFF00A8E1C3 /* BezierCurve.cpp */; };
@@ -55,6 +56,8 @@
 /* Begin PBXFileReference section */
 		CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BezierSpline.cpp; path = ../../project/BezierSpline.cpp; sourceTree = "<group>"; };
 		CD5200EB1A3E66C7007DA384 /* BezierSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BezierSpline.h; path = ../../project/BezierSpline.h; sourceTree = "<group>"; };
+		CD5200F41A3FE72E007DA384 /* Cabin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cabin.cpp; path = ../../project/Cabin.cpp; sourceTree = "<group>"; };
+		CD5200F51A3FE72E007DA384 /* Cabin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cabin.h; path = ../../project/Cabin.h; sourceTree = "<group>"; };
 		CD7517871A3BACAB00A8E1C3 /* XcodeFinalProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = XcodeFinalProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7517911A3BACC600A8E1C3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		CD7517931A3BACCA00A8E1C3 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -173,6 +176,8 @@
 		CD7517891A3BACAB00A8E1C3 /* XcodeFinalProject */ = {
 			isa = PBXGroup;
 			children = (
+				CD5200F41A3FE72E007DA384 /* Cabin.cpp */,
+				CD5200F51A3FE72E007DA384 /* Cabin.h */,
 				CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */,
 				CD5200EB1A3E66C7007DA384 /* BezierSpline.h */,
 				CDBABC6A1A3E2A9B003A08B1 /* objectmodels */,
@@ -352,6 +357,7 @@
 				CD7517FD1A3BAD4D00A8E1C3 /* Wiresphere.cpp in Sources */,
 				CD7517B51A3BAD1700A8E1C3 /* Matrix4.cpp in Sources */,
 				CD7517B31A3BAD1700A8E1C3 /* main.cpp in Sources */,
+				CD5200F61A3FE72E007DA384 /* Cabin.cpp in Sources */,
 				CD7517D71A3BAD3D00A8E1C3 /* ObjModel.cpp in Sources */,
 				CD7517AD1A3BAD1700A8E1C3 /* Camera.cpp in Sources */,
 				CD7517FB1A3BAD4D00A8E1C3 /* Vector4.cpp in Sources */,
