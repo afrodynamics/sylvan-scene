@@ -19,4 +19,5 @@ Tree* Tree::setBranches(vector<MatrixTransform*> * b) {
 
 Tree::~Tree() {
   if(trunkNodes) delete trunkNodes;
+  if(branchNodes) delete branchNodes;
 }
