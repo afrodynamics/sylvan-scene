@@ -33,6 +33,10 @@ namespace Util {
 	// Returns absolute value of a number
 	double abs(double d);
 
+	// Min & Max
+	double min(double,double);
+	double max(double,double);
+
 	// Utilities for getting values from a row-major std::vector
 	// template <typename T>
 	// T getItemFromRowMajorVector(std::vector<T>&, int x, int y, int rows, int cols);

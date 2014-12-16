@@ -40,6 +40,14 @@ double Util::abs(double d) {
   }
 }
 
+// Min & Max
+double Util::min(double a, double b) {
+	return ( a > b ? b : a );
+}
+double Util::max(double a, double b) {
+	return ( a > b ? a : b );
+}
+
 /** Data Structures **/
 
 // Utilities for getting values from a row-major std::vector
