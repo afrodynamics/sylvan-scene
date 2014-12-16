@@ -71,8 +71,6 @@ private:
 
   void addRule(char, string, string, string, double);
   double rnd();      // Generate random double between 0-1
-  void push();        // Increase stack
-  void pop();         // Decrease stack
 
   static string axiom;
   const static double BRANCH_SCALE;
@@ -80,6 +78,7 @@ private:
   const static double TOT_DEG;
   static Material leafMat;
   static Material woodMat;
+  static GLUquadricObj * q;
 
 public:
   TreeGen();
