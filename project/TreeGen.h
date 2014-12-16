@@ -70,7 +70,7 @@ private:
   map<char, rule*> rules;  // Map rules to variables
 
   void addRule(char, string, string, string, double);
-  double rnd();      // Generate random double between 0-1
+  // double rnd();      // Util::drand() does this already (speed up compile time)
 
   static string axiom;
   const static double BRANCH_SCALE;

@@ -1,4 +1,8 @@
 #include "TreeGen.h"
+#include "Util.h"
+
+using namespace Util; // Unify all the RNG elements
+                      // also, it cross-compiles nicely
 
 string TreeGen::axiom = "TX";
 const double TreeGen::BRANCH_SCALE = 0.75;
@@ -70,22 +74,17 @@ void TreeGen::initialize() {
   addRule('Y',"L[srFLFYFLL]F[srFLLFLLYF]FY","","",0.20);
 }
 
-// Generate random double between 0-1
-double TreeGen::rnd() {
-  return ((double)rand()) / RAND_MAX;
-}
-
 // Generate a string of order n
 string TreeGen::genString(int n) {
   string str = axiom;
-  srand(time(NULL));
+  Util::seed(0); // Seed with the current time
 
   // n interations
   for(int i = 0; i < n; ++i) {
     // iterate over the string
     for(int j = 0; j < str.length(); ++j) {
       char c = str.at(j);
-      double r = rnd();
+      double r = drand();
       rule * charRule = rules[c];
 
       // Loop through rules
@@ -112,14 +111,18 @@ string TreeGen::genString(int n) {
  * a - angle of branches
  */
 Tree * TreeGen::generate(double h, double r, double a, int n) {
+  
   // TODO
+  
   stack<pair<double,double>> rStack;    // Stack of radii, pair of base, top 
   stack<Group *> nodeState;        // Node stack
+  
   // Trunk nodes
-  vector<MatrixTransform *> * trunkNodes = new vector<MatrixTransform*>(); 
+  vector<MatrixTransform *> trunkNodes; // = new vector<MatrixTransform*>(); 
+  
   // Direct branch nodes
-  vector<MatrixTransform *> * branchNodes = new vector<MatrixTransform*>();
-  Group * curr, *root = curr = new Group();
+  vector<MatrixTransform *> branchNodes; // = new vector<MatrixTransform*>();
+  Group *curr, *root = curr = new Group();
   string treeStr = genString(n);
   int length = treeStr.length();
   double topRad, baseRad = topRad = r;
@@ -145,7 +148,7 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         curr->addChild(trans);
         curr = trunkTrans;      // Change current state
         baseRad = topRad;
-        trunkNodes->push_back(trunkTrans);   // Add trunk node to vector
+        trunkNodes.push_back(trunkTrans);   // Add trunk node to vector
         }
         break;
       case 'X':   // Use leaf where a branch would have been
@@ -153,7 +156,7 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'L':
         {
         MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,0.5));
-        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*rnd()));
+        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG * drand()));
         Sphere * leaf = new Sphere();
         leaf->setMat(leafMat);
 
@@ -167,11 +170,11 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'r':
         {
         MatrixTransform * rotZ = new MatrixTransform(Matrix4::rotZ(a));
-        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*rnd()));
+        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG * drand()));
         rotY->addChild(rotZ);
         curr->addChild(rotY);
         curr = rotZ;
-        branchNodes->push_back(rotZ);
+        branchNodes.push_back(rotZ);
         }
         break;
       case 's':

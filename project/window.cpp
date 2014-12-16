@@ -43,8 +43,8 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
-  TreeGen tgen = TreeGen();
-  Tree * tree;
+    TreeGen tgen = TreeGen();
+    Tree * tree;
 	BezierSpline* eagleTrajectory;
 	Terrain *terrain;
 
@@ -86,7 +86,7 @@ namespace Scene
 		world = new MatrixTransform(); // Top level of the scene graph
 		waterPatch = new BezierPatch();
 		
-    terrain = new Terrain(); // Procedural generator FTW
+        terrain = new Terrain(); // Procedural generator FTW
 		Matrix4 scl = Matrix4::scale(125,125,125);
 		Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(250, 250, 250);
@@ -104,7 +104,7 @@ namespace Scene
 		skyBoxScale = new MatrixTransform( skyScale );
 
 		Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
-    MatrixTransform * cyTrans = new MatrixTransform(trn2);
+        MatrixTransform * cyTrans = new MatrixTransform(trn2);
 		patchTranslate = new MatrixTransform( trn );
 		ptLight = new PointLight(0, 100, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
@@ -149,14 +149,14 @@ namespace Scene
 		world->addChild( ptLight );
 		world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
-    world->addChild( cyTrans );
+        world->addChild( cyTrans );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
-    // Initiate tree
-    tree = tgen.generate(3,1.5,35,10);
-    cyTrans->addChild(tree);
+        // Initiate tree
+        tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
+        cyTrans->addChild(tree);
 
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
@@ -178,6 +178,7 @@ namespace Scene
 		delete patchScale, patchTranslate, skyBoxScale;
 		delete sky;
 		delete terrain; terrain = nullptr;
+        delete tree;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
 		bunny = dragon = bear = eagle = nullptr;
