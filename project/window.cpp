@@ -16,6 +16,9 @@
 #include "SkyBox.h"
 #include "Terrain.h"
 #include "BezierPatch.h"
+#include "Cylinder.h"
+#include "Cone.h"
+#include "Material.h"
 #include "BezierCurve.h"
 #include "BezierSpline.h"
 #include "Particles.h"
@@ -44,7 +47,9 @@ namespace Scene
     BezierPatch *waterPatch;
     BezierSpline* eagleTrajectory;
     Terrain *terrain;
-    MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
+    MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate;
+    TreeGen tgen = TreeGen();
+    Tree * tree;
     Particles *snow;
 
     // Boolean Flahs
@@ -58,8 +63,6 @@ namespace Scene
     double znear = 1.0;
     double zfar = 1000; //1000.0;
     float eaglePos = 0.0;
-
-
 
     GLuint textures[7];
     GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
@@ -98,10 +101,13 @@ namespace Scene
         eagleTrajectory->push(curve3);
         eagleTrajectory->closeLoop();
         eagle = new ObjModel();
+
         Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
-        patchScale = new MatrixTransform( scl );
+        Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
+        MatrixTransform * cyTrans = new MatrixTransform(trn2);
+        terrainScale = new MatrixTransform( scl );
         skyBoxScale = new MatrixTransform( skyScale );
-        patchTranslate = new MatrixTransform( trn );
+        terrainTranslate = new MatrixTransform( trn );
         ptLight = new PointLight(0, 100, 0);
         ptLight->setAmbient(0.25, 0.25, 0.25, 1);
         ptLight->setSpecular(.5, .5, .5, 1);
@@ -143,11 +149,16 @@ namespace Scene
 
         // Now we only have 1 scene graph, less hacky than before
         world->addChild( ptLight );
-        world->addChild( patchTranslate ); 
+        world->addChild( terrainTranslate ); 
         world->addChild( skyBoxScale );
-        patchTranslate->addChild( patchScale );
-        patchScale->addChild( terrain ); // water patch
+        world->addChild( cyTrans );
+        terrainTranslate->addChild( terrainScale );
+        terrainScale->addChild( terrain ); // water patch
         skyBoxScale->addChild( sky );
+
+        // Initiate tree
+        tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
+        cyTrans->addChild(tree);
 
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
@@ -167,16 +178,16 @@ namespace Scene
         delete world; world = nullptr;
         delete bunny, dragon, bear, eagle;
         delete eagleTrajectory;
-        delete ptLight;
+        delete ptLight; delete tree;
         delete waterPatch;
-        delete patchScale, patchTranslate, skyBoxScale;
+        delete terrainScale, terrainTranslate, skyBoxScale;
         delete sky;
         delete terrain; terrain = nullptr;
         sky = nullptr;
-        waterPatch = nullptr; patchScale = patchTranslate = nullptr;
+        waterPatch = nullptr; terrainScale = terrainTranslate = nullptr;
         bunny = dragon = bear = eagle = nullptr;
         ptLight = nullptr;
-        cerr << "Dealloc called!" << endl;
+        cerr << "Dellocating memory..." << endl;
     };
 };
 
@@ -374,10 +385,14 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::showFps = !Scene::showFps;
       cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
       break;
-  // Regenerate the terrain
+
+  // Regenerate the terrain/trees
   case 't':
       Scene::terrain->generate();
       cout << "New terrain generated!" << endl;
+      break;
+  case 'g':
+    cerr << Scene::tgen.genString(3) << endl;
       break;
 
   // Allow wasd movement control of camera
@@ -424,7 +439,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::world->getMatrix().identity();
       Scene::camera->reset();
       break;
+
   // On/Off Toggles
+    
   case '1':
       Scene::isSnowing = !Scene::isSnowing;
       cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
@@ -436,7 +453,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::stopEagle = !Scene::stopEagle;
       break;
   case '4':
-      Scene::showEagleTrajectory = !Scene::showEagleTrajectory;
+      Scene::showEagleTrajectory = !Scene::showEagleTrajectory; break;
   default:
     cerr << "Pressed: " << key << endl;
     break;
