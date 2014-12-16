@@ -93,10 +93,10 @@
     <ClCompile Include="Cylinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TreeGen.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="Tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeGen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

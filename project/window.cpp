@@ -37,6 +37,7 @@ namespace Scene
 	Shader *shader;
 	BezierPatch *waterPatch;
   TreeGen tgen = TreeGen();
+  Tree * tree;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
 	bool showBounds = false;
 	bool showFps = false;
@@ -45,7 +46,6 @@ namespace Scene
 	double zfar = 1000; //1000.0;
 	GLuint textures[6];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
-  Material woodMat;
 
 	// Create a new robot at the given position in world coordinates
 	Robot* createRobot(Vector3& pos) {
@@ -79,7 +79,7 @@ namespace Scene
 		Matrix4 scl = Matrix4::scale(50,50,50);
 		Matrix4 sc2 = Matrix4::scale(3,15,3);
 		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
-		Matrix4 trn2 = Matrix4::translate(0.0,-5.0,0.0);
+		Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( scl );
 
@@ -92,12 +92,6 @@ namespace Scene
 		ptLight->setSpecular(0, 0, 1, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
-    // Wood-y color
-    woodMat.setColor(0.89509803921, 0.45098039215, 1/3.0, 1)
-           .setShine(0)
-           .setAmbient(0.2,0.2,0.2,1)
-           .setDiffuse(1,1,1,1)
-           .setSpecular({},0);
 
 		// Load a bind the textures
 		
@@ -139,10 +133,9 @@ namespace Scene
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
-    cyTrans->addChild(cyScale);
-    Cylinder * cyl = new Cylinder(0.7,0.3,1);
-    cyl->setMat(woodMat);
-    cyScale->addChild(cyl);
+
+    tree = tgen.generate(3,1.5,35,7);
+    cyTrans->addChild(tree);
 
 		// Affix shaders to individual scene graph nodes
 		waterPatch->setShader( shader ); // This patch should have a shader

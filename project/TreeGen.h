@@ -4,9 +4,15 @@
 #include <iostream>
 #include <map>
 #include <time.h>
+#include <vector>
+#include <stack>
+
 #include "node.h"
 #include "Group.h"
 #include "MatrixTransform.h"
+#include "Cylinder.h"
+#include "Sphere.h"
+#include "Material.h"
 #include "Tree.h"
 
 /* Generates a stochastic L-system tree.
@@ -64,9 +70,16 @@ private:
   map<char, rule*> rules;  // Map rules to variables
 
   void addRule(char, string, string, string, double);
-  double prob();      // Generate random double between 0-1
+  double rnd();      // Generate random double between 0-1
+  void push();        // Increase stack
+  void pop();         // Decrease stack
 
   static string axiom;
+  const static double BRANCH_SCALE;
+  const static double TOP_SCALE;
+  const static double TOT_DEG;
+  static Material leafMat;
+  static Material woodMat;
 
 public:
   TreeGen();
@@ -76,7 +89,7 @@ public:
   /* Generate a new tree with branch length len and initial radius rad
    * n - the number of iterations
    */
-  Tree generate(double len, double rad, double ang, int n);     
+  Tree * generate(double h, double r, double ang, int n);     
   string genString(int n);      // Generate a string of order n
   void destroyRules();
 };
