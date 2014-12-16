@@ -36,6 +36,7 @@ namespace Scene
 	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
 	Shader *shader;
 	BezierPatch *waterPatch;
+  TreeGen tgen = TreeGen();
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
 	bool showBounds = false;
 	bool showFps = false;
@@ -59,6 +60,8 @@ namespace Scene
 
 	// Initialize pointers with defaults
 	void setup() {
+    // Initialize Tree Generator
+    tgen.initialize();
 
 		// Scene setup
 		camera = new Camera(
@@ -90,7 +93,7 @@ namespace Scene
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
     // Wood-y color
-    woodMat.setColor(0.54509803921, 0.45098039215, 1/3.0, 1)
+    woodMat.setColor(0.89509803921, 0.45098039215, 1/3.0, 1)
            .setShine(0)
            .setAmbient(0.2,0.2,0.2,1)
            .setDiffuse(1,1,1,1)
@@ -137,7 +140,7 @@ namespace Scene
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
     cyTrans->addChild(cyScale);
-    Cylinder * cyl = new Cylinder();
+    Cylinder * cyl = new Cylinder(0.7,0.3,1);
     cyl->setMat(woodMat);
     cyScale->addChild(cyl);
 
@@ -338,6 +341,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().identity();
     Scene::camera->reset();
 	  break;
+    
+  case 'g':
+    cerr << Scene::tgen.genString(3) << endl;
+	  break;
+
   default:
     cerr << "Pressed: " << key << endl;
     break;

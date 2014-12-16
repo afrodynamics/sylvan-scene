@@ -80,6 +80,8 @@
     <ClInclude Include="GLee.h" />
     <ClInclude Include="Group.h" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="Tree.h" />
+    <ClInclude Include="TreeGen.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Matrix4.h" />
@@ -119,6 +121,8 @@
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="Tree.cpp" />
+    <ClCompile Include="TreeGen.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="SpotLight.cpp" />
     <ClCompile Include="Vector3.cpp" />
