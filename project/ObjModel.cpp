@@ -49,7 +49,7 @@ void ObjModel::printInfo(string comment)
 	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
 		<< "\tTextures: " << uvwCoords.size() << endl
-		<< "\tFaces: " << faces << endl
+		<< "\tFaces:    " << faces << endl
 		<< "\tFaceType: " << ft << endl;
 }
 
