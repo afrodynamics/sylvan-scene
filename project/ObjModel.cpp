@@ -212,9 +212,11 @@ bool ObjModel::cppParseFile(string fname) {
 			for (int i = 1; i < symbolsRead; ++i) {
 				
 				split(tokens.at(i), '/', vertexLine);
+                
 				unsigned int sz = vertexLine.size();
 				unsigned int verticesPushed = 0;
 				for (int j = 0; j < sz; ++j) {
+                    
 					if (vertexLine.at(j).compare("") == 0) {
 						continue; // An empty string between slashes can be ignored
 					}
@@ -222,7 +224,6 @@ bool ObjModel::cppParseFile(string fname) {
 						triangleList.push_back(std::stoi(vertexLine.at(j)));
 						verticesPushed++;
 					}
-					
 				}
 				if (verticesPushed == 1) faceType = VERTEX_ONLY;
 				else if (verticesPushed == 2) faceType = VERTEX_SS_NORMAL;
@@ -319,6 +320,7 @@ bool ObjModel::cppParseFile(string fname) {
 				/*  vt u v */
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
+                uvwCoords.push_back(Vector4(vtx, vty, 0, 0));
 				//normalList.push_back(Vector4(vtx, vty, 0, 0));
 			}
 
@@ -421,15 +423,13 @@ void ObjModel::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
-
-    /**
     
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
-	glEnable(GL_COLOR_MATERIAL); */
+	//glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
+	glEnable(GL_COLOR_MATERIAL);
 
 	if (!fileLoaded * !printWarn) {
 		// Print a warning letting the user know what's up, use stringstreams so it's thread safe
@@ -457,7 +457,6 @@ void ObjModel::draw(Matrix4& C) {
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
-    printf("triangle list size: %d\n", triangleList.size());
 	for (int i = 0; i < triangleList.size(); ) {
 
 		// Grab the normal and vertex indices in their respective arrays
@@ -469,7 +468,7 @@ void ObjModel::draw(Matrix4& C) {
         if (uvwIndex >= uvwSize) break;
 		//if (nrmIndex >= normSize) break;
 		if (vtxIndex >= colorSize) {
-			glColor3f(1.0, 1.0, 1.0); // Default to color white
+			glColor3f(0.0, 0.0, 0.0); // Default to color black
 			lookupColor = false;
 		}
 		else if (lookupColor) {

@@ -1,4 +1,5 @@
 #include "BezierSpline.h"
+#include <tgmath.h>
 #include <exception>
 
 BezierSpline::~BezierSpline() {}
@@ -79,4 +80,23 @@ Vector4 BezierSpline::calcPoint(double t) {
         }
     }
     return curveToDraw.calcPoint(scaledT - i);
+}
+
+double BezierSpline::getAngle(double t) {
+    Vector4 current = calcPoint(t);
+    Vector4 next;
+    if(t <= 0.99) {
+        next = calcPoint(t + 0.01);
+    }
+    else {
+        next = calcPoint(t - 0.99);
+    }
+    double deltaX = next.getX() - current.getX();
+    double deltaY = next.getY() - current.getY();
+    double degree = atan2(deltaY, deltaX);
+    double angle = (degree * 180)/3.14159;
+    if(angle < 0) {
+        angle += 360;
+    }
+    return angle;
 }
