@@ -154,7 +154,8 @@ namespace Scene
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
-    tree = tgen.generate(3,1.5,35,7);
+    // Initiate tree
+    tree = tgen.generate(3,1.5,35,10);
     cyTrans->addChild(tree);
 
         eagle->cppParseFile("objectmodels/eagle.obj");

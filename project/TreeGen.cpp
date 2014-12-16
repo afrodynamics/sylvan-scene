@@ -115,14 +115,14 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
   // TODO
   stack<pair<double,double>> rStack;    // Stack of radii, pair of base, top 
   stack<Group *> nodeState;        // Node stack
-  vector<MatrixTransform *> * trunkNodes = new vector<MatrixTransform*>();     // Trunk nodes
-  vector<MatrixTransform *> * branchNodes = new vector<MatrixTransform*>();     // Direct branch nodes
+  // Trunk nodes
+  vector<MatrixTransform *> * trunkNodes = new vector<MatrixTransform*>(); 
+  // Direct branch nodes
+  vector<MatrixTransform *> * branchNodes = new vector<MatrixTransform*>();
   Group * curr, *root = curr = new Group();
   string treeStr = genString(n);
   int length = treeStr.length();
   double topRad, baseRad = topRad = r;
-
-  cerr << "Tree string: " << treeStr << endl;
 
   for(int i = 0; i < length; ++i) {
     char c = treeStr.at(i);

@@ -44,6 +44,6 @@ void Cylinder::render() {
   glTranslatef(0,0,-1);
   gluQuadricOrientation(quad,GLU_INSIDE);
   gluDisk(quad,0,bot_r,longitude,latitude);
-  glPopMatrix();
   */
+  glPopMatrix();
 }
