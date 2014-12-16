@@ -134,7 +134,7 @@ namespace Scene
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
 
-    tree = tgen.generate(3,1.5,35,7);
+    tree = tgen.generate(2,1.5,35,5);
     cyTrans->addChild(tree);
 
 		// Affix shaders to individual scene graph nodes
