@@ -28,9 +28,14 @@ MatrixTransform::~MatrixTransform()
 void MatrixTransform::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
-	centerPos = lastC * Vector4(0,0,0,1);
+	lastC.transpose();
 
-	Group::draw(lastC);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixd(lastC.getPointer()); // Load the matrix now
+
+	lastC.transpose();
+	Group::draw(lastC);	
+	//centerPos = lastC * Vector4(0,0,0,1);
 
 }
 

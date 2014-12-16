@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Util.h"
 #include "Robot.h"
 
 using namespace std;
@@ -152,12 +153,12 @@ void Robot::animate() {
 	leftLegAngle += rotateSpeed * -rotateDir;
 	rightLegAngle += rotateSpeed * rotateDir;
 
-	if (ABS(leftLegAngle) > 60) {
+	if ( Util::abs(leftLegAngle) > 60) {
 		// If we've moved further than our threshold allows, reverse direction
 		rotateDir *= -1;
 	}
 
-	if (ABS(leftArmAngle) > 90) {
+	if ( Util::abs(leftArmAngle) > 90) {
 		// If we've moved further than our threshold allows, reverse direction
 		rotateArmDir *= -1;
 	}

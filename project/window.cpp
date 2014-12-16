@@ -7,15 +7,21 @@
 #include <GLUT/glut.h>
 #endif
 
+#include <string>
+#include <sstream>
 #include <math.h>
 #include "main.h"
 #include "Window.h"
 #include "SpotLight.h"
 #include "SkyBox.h"
+#include "Terrain.h"
 #include "BezierPatch.h"
 #include "Cylinder.h"
 #include "Cone.h"
 #include "Material.h"
+#include "BezierCurve.h"
+#include "BezierSpline.h"
+#include "Particles.h"
 
 using namespace std;
 
@@ -23,12 +29,13 @@ int Window::width  = 512;   // set window width in pixels here
 int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
+int Window::currentFPS = 60; // we hope
 
 namespace Scene
 {
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr; // Top level of the scene graph
-	ObjModel *bunny, *dragon, *bear = nullptr;
+	ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
 	PointLight *ptLight;
 	SkyBox *sky;
 	vector<Node*> nodeList;
@@ -38,13 +45,21 @@ namespace Scene
 	BezierPatch *waterPatch;
   TreeGen tgen = TreeGen();
   Tree * tree;
+	BezierSpline* eagleTrajectory;
+	Terrain *terrain;
+
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
+    Particles *snow;
 	bool showBounds = false;
 	bool showFps = false;
 	bool shaderOn = false;
+	bool fullscreen = false;
+    bool isSnowing = false;
+    bool stopEagle = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
-	GLuint textures[6];
+	float t = 0.0;
+	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
 	// Create a new robot at the given position in world coordinates
@@ -65,31 +80,35 @@ namespace Scene
 
 		// Scene setup
 		camera = new Camera(
-			Vector3(0, 0, 20), Vector3(0, 0, 0), Vector3(0, 1, 0)
+			Vector3(0, 25, 100), Vector3(0, 25, 0), Vector3(0, 1, 0)
 		);
 
-		world = new MatrixTransform();
-
-		Vector4 p0, p1, p2, p3;
-		p0 = Vector4(-5,0,0,1);
-		p1 = Vector4(-2.5,-7,0,1);
-		p2 = Vector4(2.5,7,0,1);
-		p3 = Vector4(5,0,0,1);
+		world = new MatrixTransform(); // Top level of the scene graph
 		waterPatch = new BezierPatch();
-		Matrix4 scl = Matrix4::scale(50,50,50);
-		Matrix4 sc2 = Matrix4::scale(3,15,3);
-		Matrix4 trn = Matrix4::translate(0.0,-10.0,0.0);
-		Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
+		
+    terrain = new Terrain(); // Procedural generator FTW
+		Matrix4 scl = Matrix4::scale(125,125,125);
+		Matrix4 skyScale = Matrix4::scale(250,250,250);
+        snow = new Particles(250, 250, 250);
+        BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
+        BezierCurve curve2 = BezierCurve(Vector4(-10, 0, 10, 1), Vector4 (0, -25, 100, 1), Vector4(5, -5, 20, 1), Vector4(100, 10, 0, 1));
+        BezierCurve curve3 = BezierCurve(Vector4(100, 10, 0, 1), Vector4(75, 20, -20, 1), Vector4(10, 75, 10, 1), Vector4(0, 75, 0, 1));
+     	eagleTrajectory = new BezierSpline();
+     	eagleTrajectory->push(curve1);
+     	eagleTrajectory->push(curve2);
+        eagleTrajectory->push(curve3);
+     	eagleTrajectory->closeLoop();
+        eagle = new ObjModel();
+		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
 		patchScale = new MatrixTransform( scl );
-		skyBoxScale = new MatrixTransform( scl );
+		skyBoxScale = new MatrixTransform( skyScale );
 
-    MatrixTransform * cyScale = new MatrixTransform(sc2);
+		Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
     MatrixTransform * cyTrans = new MatrixTransform(trn2);
-
 		patchTranslate = new MatrixTransform( trn );
-		ptLight = new PointLight(0, 2, 0);
+		ptLight = new PointLight(0, 100, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
-		ptLight->setSpecular(0, 0, 1, 1);
+		ptLight->setSpecular(.5, .5, .5, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
 		ptLight->enableMat(true); // Turn on material for the light
 
@@ -97,7 +116,7 @@ namespace Scene
 		
 		sky = new SkyBox(); // Still don't have a good texture class here
 
-		glGenTextures(6, textures); // This needs to be made OOP
+		glGenTextures(7, textures); // This needs to be made OOP
 
 		sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
 		sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
@@ -106,11 +125,13 @@ namespace Scene
 		sky->top = Window::loadPPM("tex/top1.ppm",1024,1024,4);
 		sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
+		snow->textureID = Window::loadPPM("tex/snow.ppm", 1024, 1024, 6);
+
 		/*  Assign texture locations into the vertex & fragment shader  */
 		// This did not belong inside of loadPPM
 		
 		shader = new Shader("shaders/reflection_map.vert", "shaders/reflection_map.frag", true);
-		shader->printLog(">>> reflection_map shader >>>");
+		shader->printLog("Shader Compiler: ");
 		GLuint texLoc;
 		for (int texID = 0; texID < 6; texID++) {
 			switch (texID) {
@@ -121,7 +142,6 @@ namespace Scene
 				case 4: texLoc = glGetUniformLocationARB(Scene::shader->pid,"top"); break;
 				case 5: texLoc = glGetUniformLocationARB(Scene::shader->pid,"base"); break;
 			}
-
 			glUniform1i( texLoc, 0 ); // The zero here determines what kind of texture this is
 		}
 
@@ -131,14 +151,16 @@ namespace Scene
 		world->addChild( skyBoxScale );
     world->addChild( cyTrans );
 		patchTranslate->addChild( patchScale );
-		patchScale->addChild( waterPatch );
+		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
     tree = tgen.generate(3,1.5,35,7);
     cyTrans->addChild(tree);
 
+        eagle->cppParseFile("objectmodels/eagle.obj");
+        eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
 		// Affix shaders to individual scene graph nodes
-		waterPatch->setShader( shader ); // This patch should have a shader
+		terrain->setShader( shader ); // This patch should have a shader
 
 	};
 	// Deallocate all kinds of stuff
@@ -148,15 +170,18 @@ namespace Scene
 			*iter = nullptr;
 		}
 		delete world; world = nullptr;
-		delete bunny, dragon, bear;
+		delete bunny, dragon, bear, eagle;
+		delete eagleTrajectory;
 		delete ptLight;
 		delete waterPatch;
 		delete patchScale, patchTranslate, skyBoxScale;
 		delete sky;
+		delete terrain; terrain = nullptr;
 		sky = nullptr;
 		waterPatch = nullptr; patchScale = patchTranslate = nullptr;
-		bunny = dragon = bear = nullptr;
+		bunny = dragon = bear = eagle = nullptr;
 		ptLight = nullptr;
+		cerr << "Dealloc called!" << endl;
 	};
 };
 
@@ -166,10 +191,25 @@ namespace Scene
 void Window::idleCallback()
 {
 
-	static int frame = 0, time, timebase = 0;
+	static long frame = 0, time, timebase = 0;
 
     // Call draw on the Scene
 	displayCallback(); // call display routine to show the cube
+
+	// Update the particle system
+	if (Scene::snow != nullptr)
+	  Scene::snow->update();
+
+    //update t for Bezier spline (eagle's trajectory)
+    if(!Scene::stopEagle) {
+        if(Scene::t < 0.9975) {
+            Scene::t += 0.0025;
+        }
+        else {
+            Scene::t = 0.0;
+        }
+    }
+    //printf("t: %f\n", Scene::t);
 
 	/* FPS Counter courtesy of Lighthouse3D */
 
@@ -181,21 +221,17 @@ void Window::idleCallback()
 	if (time - timebase > 1000) {
 		// Always calculate delta time
 		deltaTime = (time - timebase) - 1000;
-		if ( Scene::showFps ) 
-			cerr << "FPS: " << frame * 1000 / (time - timebase) << " | DT " << deltaTime << endl;
+		Window::currentFPS = frame * 1000 / (time - timebase);
 		timebase = time; // Set timebase to the current time
 		frame = 0; // Reset frame counter
 	}
-
 };
 
 //----------------------------------------------------------------------------
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-  cerr << "Window::reshapeCallback called" << endl;
-  width = w;
-  height = h;
+
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -209,12 +245,6 @@ void Window::reshapeCallback(int w, int h)
   Window::width = w;
   Window::height = h;
 
-  // Do some important calculations
-
-  double fovRadians = (Window::fov / 2) / 180.0 * M_PI;
-  double aspectRatio = ((double)(width))/(double)height;
-  double windowWidth = 2 * tan(fovRadians) * aspectRatio * Scene::camera->getPos().getZ();
-
 };
 
 //----------------------------------------------------------------------------
@@ -222,37 +252,85 @@ void Window::reshapeCallback(int w, int h)
 void Window::displayCallback()
 {
 
+  // No reason to allocate a new mat4 every call, just update it if necessary
+  static Matrix4 invCam = Matrix4();
+
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
   
-  Matrix4 ident = Matrix4();
-  Matrix4 invCam = Matrix4();
   invCam.identity();
-  ident.identity();
-  if ( Scene::camera != nullptr) 
+  if ( Scene::camera != nullptr && Scene::world != nullptr ) {
   	invCam = Scene::camera->getGLMatrix();
+  }
+  else
+  	return; // With no camera matrix, there's no point trying to draw
 
-  // Used by the skybox
+  // Scene graph is now
   invCam = invCam * Scene::world->getMatrix();
-  // Vector3 camPos3 = Scene::camera->getPos();
-  // Vector4 camPos = invCam * Vector4( camPos3.getX(), camPos3.getY(), camPos3.getZ(), 1.0 );
-  // ^ this needed to be passed in as a uniform for the reflection shader, and is no longer necessary
+
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
+	if (Scene::isSnowing) {
+        Scene::snow->render();
+    }
+
+
+    double angle = Scene::eagleTrajectory->getAngle(Scene::t);
+    angle += 90; //eagle should be facing to the right by default
+    Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::t);
+    Matrix4 eagleMatrix = invCam * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+
+    glColor3f(0.35, 0.25, 0.2);
+    Scene::eagle->draw(eagleMatrix);
+    //Scene::eagleTrajectory->draw(100); //drawing bezier spline
 
 	// Enable environment mapping on our patch
-	if (Scene::shaderOn && Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	if (Scene::shaderOn && Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-	else if ( Scene::waterPatch != nullptr ) {
-		Scene::waterPatch->enableShader( Scene::shaderOn );
+	else if ( Scene::terrain != nullptr ) {
+		Scene::terrain->enableShader( Scene::shaderOn );
 	}
-
+      
 	// Draw the scene graph
 	Scene::world->draw( invCam );
+  }
+
+  // Show FPS on screen if the flag is set
+  if ( Scene::showFps ) {
+
+  	// Build the string
+	stringstream fpsCounter;
+    double const aspect = (double)Window::width/(double)Window::height;
+	fpsCounter << "FPS: " << Window::currentFPS << endl;
+	string built = fpsCounter.str();
+
+	// Clear the zbuffer, set matrix mode to projection
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0.0, Window::width, 0.0, Window::height );
+
+	// Push an identity matrix onto the stack
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	// OpenGL's bottom left corner is (0,0) in screen coordinates
+	glRasterPos2i( 0, Window::height - 24 );
+	for( int i = 0; i < built.size(); i++ ) {
+	  glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, built.at(i) );
+	}
+
+	// Pop the extra matrices we created off of their respective stacks
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix(); // pop GL_MODELVIEW
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 
   }
 
@@ -275,6 +353,11 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   transformation.identity(); // Make sure the Matrix isn't utter garbage
 
   switch (key) {
+  case 27:
+      // Close gracefully and dealloc stuff.
+      Scene::dealloc(); 
+      exit(0); 
+      break;
   case 'b':
 	  Scene::showBounds = !Scene::showBounds;
 	  Scene::world->showBoundingBox(Scene::showBounds);
@@ -282,11 +365,16 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'e':
 	  Scene::shaderOn = !Scene::shaderOn;
-	  cerr << "Environment mapping is " << (Scene::shaderOn == true ? "on" : "off") << endl;
+	  cerr << "Shader is " << (Scene::shaderOn == true ? "on" : "off") << " for the terrain." << endl;
 	  break;
   case 'f':
 	  Scene::showFps = !Scene::showFps;
 	  cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
+	  break;
+  // Regenerate the terrain
+  case 't':
+	  Scene::terrain->generate();
+	  cout << "New terrain generated!" << endl;
 	  break;
 
   // Allow wasd movement control of camera
@@ -308,7 +396,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'z':
     Scene::camera->moveDown();
     break;
-    
   // Allow WASD rotation control of camera
   case 'W':
     Scene::camera->lookAt(1, 1);
@@ -332,18 +419,27 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'r':
 	  Scene::world->getMatrix().identity();
-    Scene::camera->reset();
+      Scene::camera->reset();
 	  break;
     
   case 'g':
     cerr << Scene::tgen.genString(3) << endl;
 	  break;
 
+  case '1':
+      Scene::isSnowing = !Scene::isSnowing;
+      cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
+      break;
+  case '2':
+      Scene::t = 0.0;
+      break;
+  case '3':
+      Scene::stopEagle = !Scene::stopEagle;
+      break;
   default:
     cerr << "Pressed: " << key << endl;
     break;
   }
-
 };
 
 /** Load a ppm file from disk, then loads it into OpenlGL.
@@ -435,9 +531,6 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// cerr << filename << " has tex ID: " << texture[0] << endl;
-	// return texture[0];
-	//cerr << filename << " has tex ID: " << Scene::textures[texID] << endl;
 	return Scene::textures[texID];
 }
 
@@ -452,7 +545,14 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
 void Window::functionKeysCallback(int key, int x, int y) {
   switch (key) {
   case GLUT_KEY_F1:
-	  cout << "Pressed F1" << endl;
+	  Scene::fullscreen = !Scene::fullscreen;
+	  if ( Scene::fullscreen ) {
+	  	  glutFullScreen();
+	  }
+	  else {
+	  	glutReshapeWindow(640,480);
+	  	// glutRepositionWindow(0,0)
+	  }
 	  break;
   default:
 	  cout << "Pressed a function key or trigged glutSpecialFunc" << endl;

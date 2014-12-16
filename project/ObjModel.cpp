@@ -1,3 +1,4 @@
+#include "Util.h"
 #include "ObjModel.h"
 #include <string>
 #include <sstream>
@@ -44,6 +45,7 @@ void ObjModel::printInfo(string comment)
 {
 	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
+		<< "\tTextures: " << uvwCoords.size() << endl
 		<< "\tFaces: " << faces << endl;
 }
 
@@ -98,6 +100,12 @@ bool ObjModel::cParseFile(string fname) {
 				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
 			}
 		}
+        else if (strncmp(buf, "vt", 2) == 0) {
+            symbolsRead = fscanf(fp, "%lf %lf %lf", &vx, &vy, &vz);
+            if (symbolsRead == 3) {
+                uvwCoords.push_back(Vector4(vx, vy, vz, 1.0));
+            }
+        }
 		else if (strncmp(buf, "f", 2) == 0) {
 			fscanf(fp, "%d %[/] %d %d %[/] %d %d %[/] %d",
 				&t1, &s1, &n1, &t2, &s2, &n2, &t3, &s3, &n3);
@@ -149,8 +157,8 @@ bool ObjModel::cppParseFile(string fname) {
 	symbolsRead = 0;
 	stringstream s;
 
-	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;;
-	cout << s.str();;
+	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;
+	cout << s.str();
 
 	ifs.seekg(0); // Seek to start of file
 
@@ -160,7 +168,7 @@ bool ObjModel::cppParseFile(string fname) {
 	xMax = yMax = zMax = -DBL_MAX;
 
 	while (ifs.good()) {
-		
+        
 		// Grabs a line from ifs and drops it
 		// into string line
 		getline(ifs, line);
@@ -178,7 +186,7 @@ bool ObjModel::cppParseFile(string fname) {
 		// So the TAs know stuff is actually going on and it isn't hanging
 		if (lineNumber % 4096 == 0) {
 			float progress = (float)filePos / (float)fileSize;
-			printf("  %.2f%% \t%.16s                        \r", 
+			printf("  %.2f%% \t%.30s                        \r", 
 				   progress * 100, fname.c_str() );
 			fflush(stdout);
 		}
@@ -204,9 +212,11 @@ bool ObjModel::cppParseFile(string fname) {
 			for (int i = 1; i < symbolsRead; ++i) {
 				
 				split(tokens.at(i), '/', vertexLine);
+                
 				unsigned int sz = vertexLine.size();
 				unsigned int verticesPushed = 0;
 				for (int j = 0; j < sz; ++j) {
+                    
 					if (vertexLine.at(j).compare("") == 0) {
 						continue; // An empty string between slashes can be ignored
 					}
@@ -214,7 +224,6 @@ bool ObjModel::cppParseFile(string fname) {
 						triangleList.push_back(std::stoi(vertexLine.at(j)));
 						verticesPushed++;
 					}
-					
 				}
 				if (verticesPushed == 1) faceType = VERTEX_ONLY;
 				else if (verticesPushed == 2) faceType = VERTEX_SS_NORMAL;
@@ -304,12 +313,14 @@ bool ObjModel::cppParseFile(string fname) {
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
 				vtz = std::stod(tokens.at(3));
+                uvwCoords.push_back(Vector4(vtx, vty, vtz, 0));
 				//normalList.push_back(Vector4(vtx, vty, vtz, 0));
 			}
 			else if (symbolsRead == 3) {
 				/*  vt u v */
 				vtx = std::stod(tokens.at(1));
 				vty = std::stod(tokens.at(2));
+                uvwCoords.push_back(Vector4(vtx, vty, 0, 0));
 				//normalList.push_back(Vector4(vtx, vty, 0, 0));
 			}
 
@@ -339,11 +350,12 @@ bool ObjModel::cppParseFile(string fname) {
 		}
 	}
 
+    /**
 	if (ifs.fail()) {
 		std::cerr << "Parsing failed: " << strerror(errno) << endl;
 		ifs.close();
 		return false;
-	}
+	} */
 
 	ifs.close();
 
@@ -361,9 +373,9 @@ bool ObjModel::cppParseFile(string fname) {
 	double yMiddle = (yMin + yMax) / 2.0;
 	double zMiddle = (zMin + zMax) / 2.0;
 
-	double scaleX = windowWidth / ABS(ABS(xMax) + ABS(xMin));
-	double scaleY = windowWidth / ABS(ABS(yMax) + ABS(yMin));
-	double scaleZ = windowWidth / ABS(ABS(zMax) + ABS(zMin));
+	double scaleX = windowWidth / Util::abs(Util::abs(xMax) + Util::abs(xMin));
+	double scaleY = windowWidth / Util::abs(Util::abs(yMax) + Util::abs(yMin));
+	double scaleZ = windowWidth / Util::abs(Util::abs(zMax) + Util::abs(zMin));
 
 #ifdef __APPLE__
 	double scaleFactor = std::min( std::min(scaleX, scaleY), std::min(scaleY, scaleZ) );
@@ -411,12 +423,12 @@ void ObjModel::draw(Matrix4& C) {
 
 	lastC = C * *mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
-
+    
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
+	//glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR );
 	glEnable(GL_COLOR_MATERIAL);
 
 	if (!fileLoaded * !printWarn) {
@@ -430,9 +442,10 @@ void ObjModel::draw(Matrix4& C) {
 
 	// Draw *this* object, then the children
 
-	Vector4 vtx, nrm, clr;
+	Vector4 vtx, nrm, clr, tex;
 	unsigned int normSize = normalList.size();
 	unsigned int vertSize = vertexList.size();
+    unsigned int uvwSize = uvwCoords.size();
 	unsigned int colorSize = vertexList.size();
 
 	Matrix4 tmp = lastC;
@@ -440,20 +453,22 @@ void ObjModel::draw(Matrix4& C) {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(tmp.getPointer());
+
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
-
 	for (int i = 0; i < triangleList.size(); ) {
 
 		// Grab the normal and vertex indices in their respective arrays
 		unsigned int vtxIndex = triangleList[i++] - 1;
-		unsigned int nrmIndex = triangleList[i++] - 1;
+		//unsigned int nrmIndex = triangleList[i++] - 1;
+        unsigned int uvwIndex = triangleList[i++] - 1;
 
 		if (vtxIndex >= vertSize) break;
-		if (nrmIndex >= normSize) break;
+        if (uvwIndex >= uvwSize) break;
+		//if (nrmIndex >= normSize) break;
 		if (vtxIndex >= colorSize) {
-			glColor3f(1.0, 1.0, 1.0); // Default to color white
+			glColor3f(0.0, 0.0, 0.0); // Default to color black
 			lookupColor = false;
 		}
 		else if (lookupColor) {
@@ -463,23 +478,22 @@ void ObjModel::draw(Matrix4& C) {
 
 		// Grab the information we need from our std::vectors (in Vector4 format)
 		/* Vertex 1 */
-		
-		if (faceType == VERTEX_SS_NORMAL) {
+		//if (faceType == VERTEX_SS_NORMAL) {
 			vtx = vertexList[vtxIndex];
-			nrm = normalList[nrmIndex];
+			//nrm = normalList[nrmIndex];
+            tex = uvwCoords[uvwIndex];
 			clr;
-		}
-		else {
+		//}
+		/**else {
 			break; // Unsupported face type right now
-		}
-				
-		glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
-		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());	
-
+		} */
+		
+		//glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+        glTexCoord3f(tex.getX(), tex.getY(), tex.getZ());
+		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
 	}
 
 	glEnd();
-
 	// Call draw on the children, if we have any
 	Group::draw(lastC);
 

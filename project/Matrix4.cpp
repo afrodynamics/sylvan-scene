@@ -11,16 +11,6 @@
 #include <exception>
 #include "Matrix4.h"
 
-/* Sick of Compiler Errors */
-double ABS(double d) {
-  if ( d >= 0 ) {
-    return d;
-  }
-  else {
-    return -d;
-  }
-}
-
 /**
  * Matrix4 standard constructor
  */

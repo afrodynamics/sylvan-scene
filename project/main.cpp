@@ -16,13 +16,13 @@ int main(int argc, char *argv[])
 {
   float specular[]  = {1.0, 1.0, 1.0, 1.0};
   float shininess[] = {100.0};
-  float position[]  = {0.0, 10.0, 0.0, 0.0};	// lightsource position
+  float position[]  = {0.0, 100.0, -20.0, 0.0};	// lightsource position
 
     
   glutInit(&argc, argv);      	      	      // initialize GLUT
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);   // open an OpenGL context with double buffering, RGB colors, and depth buffering
   glutInitWindowSize(Window::width, Window::height);      // set initial window size
-  glutCreateWindow("CSE 167 Project 6");    	      // open window and set window title
+  glutCreateWindow("A Sylvan Setting");    	      // open window and set window title
 
   // Initialize the scene
   Scene::setup();

@@ -8,8 +8,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-extern double ABS(double); // So I can use this anywhere I have a Matrix4.h
-
 class Matrix4
 {
   private:
