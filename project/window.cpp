@@ -266,6 +266,8 @@ void Window::displayCallback()
     angle += 90; //eagle should be facing to the right by default
     Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::t);
     Matrix4 eagleMatrix = invCam * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+
+    glColor3f(0.35, 0.25, 0.2);
     Scene::eagle->draw(eagleMatrix);
     //Scene::eagleTrajectory->draw(100); //drawing bezier spline
 
