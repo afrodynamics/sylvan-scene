@@ -11,11 +11,12 @@ Cabin::Cabin() {}
 Cabin::~Cabin() {}
 
 void Cabin::draw(Matrix4 m) {
-    glPushMatrix();
-    glLoadMatrixd(m.getPointer());
+  //  glPushMatrix();
+   // glLoadMatrixd(m.getPointer());
 //    GLUquadricObj *obj = gluNewQuadric();
     glColor3f(0.35, 0.25, 0.2);
+    glTranslated(0, -10, 0);
     glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
     gluCylinder(gluNewQuadric(), 5, 5, 20, 100, 100);
-    glPopMatrix();
+    //glPopMatrix();
 }

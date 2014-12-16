@@ -96,7 +96,7 @@ namespace Scene
 		patchScale = new MatrixTransform( scl );
 		skyBoxScale = new MatrixTransform( skyScale );
 		patchTranslate = new MatrixTransform( trn );
-		ptLight = new PointLight(0, 20, 0);
+		ptLight = new PointLight(0, 100, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(.5, .5, .5, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
@@ -266,7 +266,7 @@ void Window::displayCallback()
         Scene::snow->render();
     }
 
- Scene::cabin->draw(invCam ); //* Matrix4::translate(0, 20, 0) * Matrix4::rotY(180));
+      Scene::cabin->draw(invCam ); //* Matrix4::translate(0, 20, 0) * Matrix4::rotY(180));
       
     double angle = Scene::eagleTrajectory->getAngle(Scene::t);
     angle += 90; //eagle should be facing to the right by default
