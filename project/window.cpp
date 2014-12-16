@@ -148,10 +148,12 @@ namespace Scene
         }
 
         // Now we only have 1 scene graph, less hacky than before
+        world->mtx.identity();
         world->addChild( ptLight );
         world->addChild( terrainTranslate ); 
         world->addChild( skyBoxScale );
         world->addChild( cyTrans );
+        world->addChild( eagleTrajectory );
         terrainTranslate->addChild( terrainScale );
         terrainScale->addChild( terrain ); // water patch
         skyBoxScale->addChild( sky );
@@ -283,23 +285,13 @@ void Window::displayCallback()
 
     double angle = Scene::eagleTrajectory->getAngle(Scene::eaglePos); // this could be precomputed
     angle += 90; //eagle should be facing to the right by default
-    Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::eaglePos);
-    Matrix4 eagleMatrix = invCamRot * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+    Vector4 position = invCamRot * Scene::eagleTrajectory->calcPoint(Scene::eaglePos);
+    Matrix4 eagleMatrix = /* invCamRot **/ Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
 
     glColor3f(0.35, 0.25, 0.2);
+    Scene::eagle->mtx.identity();
     Scene::eagle->draw(eagleMatrix);
-
-    if ( Scene::showEagleTrajectory ) {
-
-      // Re load the inv. camera matrix so we actually see the *real* bezier path
-      glColor3f(1.0,0.0,0.0);
-      glLoadIdentity();
-      invCamRot.transpose();
-      glLoadMatrixd(invCamRot.getPointer());
-      invCamRot.transpose();
-      Scene::eagleTrajectory->draw(100); // draw bezier spline
-
-    }
+    Scene::eagle->mtx = eagleMatrix;
 
     // Enable environment mapping on our patch
     if ( Scene::shaderOn && Scene::terrain != nullptr ) {

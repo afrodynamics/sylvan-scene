@@ -23,7 +23,10 @@ Geode::~Geode()
 // matrix in OpenGL. Assumes C is a row major matrix
 void Geode::draw(Matrix4& C) {
 
-	// Let MatrixTransform nodes load matrices
+	// Load matrix C.
+	C.transpose();
+	glLoadMatrixd(C.getPointer());
+	C.transpose();
 
 	// Shaders & Materials don't work well together
 	if ( useShader && shader != nullptr ) {

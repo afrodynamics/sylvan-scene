@@ -6,17 +6,20 @@
  * close the loop by moving curves around until there are one or fewer curves.
  */
 #include <vector>
+#include "Geode.h"
 #include "BezierCurve.h"
 
-class BezierSpline {
+class BezierSpline : public Geode {
 private:
 	std::vector<BezierCurve> curves;
 	bool loop;   // Indicates whether this spline should form a continuous loop
 	bool closed; // Indicates whether the spline is a closed loop (used to prevent
 		         // pushing any further curves.)
 public:
-	BezierSpline() : loop(false), closed(false) {};   // Splines don't loop by default
+	int samples; // The # of samples to use to draw this BezierSpline
+	BezierSpline() : loop(false), closed(false), samples(75) {};   // Splines don't loop by default
     ~BezierSpline();
+    void render(); // Inherited from Geode
 	void draw(int); // Draw the curve in its entirety, given samples
 	void push(BezierCurve&);
 	void pop();

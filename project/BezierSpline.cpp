@@ -4,10 +4,15 @@
 
 BezierSpline::~BezierSpline() {}
 
+// Allow positioning in the scene graph
+void BezierSpline::render() {
+    draw(samples);
+}
+
 // Draw all the curves using uniform sampling
-void BezierSpline::draw(int samples) {
+void BezierSpline::draw(int s) {
     for (auto iter = curves.begin(); iter != curves.end(); ++iter) {
-        (*iter).draw(samples);
+        (*iter).draw(s);
     }
 }
 
@@ -63,7 +68,7 @@ void BezierSpline::closeLoop() {
     }
 }
 
-//calcuate point
+// Calcuate point
 Vector4 BezierSpline::calcPoint(double t) {
     if ( t < 0 || t > 1 ) {
         throw std::runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");
