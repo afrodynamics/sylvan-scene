@@ -1,5 +1,5 @@
 #include "BezierSpline.h"
-#include <tgmath.h>
+#include <cmath>
 #include <exception>
 
 BezierSpline::~BezierSpline() {}

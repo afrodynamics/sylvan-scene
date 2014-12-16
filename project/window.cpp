@@ -30,6 +30,8 @@ int Window::currentFPS = 60; // we hope
 
 namespace Scene
 {
+
+	// Scene Graph & Camera objects 
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr; // Top level of the scene graph
 	ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
@@ -44,15 +46,21 @@ namespace Scene
 	Terrain *terrain;
 	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
     Particles *snow;
+
+    // Boolean Flahs
 	bool showBounds = false;
 	bool showFps = false;
+	bool showEagleTrajectory = true;
 	bool shaderOn = false;
 	bool fullscreen = false;
     bool isSnowing = false;
     bool stopEagle = false;
 	double znear = 1.0;
 	double zfar = 1000; //1000.0;
-	float t = 0.0;
+	float eaglePos = 0.0;
+
+
+
 	GLuint textures[7];
 	GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
 
@@ -141,8 +149,11 @@ namespace Scene
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
+		// ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
+        world->addChild( eagle );
+		
 		// Affix shaders to individual scene graph nodes
 		terrain->setShader( shader ); // This patch should have a shader
 
@@ -186,14 +197,13 @@ void Window::idleCallback()
 
     //update t for Bezier spline (eagle's trajectory)
     if(!Scene::stopEagle) {
-        if(Scene::t < 0.9975) {
-            Scene::t += 0.0025;
+        if(Scene::eaglePos < 0.9975) {
+            Scene::eaglePos += 0.0025;
         }
         else {
-            Scene::t = 0.0;
+            Scene::eaglePos = 0.0;
         }
     }
-    //printf("t: %f\n", Scene::t);
 
 	/* FPS Counter courtesy of Lighthouse3D */
 
@@ -238,22 +248,21 @@ void Window::displayCallback()
 
   // No reason to allocate a new mat4 every call, just update it if necessary
   static Matrix4 invCam = Matrix4();
+  static Matrix4 invCamRot = Matrix4();
 
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear color and depth buffers
   glMatrixMode(GL_MODELVIEW);  // make sure we're in Modelview mode
-  
+
   invCam.identity();
+  invCamRot.identity();
   if ( Scene::camera != nullptr && Scene::world != nullptr ) {
   	invCam = Scene::camera->getGLMatrix();
+  	invCamRot = invCam * Scene::world->getMatrix();
   }
   else
   	return; // With no camera matrix, there's no point trying to draw
-
-  // Scene graph is now
-  invCam = invCam * Scene::world->getMatrix();
-
 
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
@@ -261,15 +270,33 @@ void Window::displayCallback()
         Scene::snow->render();
     }
 
-
-    double angle = Scene::eagleTrajectory->getAngle(Scene::t);
+    double angle = Scene::eagleTrajectory->getAngle(Scene::eaglePos);
     angle += 90; //eagle should be facing to the right by default
-    Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::t);
-    Matrix4 eagleMatrix = invCam * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+    Vector4 position = Scene::eagleTrajectory->calcPoint(Scene::eaglePos);
+    Matrix4 eagleMatrix = invCamRot * Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+    // Scene::eagle->mtx = Matrix4(Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle));
+    // Since the Matrix4::translate & rotY commands create temporaries, we need to wrap this in a copy on the heap
+    // Scene::eagle->mtx = new Matrix4(
+    //   Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle) 
+    // );
 
     glColor3f(0.35, 0.25, 0.2);
+    // Scene::eagle->mtx = eagleMatrix;
+    Scene::eagle->mtx.identity();
     Scene::eagle->draw(eagleMatrix);
-    //Scene::eagleTrajectory->draw(100); //drawing bezier spline
+    // Scene::eagle->mtx = Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
+
+    if (Scene::showEagleTrajectory) {
+
+      // Re load the inv. camera matrix so we actually see the *real* bezier path
+      glColor3f(1.0,0.0,0.0);
+      glLoadIdentity();
+      invCamRot.transpose();
+      glLoadMatrixd(invCamRot.getPointer());
+      invCamRot.transpose();
+      Scene::eagleTrajectory->draw(100); // draw bezier spline
+
+    }
 
 	// Enable environment mapping on our patch
 	if (Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -405,16 +432,19 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  Scene::world->getMatrix().identity();
       Scene::camera->reset();
 	  break;
+  // On/Off Toggles
   case '1':
       Scene::isSnowing = !Scene::isSnowing;
       cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
       break;
   case '2':
-      Scene::t = 0.0;
+      Scene::eaglePos = 0.0;
       break;
   case '3':
       Scene::stopEagle = !Scene::stopEagle;
       break;
+  case '4':
+      Scene::showEagleTrajectory = !Scene::showEagleTrajectory;
   default:
     cerr << "Pressed: " << key << endl;
     break;

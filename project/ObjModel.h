@@ -3,7 +3,11 @@
 #include <string>
 
 enum FaceDefinition {
-	VERTEX_ONLY, VERTEX_SS_NORMAL, VERTEX_TEXTURE_NORMAL, QUAD
+	VERTEX_ONLY = 0,             // f *       -- only vertoces
+	VERTEX_SS_NORMAL = 1,        // f *//*    -- vertices, skip tex coord, then normals
+	VERTEX_TEXTURE_NORMAL = 2,   // f */*/*   -- vertices, texture coords and normals
+	VERTEX_TEXTURE_ONLY = 3,     // f */*     -- quads
+	QUAD = 4
 };
 
 class ObjModel :
@@ -33,12 +37,12 @@ private:
 	float shininess[4];
 
 public:
+	Matrix4 modelScaleMtx; // Do not change this matrix under any circumstances!
 	std::vector<Vector4> vertexList, normalList, colorList, uvwCoords;
 	std::vector<int> triangleList;
 	ObjModel();
 	~ObjModel();
 	bool parseFile(std::string fname, double);
-	bool cParseFile(std::string fname);
 	bool cppParseFile(std::string fname);
 	bool isLoaded();
 	void printInfo(std::string comment);
