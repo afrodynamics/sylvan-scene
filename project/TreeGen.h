@@ -105,15 +105,35 @@ private:
   static Material woodMat;
   static GLUquadricObj * q;
 
+  double length;
+  double radius;
+  double angle;
+  int depth;
+  double angleVary;
+  double lenVary;
+
 public:
   TreeGen();
+  TreeGen(double,double,double,int);
   ~TreeGen();
   void initialize();    // Initialize the rules
 
   /* Generate a new tree with branch length len and initial radius rad
    * n - the number of iterations
    */
-  Tree * generate(double h, double r, double ang, int n);     
+  Tree * generate();    // Default generation
+  Tree * generate(int n);    // Default generation with depth n
+  Tree * generate(double l, double r, double ang, int n);
+
+  /* Setter methods
+   */
+  TreeGen * setLength(double);
+  TreeGen * setRadius(double);
+  TreeGen * setAngle(double);
+  TreeGen * setDepth(int);
+  TreeGen * setAVary(double);
+  TreeGen * setLVary(double);
+
   string genString(int n);      // Generate a string of order n
   void destroyRules();
 };

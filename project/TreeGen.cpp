@@ -4,7 +4,7 @@
 using namespace Util; // Unify all the RNG elements
                       // also, it cross-compiles nicely
 
-string TreeGen::axiom = "IzTXX";
+string TreeGen::axiom = "IzXXtXT";
 const double TreeGen::BRANCH_SCALE = 0.80;
 const double TreeGen::MIN_RAD = 0.03;
 const double TreeGen::TOP_SCALE = 0.94;
@@ -21,8 +21,17 @@ Material TreeGen::woodMat = Material().setColor(0.89509803921,0.45098039215,1/3.
                                      .setSpecular({},0);
 GLUquadricObj * TreeGen::q = gluNewQuadric();
 
-TreeGen::TreeGen() {
-  // TODO
+TreeGen::TreeGen() :
+  TreeGen(3,3,35,5)
+{
+}
+
+TreeGen::TreeGen(double l, double r, double a, int n) {
+  length = l;
+  radius = r;
+  angle = a;
+  depth = n;
+  angleVary = lenVary = 0;
 }
 
 TreeGen::~TreeGen() {
@@ -63,19 +72,32 @@ void TreeGen::addRule(char k,
 void TreeGen::initialize() {
   Util::seed(0); // Seed with the current time
 
+  addRule('T',"tXT","","",0.25);
+  addRule('T',"tXXT","","",0.25);
+  addRule('T',"tXXXT","","",0.25);
+  addRule('T',"tXTXX","","",0.25);
+  /*
   addRule('T',"TXXz","","",0.30);
   addRule('T',"tXtXtzXT","","",0.15);
   addRule('T',"tXXtXtXTzX","","",0.15);
   addRule('T',"tXXtXXtTz","","",0.15);
   addRule('T',"tXtXXzT","","",0.15);
+  */
   //addRule('T', "t","","",0.10);
 
+  addRule('T',"fYF","","",0.25);
+  addRule('T',"fYYF","","",0.25);
+  addRule('T',"fYYYF","","",0.25);
+  addRule('T',"fYFYY","","",0.25);
+
+  /*
   addRule('F',"FFYYFLLzFY","","",0.30);
   addRule('F',"FFYFLYYFLL","","",0.20);
   addRule('F',"FFYLFYF","","",0.20);
   addRule('F',"FFYLLzF","","",0.50);
   addRule('F',"FFYFzLFY","","",0.30);
   addRule('F',"Lf","","",0.10);
+  */
 
   addRule('I',"iI","","",1);
   addRule('i',"i","","",1);
@@ -87,12 +109,12 @@ void TreeGen::initialize() {
   addRule('X',"[srFFYY]","","",0.125);
   addRule('X',"[srFFY]","","",0.125);
   
-  addRule('Y',"[sssrFLYFFYLFY]","","",0.225);
-  addRule('Y',"[sssrFLFYFYLLFY]","","",0.225);
-  addRule('Y',"[ssrFYFYYFYF]","","",0.15);
-  addRule('Y',"[ssrFYFLYFLLF]","","",0.15);
-  addRule('Y',"[srFLLYFLFYYFLYY]","","",0.125);
-  addRule('Y',"[srFLYLYFLYLF]","","",0.125);
+  addRule('Y',"[sssrfLYffYLFY]","","",0.225);
+  addRule('Y',"[sssrfLfYfYLLFY]","","",0.225);
+  addRule('Y',"[ssrfYfYYfYF]","","",0.15);
+  addRule('Y',"[ssrfYfLYfLLF]","","",0.15);
+  addRule('Y',"[srfLLYfLfYYfLYY]","","",0.125);
+  addRule('Y',"[srfLYLYfLYLF]","","",0.125);
 
   addRule('t', "t","","",1);
   addRule('f', "f","","",1);
@@ -149,6 +171,16 @@ string TreeGen::genString(int n) {
   return str;
 }
 
+/* Default generations
+ */
+Tree * TreeGen::generate() {
+  return generate(length,radius,angle,depth);
+}
+
+Tree * TreeGen::generate(int n) {
+  return generate(length,radius,angle,n);
+}
+
 /* Generate a new tree
  * h - the step of a forward movement
  * r - original radius of tree
@@ -190,7 +222,7 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'f':
         {
         // Create tree branch/trunk
-        Cylinder * cy = new Cylinder(q, baseRad,topRad,h);
+        Cylinder * cy = new Cylinder(q, baseRad,topRad,h,5,3);
         cy->setMat(woodMat);
         // Create translation for next branch
         MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,h,0));
@@ -263,7 +295,31 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
   tree->setTrunk(trunkNodes)->setBranches(branchNodes);
 
   return tree;
-} 
+}
+
+/* Setter methods
+ */
+TreeGen* TreeGen::setLength(double l) {
+  length = l;
+  return this;
+}
+TreeGen* TreeGen::setRadius(double r) {
+  radius = r;
+  return this;
+}
+
+TreeGen* TreeGen::setAngle(double a) {
+  angle = a;
+  return this;
+}
+TreeGen* TreeGen::setDepth(int n) {
+  depth = n;
+  return this;
+}
+TreeGen* TreeGen::setAVary(double v) {
+  angleVary = v;
+  return this;
+}
 
 void TreeGen::destroyRules() {
   // TODO

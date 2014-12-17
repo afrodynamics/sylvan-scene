@@ -53,7 +53,7 @@ void Cylinder::render() {
   glRotatef(90,-1,0,0);
   // Draw cylinder
   gluQuadricOrientation(quad,GLU_OUTSIDE);
-	gluCylinder(quad, bot_r, top_r, height, longitude, latitude);
+	gluCylinder(quad, bot_r, top_r, height, latitude, longitude);
   
   // Draw cylinder bases
   /*
