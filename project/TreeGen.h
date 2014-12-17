@@ -99,8 +99,8 @@ private:
   int calcSlices(double initR, double r);
 
   static string axiom;
-  const static int MAX_SLICES = 16;
-  const static int MIN_SLICES = 5;
+  const static int MAX_SLICES;
+  const static int MIN_SLICES;
   const static double LEN_ALTER;
   const static double MIN_RAD;
   const static double BRANCH_SCALE;
