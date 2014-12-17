@@ -38,6 +38,17 @@ void Terrain::generate() {
 }
 
 /**
+ * Returns a random vertex from the heightmap
+ */
+Vector3 Terrain::getRandomGroundLocation() {
+	int x = floor(drandRange(0, tesselX - 1));
+	int z = floor(drandRange(0, tesselZ - 1));
+	return Vector3(
+		(double)x / (double)tesselX, getHeightmap(x, z), (double)z / (double)tesselZ
+	);
+}
+
+/**
  * Generates the vertices of the terrain, filling in the y coordinate
  * with the value in the heightmap. Call this ***after*** generateHeightmap()
  */
