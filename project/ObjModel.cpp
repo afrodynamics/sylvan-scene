@@ -12,16 +12,13 @@ ObjModel::ObjModel()
 	fileLoaded = printWarn = false;
 	filename = "";
 	faces = 0;
-	mtx = new Matrix4();
-	mtx->identity();
+	mtx = Matrix4();
+	mtx.identity();
 	windowWidth = 20.0;
 }
 
 ObjModel::~ObjModel()
 {
-	if (mtx != nullptr) {
-		delete mtx;
-	}
 }
 
 /**
@@ -391,17 +388,17 @@ bool ObjModel::cppParseFile(string fname) {
 #endif
 	// Translate the model's vertices from its center to *THE* center
 	Matrix4 translationMtx = Matrix4::translate(-xMiddle, -yMiddle, -zMiddle);
-	mtx->transformWorld(translationMtx);
+	mtx.transformWorld(translationMtx);
 
 	for (int v = 0; v < vertexList.size(); ++v) {
-		vertexList[v] = *mtx * vertexList[v]; // Translate vertices
+		vertexList[v] = mtx * vertexList[v]; // Translate vertices
 	}
 
 	// Finally, reset our matrix to the identity & scale
 
 	Matrix4 scale = Matrix4::scale(scaleFactor, scaleFactor, scaleFactor);
-	mtx->identity();
-	mtx->transformWorld(scale);
+	mtx.identity();
+	mtx.transformWorld(scale);
 
 	/** End of Centering **/
 	
@@ -421,7 +418,7 @@ bool ObjModel::isLoaded() { return fileLoaded; }
  */
 void ObjModel::draw(Matrix4& C) {
 
-	lastC = C * *mtx;
+	lastC = C * mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
     
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);

@@ -5,7 +5,7 @@ Cylinder::Cylinder(GLUquadricObj * q)
 {
   top_r = bot_r = 0.5;
 	height = 1;
-	boundingRadius = Util::max(Util::max(top_r,bot_r), height/2.0);
+	boundingRadius = Util::umax(Util::umax(top_r,bot_r), height/2.0);
 	longitude = latitude = 16; // 32 is way too high
   quad = q;
 }
@@ -15,7 +15,7 @@ Cylinder::Cylinder(GLUquadricObj * q, double b, double t, double h)
   bot_r = b;
   top_r = t;
 	height = h;
-	boundingRadius = Util::max(Util::max(top_r,bot_r), height/2.0);
+	boundingRadius = Util::umax(Util::umax(top_r,bot_r), height/2.0);
 	longitude = latitude = 16; // 32 is way too high
   quad = q;
 }
