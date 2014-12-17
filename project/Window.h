@@ -18,7 +18,6 @@ namespace Scene
 	extern double znear, zfar;
 	extern MatrixTransform *world;
 	extern Robot* createRobot(Vector3&);
-  extern TreeGen tgen;
 	extern void setup();
 	extern void dealloc();
 };

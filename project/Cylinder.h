@@ -15,6 +15,7 @@ private:
 public:
 	Cylinder(GLUquadricObj * q);
 	Cylinder(GLUquadricObj * q, double b, double t, double h);
+	Cylinder(GLUquadricObj * q, double b, double t, double h, double lat, double lon);
 	~Cylinder();
 	void render();
 };

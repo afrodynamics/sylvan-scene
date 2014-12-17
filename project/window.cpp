@@ -22,6 +22,7 @@
 #include "BezierCurve.h"
 #include "BezierSpline.h"
 #include "Particles.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -37,7 +38,7 @@ namespace Scene
     // Scene Graph & Camera objects 
     Camera *camera = nullptr;
     MatrixTransform *world = nullptr; // Top level of the scene graph
-    ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
+    ObjModel *eagle = nullptr;
     PointLight *ptLight;
     SkyBox *sky;
     vector<Node*> nodeList;
@@ -48,8 +49,8 @@ namespace Scene
     BezierSpline* eagleTrajectory;
     Terrain *terrain;
     MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate, *treeTranslate;
-    TreeGen tgen = TreeGen();
-    Tree * tree;
+    TreeGen *tgen;
+    Tree *tree;
     Particles *snow;
 
     // Boolean Flahs
@@ -101,9 +102,11 @@ namespace Scene
         eagleTrajectory->push(curve3);
         eagleTrajectory->closeLoop();
         eagle = new ObjModel();
+        tgen = new TreeGen();
+        tgen->initialize();
 
         Matrix4 terTransMtx = Matrix4::translate(0.0,-125.0,0.0);
-        Matrix4 cylTransMtx = Matrix4::translate(0.0,-10.0,0.0);
+        Matrix4 cylTransMtx = Matrix4::translate(0.0,-100.0,0.0);
         treeTranslate = new MatrixTransform(cylTransMtx);
         terrainScale = new MatrixTransform( scl );
         skyBoxScale = new MatrixTransform( skyScale );
@@ -159,7 +162,7 @@ namespace Scene
         skyBoxScale->addChild( sky );
 
         // Initiate tree
-        tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
+        tree = tgen->generate(3,1.5,50,5); // Any number greater than 5 results in 2 FPS!!!
         treeTranslate->addChild(tree);
 
         // ObjModels are scene graph compatible
@@ -176,17 +179,19 @@ namespace Scene
             delete *iter;
             *iter = nullptr;
         }
-        delete world; world = nullptr;
-        delete bunny, dragon, bear, eagle;
+        delete eagle;
         delete eagleTrajectory;
-        delete ptLight; delete tree;
+        delete ptLight; 
+        delete tgen;
+        delete tree;
         delete waterPatch;
         delete terrainScale, terrainTranslate, skyBoxScale;
         delete sky;
-        delete terrain; terrain = nullptr;
+        delete terrain;
+        delete world;
         sky = nullptr;
         waterPatch = nullptr; terrainScale = terrainTranslate = nullptr;
-        bunny = dragon = bear = eagle = nullptr;
+        eagle = nullptr;
         ptLight = nullptr;
         cerr << "Dellocating memory..." << endl;
     };
@@ -381,7 +386,14 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       cout << "New terrain generated!" << endl;
       break;
   case 'g':
-    cerr << Scene::tgen.genString(3) << endl;
+      cerr << Scene::tgen->genString(3) << endl;
+      break;
+  case 'G':
+      delete Scene::tree;
+      cerr << "Tree Gen" << endl;
+      Scene::treeTranslate->removeChild(Scene::tree);
+      Scene::tree = Scene::tgen->generate( 2, 1.5, 40 + 20 * Util::drand(), 5);
+      Scene::treeTranslate->addChild(Scene::tree);
       break;
 
   // Allow wasd movement control of camera
@@ -427,14 +439,14 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   case 'r':
       Scene::world->getMatrix().identity();
       Scene::camera->reset();
-      break;
+	  break;
 
   // On/Off Toggles
     
   case '1':
-      Scene::isSnowing = !Scene::isSnowing;
-      cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
-      break;
+    Scene::isSnowing = !Scene::isSnowing;
+    cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
+    break;
   case '2':
       Scene::eaglePos = 0.0;
       break;
