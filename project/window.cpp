@@ -37,27 +37,28 @@ namespace Scene
 	Camera *camera = nullptr;
 	MatrixTransform *world = nullptr; // Top level of the scene graph
 	ObjModel *bunny, *dragon, *bear, *eagle = nullptr;
-	PointLight *ptLight;
-	SkyBox *sky;
-	vector<Node*> nodeList;
-	vector<Robot*> robotList;
-	vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
-	Shader *shader;
-	BezierPatch *waterPatch;
-    TreeGen tgen = TreeGen();
-    Tree * tree;
-	BezierSpline* eagleTrajectory;
-	Terrain *terrain;
+  PointLight *ptLight;
+  SkyBox *sky;
+  vector<Node*> nodeList;
+  vector<Robot*> robotList;
+  vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
+  Shader *shader;
+  BezierPatch *waterPatch;
+  TreeGen tgen = TreeGen();
+  MatrixTransform * treeTranslate;
+  Tree * tree;
+  BezierSpline* eagleTrajectory;
+  Terrain *terrain;
 
-	MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
-    Particles *snow;
-	bool showBounds = false;
-	bool showFps = false;
-	bool shaderOn = false;
-	bool fullscreen = false;
-    bool isSnowing = false;
-    bool stopEagle = false;
-	double znear = 1.0;
+  MatrixTransform *patchScale, *skyBoxScale, *patchTranslate;
+  Particles *snow;
+  bool showBounds = false;
+  bool showFps = false;
+  bool shaderOn = false;
+  bool fullscreen = false;
+  bool isSnowing = false;
+  bool stopEagle = false;
+  double znear = 1.0;
 	double zfar = 1000; //1000.0;
 	float t = 0.0;
 	GLuint textures[7];
@@ -87,27 +88,26 @@ namespace Scene
 		world = new MatrixTransform(); // Top level of the scene graph
 		waterPatch = new BezierPatch();
 		
-        terrain = new Terrain(); // Procedural generator FTW
-		Matrix4 scl = Matrix4::scale(125,125,125);
-		Matrix4 skyScale = Matrix4::scale(250,250,250);
-        snow = new Particles(250, 250, 250);
-        BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
-        BezierCurve curve2 = BezierCurve(Vector4(-10, 0, 10, 1), Vector4 (0, -25, 100, 1), Vector4(5, -5, 20, 1), Vector4(100, 10, 0, 1));
-        BezierCurve curve3 = BezierCurve(Vector4(100, 10, 0, 1), Vector4(75, 20, -20, 1), Vector4(10, 75, 10, 1), Vector4(0, 75, 0, 1));
-     	eagleTrajectory = new BezierSpline();
-     	eagleTrajectory->push(curve1);
-     	eagleTrajectory->push(curve2);
-        eagleTrajectory->push(curve3);
-     	eagleTrajectory->closeLoop();
-        eagle = new ObjModel();
-		Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
-		patchScale = new MatrixTransform( scl );
-		skyBoxScale = new MatrixTransform( skyScale );
+    terrain = new Terrain(); // Procedural generator FTW
+    Matrix4 scl = Matrix4::scale(125,125,125);
+    Matrix4 skyScale = Matrix4::scale(250,250,250);
+    snow = new Particles(250, 250, 250);
+    BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
+    BezierCurve curve2 = BezierCurve(Vector4(-10, 0, 10, 1), Vector4 (0, -25, 100, 1), Vector4(5, -5, 20, 1), Vector4(100, 10, 0, 1));
+    BezierCurve curve3 = BezierCurve(Vector4(100, 10, 0, 1), Vector4(75, 20, -20, 1), Vector4(10, 75, 10, 1), Vector4(0, 75, 0, 1));
+    eagleTrajectory = new BezierSpline();
+    eagleTrajectory->push(curve1);
+    eagleTrajectory->push(curve2);
+    eagleTrajectory->push(curve3);
+    eagleTrajectory->closeLoop();
+    eagle = new ObjModel();
+    Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
+    patchScale = new MatrixTransform( scl );
+    skyBoxScale = new MatrixTransform( skyScale );
 
-		Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
-        MatrixTransform * cyTrans = new MatrixTransform(trn2);
-		patchTranslate = new MatrixTransform( trn );
-		ptLight = new PointLight(0, 100, 0);
+    treeTranslate = new MatrixTransform(Matrix4::translate(0.0,-10.0,0.0));
+    patchTranslate = new MatrixTransform( trn );
+    ptLight = new PointLight(0, 100, 0);
 		ptLight->setAmbient(0.25, 0.25, 0.25, 1);
 		ptLight->setSpecular(.5, .5, .5, 1);
 		ptLight->setDiffuse(.35, .35, .35, 0);
@@ -146,23 +146,23 @@ namespace Scene
 			glUniform1i( texLoc, 0 ); // The zero here determines what kind of texture this is
 		}
 
-		// Now we only have 1 scene graph, less hacky than before
-		world->addChild( ptLight );
-		//world->addChild( patchTranslate ); 
-		world->addChild( skyBoxScale );
-        world->addChild( cyTrans );
-		patchTranslate->addChild( patchScale );
-		patchScale->addChild( terrain ); // water patch
-		skyBoxScale->addChild( sky );
+    // Now we only have 1 scene graph, less hacky than before
+    world->addChild( ptLight );
+    //world->addChild( patchTranslate ); 
+    world->addChild( skyBoxScale );
+    world->addChild( treeTranslate );
+    patchTranslate->addChild( patchScale );
+    patchScale->addChild( terrain ); // water patch
+    skyBoxScale->addChild( sky );
 
     // Initiate tree
     tree = tgen.generate(3,1.5,50,5); // Any number greater than 5 results in 2 FPS!!!
-    cyTrans->addChild(tree);
+    treeTranslate->addChild(tree);
 
-        eagle->cppParseFile("objectmodels/eagle.obj");
-        eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
-		// Affix shaders to individual scene graph nodes
-		terrain->setShader( shader ); // This patch should have a shader
+    eagle->cppParseFile("objectmodels/eagle.obj");
+    eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
+    // Affix shaders to individual scene graph nodes
+    terrain->setShader( shader ); // This patch should have a shader
 
 	};
 	// Deallocate all kinds of stuff
@@ -430,19 +430,22 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
 	  break;
   case 'G':
     delete Scene::tree;
+    cerr << "Tree Gen" << endl;
+    Scene::treeTranslate->removeChild(Scene::tree);
     Scene::tree = Scene::tgen.generate(2,1.5,40+20*Util::drand(), 5);
+    Scene::treeTranslate->addChild(Scene::tree);
 	  break;
 
   case '1':
-      Scene::isSnowing = !Scene::isSnowing;
-      cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
-      break;
+    Scene::isSnowing = !Scene::isSnowing;
+    cerr << (Scene::isSnowing ? "It is" : "It is not") << " snowing" << endl;
+    break;
   case '2':
-      Scene::t = 0.0;
-      break;
+    Scene::t = 0.0;
+    break;
   case '3':
-      Scene::stopEagle = !Scene::stopEagle;
-      break;
+    Scene::stopEagle = !Scene::stopEagle;
+    break;
   default:
     cerr << "Pressed: " << key << endl;
     break;

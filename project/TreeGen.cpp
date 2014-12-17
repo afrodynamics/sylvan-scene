@@ -60,6 +60,8 @@ void TreeGen::addRule(char k,
 
 // Initialize the rules
 void TreeGen::initialize() {
+  Util::seed(0); // Seed with the current time
+
   addRule('T',"TXXz","","",0.30);
   addRule('T',"XTzXT","","",0.15);
   addRule('T',"XTTzX","","",15);
@@ -107,7 +109,6 @@ void TreeGen::initialize() {
 // Generate a string of order n
 string TreeGen::genString(int n) {
   string str = axiom;
-  Util::seed(0); // Seed with the current time
 
   // n interations
   for(int i = 0; i < n; ++i) {
@@ -141,9 +142,6 @@ string TreeGen::genString(int n) {
  * a - angle of branches
  */
 Tree * TreeGen::generate(double h, double r, double a, int n) {
-  
-  // TODO
-  
   stack<pair<double,double>> rStack;    // Stack of radii, pair of base, top 
   stack<Group *> nodeState;        // Node stack
   
@@ -156,9 +154,20 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
   string treeStr = genString(n);
   int length = treeStr.length();
   double topRad, baseRad = topRad = r;
+  int terminate = 0;
 
   for(int i = 0; i < length; ++i) {
     char c = treeStr.at(i);
+
+    if( terminate ) {
+      if( c == '[' ) terminate++;
+      if( c == ']' ) terminate--;
+      continue;
+    }
+    else if( baseRad < 0.03 ) {
+      terminate = 1;
+    }
+
     switch(c) {
       case 'T':
       case 't':
@@ -216,10 +225,12 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         topRad *= TOP_SCALE;
         break;
       case '[':
+        if( terminate ) terminate++;
         nodeState.push(curr);
         rStack.push(pair<double,double>(baseRad,topRad));
         break;
       case ']':
+        if( terminate ) terminate--;
         curr = nodeState.top();
         baseRad = rStack.top().first;
         topRad = rStack.top().second;
