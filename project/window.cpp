@@ -266,7 +266,6 @@ void Window::displayCallback()
   // No reason to allocate a new mat4 every call, just update it if necessary
   static Matrix4 invCam = Matrix4();
   static Matrix4 invCamRot = Matrix4();
-  static Matrix4 invCamSnow = Matrix4();
 
   printGLError("GL Error in displayCallback: "); // Print any GL errors we might get
 
@@ -278,7 +277,6 @@ void Window::displayCallback()
   if ( Scene::camera != nullptr && Scene::world != nullptr ) {
     invCam = Scene::camera->getGLMatrix();
     invCamRot = invCam * Scene::world->getMatrix();
-      invCamSnow = invCam * (Matrix4::scale(125,125,125) * Scene::world->getMatrix());
   }
   else
     return; // With no camera matrix, there's no point trying to draw
