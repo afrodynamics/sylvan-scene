@@ -147,16 +147,16 @@ namespace Scene
 
 		// Now we only have 1 scene graph, less hacky than before
 		world->addChild( ptLight );
-		world->addChild( patchTranslate ); 
+		//world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
         world->addChild( cyTrans );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( terrain ); // water patch
 		skyBoxScale->addChild( sky );
 
-        // Initiate tree
-        tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
-        cyTrans->addChild(tree);
+    // Initiate tree
+    tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
+    cyTrans->addChild(tree);
 
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));

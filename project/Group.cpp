@@ -12,6 +12,9 @@ Group::Group()
 
 Group::~Group()
 {
+  for( Node * n : children ) {
+    delete n;
+  }
 }
 
 void Group::draw(Matrix4& C) {

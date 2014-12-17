@@ -4,7 +4,7 @@
 using namespace Util; // Unify all the RNG elements
                       // also, it cross-compiles nicely
 
-string TreeGen::axiom = "TX";
+string TreeGen::axiom = "tTX";
 const double TreeGen::BRANCH_SCALE = 0.75;
 const double TreeGen::TOP_SCALE = 0.9;
 const double TreeGen::TOT_DEG = 360.0;
@@ -58,19 +58,47 @@ void TreeGen::addRule(char k,
 
 // Initialize the rules
 void TreeGen::initialize() {
+  addRule('T',"TXXz","","",0.30);
+  addRule('T',"XTzXT","","",0.15);
+  addRule('T',"XTTzX","","",15);
+  addRule('T',"XTTz","","",15);
+  addRule('T',"TXzT","","",15);
+  addRule('T', "t","","",0.10);
+
+  addRule('F',"YYFzFY","","",0.30);
+  addRule('F',"YFYYF","","",0.20);
+  addRule('F',"YFYF","","",0.20);
+  addRule('F',"FYzF","","",0.50);
+  addRule('F',"YFzFY","","",0.30);
+  addRule('F',"f","","",0.10);
+
+  addRule('X',"[sssrFYF]","","",0.225);
+  addRule('X',"[sssrFFY]","","",0.225);
+  addRule('X',"[ssrFYF]","","",0.15);
+  addRule('X',"[ssrFFYY]","","",0.15);
+  addRule('X',"[srFYY]","","",0.125);
+  addRule('X',"[srFY]","","",0.125);
+
+  addRule('t', "t","","",1);
+  addRule('f', "f","","",1);
+  /* Old T rules
   addRule('T', "TT","","",0.38);
   addRule('T',"TTz","","",0.07);
   addRule('T', "TTXz","","",0.15);
-  addRule('T', "t","","",0.40);
-  addRule('t', "t","","",1);
-  addRule('F',"FF","","",0.65);
-  addRule('F',"FYF","","",0.35);
+  */
+  /* Old F rules
+  addRule('F',"YFF","","",0.30);
+  addRule('F',"FYF","","",0.50);
+  addRule('F',"FF","","",0.20);
+  */
   //addRule('F',"F","","",0.20);
+  /* Old Branch rules
   addRule('X',"[srFFYL]T[ssrFFYYFL]TX","","",0.50);
   addRule('X',"[ssrFFYL][ssrFFYL]TXX","","",0.30);
   addRule('X',"[ssrFFYL]T[sssrFFYL]TX","","",0.20);
-  addRule('Y',"LL[rLFLLFLY]FLLLFY","","",0.40);
-  addRule('Y',"L[rFLFYFLL][rFLLFLLYF]FY","","",0.40);
+  */
+  addRule('Y',"LL[srLFLLFLY]FLLLFY","","",0.40);
+  addRule('Y',"L[srFLFYFLL][srFLLFLLYF]FY","","",0.40);
   addRule('Y',"L[srFLFYFLL]F[srFLLFLLYF]FY","","",0.20);
 }
 
@@ -151,13 +179,14 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         trunkNodes.push_back(trunkTrans);   // Add trunk node to vector
         }
         break;
-      case 'X':   // Use leaf where a branch would have been
+      case 'X':   // Do nothing
+        break;
       case 'Y':   // Use leaf where a branch would have been
       case 'L':
         {
-        MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,0.5));
-        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG * drand()));
-        Sphere * leaf = new Sphere();
+        MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,baseRad+0.5));
+        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*rnd()));
+        Sphere * leaf = new Sphere(0.5);
         leaf->setMat(leafMat);
 
         // Add leaf to curr position

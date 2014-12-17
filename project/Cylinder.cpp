@@ -1,29 +1,47 @@
 #include "Cylinder.h"
 #include "Util.h"
 
-Cylinder::Cylinder(GLUquadricObj * q)
+/* Constructor
+ * q - GLUQuadratic object.  Borrowed, do not delete
+ */
+Cylinder::Cylinder(GLUquadricObj * q) : Cylinder(q,0.5,0.5,1, 16, 16)
 {
-  top_r = bot_r = 0.5;
-	height = 1;
-	boundingRadius = Util::umax(Util::umax(top_r,bot_r), height/2.0);
-	longitude = latitude = 16; // 32 is way too high
-  quad = q;
 }
 
-Cylinder::Cylinder(GLUquadricObj * q, double b, double t, double h)
+/* Constructor
+ * q - GLUQuadratic object.  Borrowed, do not delete
+ * b - bottom radius
+ * t - top radius
+ * h - height
+ */
+Cylinder::Cylinder(GLUquadricObj * q, double b, double t, double h) :
+  Cylinder(q,b,t,h,16,16)
+{
+}
+
+/* Constructor
+ * q - GLUQuadratic object.  Borrowed, do not delete
+ * b - bottom radius
+ * t - top radius
+ * h - height
+ * lat - latitude 
+ */
+Cylinder::Cylinder(GLUquadricObj * q, double b, double t, double h,
+                      double lat, double lon)
 {
   bot_r = b;
   top_r = t;
 	height = h;
 	boundingRadius = Util::umax(Util::umax(top_r,bot_r), height/2.0);
-	longitude = latitude = 16; // 32 is way too high
+  latitude = lat;
+	longitude = lon;
   quad = q;
 }
 
 
 Cylinder::~Cylinder()
 {
-  gluDeleteQuadric(quad);
+  // No need to delete GLUQuadratic since it is borrowed
 }
 
 /*
@@ -46,5 +64,6 @@ void Cylinder::render() {
   gluQuadricOrientation(quad,GLU_INSIDE);
   gluDisk(quad,0,bot_r,longitude,latitude);
   */
+
   glPopMatrix();
 }

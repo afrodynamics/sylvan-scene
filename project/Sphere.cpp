@@ -8,6 +8,14 @@ Sphere::Sphere()
 	scale = Vector4(radius, radius, radius, 1);
 }
 
+Sphere::Sphere(double r)
+{
+	boundingRadius = radius = r;
+	longitude = latitude = 16;
+	lastC.identity();
+	scale = Vector4(radius, radius, radius, 1);
+}
+
 Sphere::~Sphere()
 {
 }
