@@ -31,7 +31,7 @@ TreeGen::TreeGen(double l, double r, double a, int n) {
   radius = r;
   angle = a;
   depth = n;
-  angleVary = lenVary = 0;
+  aVary = lVary = 0;
 }
 
 TreeGen::~TreeGen() {
@@ -222,7 +222,8 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'f':
         {
         // Create tree branch/trunk
-        Cylinder * cy = new Cylinder(q, baseRad,topRad,h,5,3);
+        double vary = lVary * drand() - lVary/2.0;
+        Cylinder * cy = new Cylinder(q, baseRad,topRad,h+vary,5,3);
         cy->setMat(woodMat);
         // Create translation for next branch
         MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,h,0));
@@ -257,7 +258,8 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         break;
       case 'r':
         {
-        MatrixTransform * rotZ = new MatrixTransform(Matrix4::rotZ(a));
+        double vary = aVary * drand() + aVary/2.0;
+        MatrixTransform * rotZ = new MatrixTransform(Matrix4::rotZ(a+vary));
         MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG * drand()));
         rotY->addChild(rotZ);
         curr->addChild(rotY);
@@ -317,7 +319,11 @@ TreeGen* TreeGen::setDepth(int n) {
   return this;
 }
 TreeGen* TreeGen::setAVary(double v) {
-  angleVary = v;
+  aVary = v;
+  return this;
+}
+TreeGen* TreeGen::setLVary(double v) {
+  lVary = v;
   return this;
 }
 

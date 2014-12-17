@@ -109,8 +109,8 @@ private:
   double radius;
   double angle;
   int depth;
-  double angleVary;
-  double lenVary;
+  double aVary;
+  double lVary;
 
 public:
   TreeGen();
