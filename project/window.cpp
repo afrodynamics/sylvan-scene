@@ -31,7 +31,7 @@ int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
-
+ 
 namespace Scene
 {
 
