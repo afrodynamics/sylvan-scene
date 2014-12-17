@@ -61,7 +61,7 @@ void Robot::createRobot() {
 	rightArmJoint = new MatrixTransform( rightArmMtx );
 
 	Matrix4 limbScale = Matrix4::scale(1, 3, 1);
-
+ 
 	leftLegScale = new MatrixTransform(limbScale);
 	rightLegScale = new MatrixTransform(limbScale);
 	leftArmScale = new MatrixTransform(limbScale);

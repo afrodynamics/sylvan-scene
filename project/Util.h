@@ -34,8 +34,8 @@ namespace Util {
     double abs(double d);
 
     // Min & Max
-    double min(double,double);
-    double max(double,double);
+    double umin(double,double);
+    double umax(double,double);
 
     // Utilities for getting values from a row-major std::vector
     // template <typename T>

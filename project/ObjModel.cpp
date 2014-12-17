@@ -17,7 +17,9 @@ ObjModel::ObjModel()
 	windowWidth = 20.0;
 }
 
-ObjModel::~ObjModel() {}
+ObjModel::~ObjModel()
+{
+}
 
 /**
  * Utility Functions (static, visible to this file only)
@@ -357,7 +359,7 @@ bool ObjModel::cppParseFile(string fname) {
 
 	// This original matrix needs to be stored
 	modelScaleMtx = mtx;
-	mtx.identity(); // danger
+	mtx.identity(); // we'll allow modifying this matrix as if it were obj2world
 
 	/** End of Centering **/
 	
