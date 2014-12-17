@@ -127,14 +127,14 @@ namespace Scene
 
 		// Now we only have 1 scene graph, less hacky than before
 		world->addChild( ptLight );
-		world->addChild( patchTranslate ); 
+		//world->addChild( patchTranslate ); 
 		world->addChild( skyBoxScale );
     world->addChild( cyTrans );
 		patchTranslate->addChild( patchScale );
 		patchScale->addChild( waterPatch );
 		skyBoxScale->addChild( sky );
 
-    tree = tgen.generate(2,1.5,35,5);
+    tree = tgen.generate(2,1.5,35,4);
     cyTrans->addChild(tree);
 
 		// Affix shaders to individual scene graph nodes

@@ -21,6 +21,7 @@
  *    T - forward (trunk)
  *    t - forward (non-replacing)
  *    F - forward (branches)
+ *    f - forward (non-replacing)
  *    L - rotate + Leaf
  *    X - Branching (trunk)
  *    Y - Branching (branches)
@@ -33,19 +34,36 @@
  * Axiom = "tTX"
  * 
  * Rules:
- *    T -> TT (38%)
- *    T -> TTz (7%)
+ *    T -> TXXz (30%)
+ *    T -> XTzXT (15%)
+ *    T -> XTTzX (15%)
+ *    T -> XTTz (15%)
  *    T -> TXzT (15%)
- *    T -> t (40%)
+ *    T -> t (10%)
+ *
+ *    F -> FYzF (50%)
+ *    F -> YFzFY (30%)
+ *    F -> YYFzFY (30%)
+ *    F -> YFYYF (20%)
+ *    F -> YFYF (20%)
+ *    F -> f (10%)
+ *
  *    t -> t (100%)
- *    F -> FF (10%)
- *    F -> FYF (10%)
- *    F -> F (60%)
- *    X -> [srFYL]T[ssrFYYFL]TX (50%)
- *    X -> [ssrFYL][ssrFYL]TXX (30%)
+ *    f -> f (100%)
+ *
+ *    X -> [sssrFYF] (22.5%)
+ *    X -> [sssrFFY] (22.5%)
+ *    X -> [ssrFYF] (15%)
+ *    X -> [ssrFFYY] (15%)
+ *    X -> [srFYY] (12.5%)
+ *    X -> [srFY] (12.5%)
+ *
+ *
+ *    X -> [ssrFYL]T[sssrFYYFL]TX (50%)
+ *    X -> [ssrFYL][sssrFYL]TXX (30%)
  *    X -> [ssrFYL]T[sssrFYL]TX (20%)
- *    Y -> LL[rLFLLFLY]FLLLFY (40%)
- *    Y -> L[rFLFYFLL][rFLLFLLYF]FY (40%)
+ *    Y -> LL[srLFLLFLY]FLLLFY (40%)
+ *    Y -> L[srFLFYFLL][srFLLFLLYF]FY (40%)
  *    Y -> L[srFLFYFLL]F[srFLLFLLYF]FY (20%)
  */
 
