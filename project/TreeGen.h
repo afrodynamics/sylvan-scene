@@ -95,12 +95,19 @@ private:
   map<char, rule*> rules;  // Map rules to variables
 
   void addRule(char, string, string, string, double);
+  // Calculate the number fo slices for a cylinder as a fn of radius
+  int calcSlices(double initR, double r);
 
   static string axiom;
-  const static double BRANCH_SCALE;
+  const static int MAX_SLICES = 16;
+  const static int MIN_SLICES = 5;
+  const static double LEN_ALTER;
   const static double MIN_RAD;
+  const static double BRANCH_SCALE;
   const static double TOP_SCALE;
+  const static double TOP_T_SCALE;
   const static double TOT_DEG;
+  const static double G_ANG;      // Golden Angle
   static Material leafMat;
   static Material woodMat;
   static GLUquadricObj * q;
