@@ -4,9 +4,10 @@
 using namespace Util; // Unify all the RNG elements
                       // also, it cross-compiles nicely
 
-string TreeGen::axiom = "tTX";
-const double TreeGen::BRANCH_SCALE = 0.75;
-const double TreeGen::TOP_SCALE = 0.9;
+string TreeGen::axiom = "IzTXX";
+const double TreeGen::BRANCH_SCALE = 0.80;
+const double TreeGen::MIN_RAD = 0.03;
+const double TreeGen::TOP_SCALE = 0.94;
 const double TreeGen::TOT_DEG = 360.0;
 Material TreeGen::leafMat = Material().setColor(0.1,1,0.1,1)
                                      .setShine(5)
@@ -63,25 +64,35 @@ void TreeGen::initialize() {
   Util::seed(0); // Seed with the current time
 
   addRule('T',"TXXz","","",0.30);
-  addRule('T',"XTzXT","","",0.15);
-  addRule('T',"XTTzX","","",15);
-  addRule('T',"XTTz","","",15);
-  addRule('T',"TXzT","","",15);
-  addRule('T', "t","","",0.10);
+  addRule('T',"tXtXtzXT","","",0.15);
+  addRule('T',"tXXtXtXTzX","","",0.15);
+  addRule('T',"tXXtXXtTz","","",0.15);
+  addRule('T',"tXtXXzT","","",0.15);
+  //addRule('T', "t","","",0.10);
 
-  addRule('F',"YYFzFY","","",0.30);
-  addRule('F',"YFYYF","","",0.20);
-  addRule('F',"YFYF","","",0.20);
-  addRule('F',"FYzF","","",0.50);
-  addRule('F',"YFzFY","","",0.30);
-  addRule('F',"f","","",0.10);
+  addRule('F',"FFYYFLLzFY","","",0.30);
+  addRule('F',"FFYFLYYFLL","","",0.20);
+  addRule('F',"FFYLFYF","","",0.20);
+  addRule('F',"FFYLLzF","","",0.50);
+  addRule('F',"FFYFzLFY","","",0.30);
+  addRule('F',"Lf","","",0.10);
 
-  addRule('X',"[sssrFYF]","","",0.225);
-  addRule('X',"[sssrFFY]","","",0.225);
-  addRule('X',"[ssrFYF]","","",0.15);
+  addRule('I',"iI","","",1);
+  addRule('i',"i","","",1);
+
+  addRule('X',"[sssrFFYYF]","","",0.225);
+  addRule('X',"[sssrFFYFY]","","",0.225);
+  addRule('X',"[ssrFFYF]","","",0.15);
   addRule('X',"[ssrFFYY]","","",0.15);
-  addRule('X',"[srFYY]","","",0.125);
-  addRule('X',"[srFY]","","",0.125);
+  addRule('X',"[srFFYY]","","",0.125);
+  addRule('X',"[srFFY]","","",0.125);
+  
+  addRule('Y',"[sssrFLYFFYLFY]","","",0.225);
+  addRule('Y',"[sssrFLFYFYLLFY]","","",0.225);
+  addRule('Y',"[ssrFYFYYFYF]","","",0.15);
+  addRule('Y',"[ssrFYFLYFLLF]","","",0.15);
+  addRule('Y',"[srFLLYFLFYYFLYY]","","",0.125);
+  addRule('Y',"[srFLYLYFLYLF]","","",0.125);
 
   addRule('t', "t","","",1);
   addRule('f', "f","","",1);
@@ -101,9 +112,11 @@ void TreeGen::initialize() {
   addRule('X',"[ssrFFYL][ssrFFYL]TXX","","",0.30);
   addRule('X',"[ssrFFYL]T[sssrFFYL]TX","","",0.20);
   */
+  /* Old Y rules
   addRule('Y',"LL[srLFLLFLY]FLLLFY","","",0.40);
   addRule('Y',"L[srFLFYFLL][srFLLFLLYF]FY","","",0.40);
   addRule('Y',"L[srFLFYFLL]F[srFLLFLLYF]FY","","",0.20);
+  */
 }
 
 // Generate a string of order n
@@ -164,14 +177,17 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       if( c == ']' ) terminate--;
       continue;
     }
-    else if( baseRad < 0.03 ) {
+    else if( baseRad < MIN_RAD ) {
       terminate = 1;
     }
 
     switch(c) {
+      case 'I':
+      case 'i':
       case 'T':
       case 't':
       case 'F':
+      case 'f':
         {
         // Create tree branch/trunk
         Cylinder * cy = new Cylinder(q, baseRad,topRad,h);

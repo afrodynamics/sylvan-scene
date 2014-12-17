@@ -162,7 +162,7 @@ namespace Scene
         skyBoxScale->addChild( sky );
 
         // Initiate tree
-        tree = tgen->generate(3,1.5,50,5); // Any number greater than 5 results in 2 FPS!!!
+        tree = tgen->generate(5,5,35,7); // Any number greater than 5 results in 2 FPS!!!
         treeTranslate->addChild(tree);
 
         // ObjModels are scene graph compatible
@@ -392,7 +392,7 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       delete Scene::tree;
       cerr << "Tree Gen" << endl;
       Scene::treeTranslate->removeChild(Scene::tree);
-      Scene::tree = Scene::tgen->generate( 2, 1.5, 40 + 20 * Util::drand(), 5);
+      Scene::tree = Scene::tgen->generate( 5, 5, 30 + 10 * Util::drand(), 7);
       Scene::treeTranslate->addChild(Scene::tree);
       break;
 
