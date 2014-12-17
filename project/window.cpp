@@ -31,6 +31,7 @@ int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
+int Window::tdepth = 5;
 
 namespace Scene
 {
@@ -390,9 +391,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       break;
   case 'G':
       delete Scene::tree;
-      cerr << "Tree Gen" << endl;
       Scene::treeTranslate->removeChild(Scene::tree);
-      Scene::tree = Scene::tgen->generate();
+      Scene::tree = Scene::tgen->generate(tdepth);
       Scene::treeTranslate->addChild(Scene::tree);
       break;
 
@@ -575,6 +575,24 @@ void Window::functionKeysCallback(int key, int x, int y) {
         // glutRepositionWindow(0,0)
       }
       break;
+  case GLUT_KEY_F2:
+    tdepth = 2;
+    break;
+  case GLUT_KEY_F3:
+    tdepth = 3;
+    break;
+  case GLUT_KEY_F4:
+    tdepth = 4;
+    break;
+  case GLUT_KEY_F5:
+    tdepth = 5;
+    break;
+  case GLUT_KEY_F6:
+    tdepth = 6;
+    break;
+  case GLUT_KEY_F7:
+    tdepth = 7;
+    break;
   default:
       cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
       break;
