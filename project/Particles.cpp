@@ -45,7 +45,7 @@ void Particles::render(Matrix4 m) {
     glEnd();
 
     glDisable(GL_POINT_SPRITE);
-    // update(); // This is now being done in Window::idlecallback()
+    
     glPopMatrix();
 }
 

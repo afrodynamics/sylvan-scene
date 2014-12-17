@@ -64,6 +64,7 @@
 		CD52012F1A412491007DA384 /* Tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Tree.h; path = ../../project/Tree.h; sourceTree = "<group>"; };
 		CD5201301A412491007DA384 /* TreeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeGen.cpp; path = ../../project/TreeGen.cpp; sourceTree = "<group>"; };
 		CD5201311A412491007DA384 /* TreeGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TreeGen.h; path = ../../project/TreeGen.h; sourceTree = "<group>"; };
+		CD5201351A413F73007DA384 /* snow.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = snow.ppm; sourceTree = "<group>"; };
 		CD7517871A3BACAB00A8E1C3 /* XcodeFinalProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = XcodeFinalProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7517911A3BACC600A8E1C3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		CD7517931A3BACCA00A8E1C3 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -274,6 +275,7 @@
 		CD7517E11A3BAD4D00A8E1C3 /* tex */ = {
 			isa = PBXGroup;
 			children = (
+				CD5201351A413F73007DA384 /* snow.ppm */,
 				CD7517E21A3BAD4D00A8E1C3 /* back.ppm */,
 				CD7517E31A3BAD4D00A8E1C3 /* back1.ppm */,
 				CD7517E41A3BAD4D00A8E1C3 /* base.ppm */,
