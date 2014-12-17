@@ -6,7 +6,8 @@ BezierSpline::~BezierSpline() {}
 
 // Allow positioning in the scene graph
 void BezierSpline::render() {
-    draw(samples);
+    if (drawSpline)
+        draw(samples);
 }
 
 // Draw all the curves using uniform sampling

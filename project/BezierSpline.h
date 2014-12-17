@@ -16,8 +16,9 @@ private:
 	bool closed; // Indicates whether the spline is a closed loop (used to prevent
 		         // pushing any further curves.)
 public:
+	bool drawSpline;
 	int samples; // The # of samples to use to draw this BezierSpline
-	BezierSpline() : loop(false), closed(false), samples(75) {};   // Splines don't loop by default
+	BezierSpline() : loop(false), closed(false), samples(75), drawSpline(true) {};   // Splines don't loop by default
     ~BezierSpline();
     void render(); // Inherited from Geode
 	void draw(int); // Draw the curve in its entirety, given samples

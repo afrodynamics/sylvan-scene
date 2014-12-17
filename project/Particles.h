@@ -1,4 +1,4 @@
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 5000
 #include "Vector3.h"
 #include "shader.h"
 #include <vector>

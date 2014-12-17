@@ -47,7 +47,7 @@ namespace Scene
     BezierPatch *waterPatch;
     BezierSpline* eagleTrajectory;
     Terrain *terrain;
-    MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate;
+    MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate, *treeTranslate;
     TreeGen tgen = TreeGen();
     Tree * tree;
     Particles *snow;
@@ -83,7 +83,7 @@ namespace Scene
 
         // Scene setup
         camera = new Camera(
-            Vector3(0, 25, 100), Vector3(0, 25, 0), Vector3(0, 1, 0)
+            Vector3(0, -50, 100), Vector3(0, -50, 0), Vector3(0, 1, 0)
         );
 
         world = new MatrixTransform(); // Top level of the scene graph
@@ -91,7 +91,7 @@ namespace Scene
         terrain = new Terrain(); // Procedural generator FTW
         Matrix4 scl = Matrix4::scale(125,125,125);
         Matrix4 skyScale = Matrix4::scale(250,250,250);
-        snow = new Particles(250, 250, 250);
+        snow = new Particles(125, 125, 125);
         BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
         BezierCurve curve2 = BezierCurve(Vector4(-10, 0, 10, 1), Vector4 (0, -25, 100, 1), Vector4(5, -5, 20, 1), Vector4(100, 10, 0, 1));
         BezierCurve curve3 = BezierCurve(Vector4(100, 10, 0, 1), Vector4(75, 20, -20, 1), Vector4(10, 75, 10, 1), Vector4(0, 75, 0, 1));
@@ -102,12 +102,12 @@ namespace Scene
         eagleTrajectory->closeLoop();
         eagle = new ObjModel();
 
-        Matrix4 trn = Matrix4::translate(0.0,-50.0,0.0);
-        Matrix4 trn2 = Matrix4::translate(0.0,-10.0,0.0);
-        MatrixTransform * cyTrans = new MatrixTransform(trn2);
+        Matrix4 terTransMtx = Matrix4::translate(0.0,-125.0,0.0);
+        Matrix4 cylTransMtx = Matrix4::translate(0.0,-10.0,0.0);
+        treeTranslate = new MatrixTransform(cylTransMtx);
         terrainScale = new MatrixTransform( scl );
         skyBoxScale = new MatrixTransform( skyScale );
-        terrainTranslate = new MatrixTransform( trn );
+        terrainTranslate = new MatrixTransform( terTransMtx );
         ptLight = new PointLight(0, 100, 0);
         ptLight->setAmbient(0.25, 0.25, 0.25, 1);
         ptLight->setSpecular(.5, .5, .5, 1);
@@ -152,7 +152,7 @@ namespace Scene
         world->addChild( ptLight );
         world->addChild( terrainTranslate ); 
         world->addChild( skyBoxScale );
-        world->addChild( cyTrans );
+        world->addChild( treeTranslate );
         world->addChild( eagleTrajectory );
         terrainTranslate->addChild( terrainScale );
         terrainScale->addChild( terrain ); // water patch
@@ -160,12 +160,11 @@ namespace Scene
 
         // Initiate tree
         tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
-        cyTrans->addChild(tree);
+        treeTranslate->addChild(tree);
 
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
-        world->addChild( eagle );
         
         // Affix shaders to individual scene graph nodes
         terrain->setShader( shader ); // This patch should have a shader
@@ -289,9 +288,7 @@ void Window::displayCallback()
     Matrix4 eagleMatrix = /* invCamRot **/ Matrix4::translate(position.getX(), position.getY(), position.getZ()) * Matrix4::rotY(angle);
 
     glColor3f(0.35, 0.25, 0.2);
-    Scene::eagle->mtx.identity();
     Scene::eagle->draw(eagleMatrix);
-    Scene::eagle->mtx = eagleMatrix;
 
     // Enable environment mapping on our patch
     if ( Scene::shaderOn && Scene::terrain != nullptr ) {
@@ -445,7 +442,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::stopEagle = !Scene::stopEagle;
       break;
   case '4':
-      Scene::showEagleTrajectory = !Scene::showEagleTrajectory; break;
+      Scene::showEagleTrajectory = !Scene::showEagleTrajectory; 
+      Scene::eagleTrajectory->drawSpline = Scene::showEagleTrajectory;
+      break;
   default:
     cerr << "Pressed: " << key << endl;
     break;

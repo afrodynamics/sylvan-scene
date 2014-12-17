@@ -16,12 +16,6 @@ MatrixTransform::MatrixTransform(Matrix4 matrix)
 	mtx = Matrix4(matrix);
 }
 
-// Constructor: copies the given matrix, allowing us to easily pass in temporaries
-// MatrixTransform::MatrixTransform(Matrix4& matrix)
-// {
-// 	mtx = Matrix4(matrix);
-// }
-
 // destructor
 MatrixTransform::~MatrixTransform() {}
 
