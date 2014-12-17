@@ -22,6 +22,7 @@
 #include "BezierCurve.h"
 #include "BezierSpline.h"
 #include "Particles.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -155,7 +156,7 @@ namespace Scene
 		skyBoxScale->addChild( sky );
 
     // Initiate tree
-    tree = tgen.generate(3,1.5,35,5); // Any number greater than 5 results in 2 FPS!!!
+    tree = tgen.generate(3,1.5,50,5); // Any number greater than 5 results in 2 FPS!!!
     cyTrans->addChild(tree);
 
         eagle->cppParseFile("objectmodels/eagle.obj");
@@ -426,6 +427,10 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
     
   case 'g':
     cerr << Scene::tgen.genString(3) << endl;
+	  break;
+  case 'G':
+    delete Scene::tree;
+    Scene::tree = Scene::tgen.generate(2,1.5,40+20*Util::drand(), 5);
 	  break;
 
   case '1':

@@ -29,6 +29,8 @@ TreeGen::~TreeGen() {
 }
 
 
+
+
 // Add a rule to the dictionary/linked list data structure
 void TreeGen::addRule(char k,
                       string rep,
@@ -185,7 +187,7 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
       case 'L':
         {
         MatrixTransform * trans = new MatrixTransform(Matrix4::translate(0,0,baseRad+0.5));
-        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*rnd()));
+        MatrixTransform * rotY = new MatrixTransform(Matrix4::rotY(TOT_DEG*Util::drand()));
         Sphere * leaf = new Sphere(0.5);
         leaf->setMat(leafMat);
 
