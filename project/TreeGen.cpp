@@ -93,58 +93,25 @@ void TreeGen::initialize() {
   addRule('T',"tttXXZT","","",0.30);
   addRule('T',"ttXtXZT","","",0.30);
   addRule('T',"ttXZTXX","","",0.15);
-  /*
-  addRule('T',"TXXz","","",0.30);
-  addRule('T',"tXtXtzXT","","",0.15);
-  addRule('T',"tXXtXtXTzX","","",0.15);
-  addRule('T',"tXXtXXtTz","","",0.15);
-  addRule('T',"tXtXXzT","","",0.15);
-  */
-  //addRule('T', "t","","",0.10);
 
   addRule('F',"fYF","","",0.25);
   addRule('F',"fYYzF","","",0.25);
   addRule('F',"fYYYzF","","",0.25);
   addRule('F',"fYFYY","","",0.25);
+  
+  addRule('X',"[sssrffYF]","","",0.20);
+  addRule('X',"[sssrffFYY]","","",0.20);
+  addRule('X',"[sssrfffYfYF]","","",0.20);
+  addRule('X',"[ssrffffYYF]","","",0.133);
+  addRule('X',"[ssrfffFYY]","","",0.133);
+  addRule('X',"[ssrfffYF]","","",0.134);
 
-  /*
-  addRule('F',"FFYYFLLzFY","","",0.30);
-  addRule('F',"FFYFLYYFLL","","",0.20);
-  addRule('F',"FFYLFYF","","",0.20);
-  addRule('F',"FFYLLzF","","",0.50);
-  addRule('F',"FFYFzLFY","","",0.30);
-  addRule('F',"Lf","","",0.10);
-  */
-  /*
-  addRule('X',"[sssrffYYF]","","",0.225);
-  addRule('X',"[sssrffYFY]","","",0.225);
-  addRule('X',"[ssrffYF]","","",0.15);
-  addRule('X',"[ssrfffYY]","","",0.15);
-  addRule('X',"[srfffffYY]","","",0.125);
-  addRule('X',"[srffffY]","","",0.125);
-  */
-  
-  addRule('X',"[ssrffYF]","","",0.20);
-  addRule('X',"[ssrffFYY]","","",0.20);
-  addRule('X',"[ssrfffYfYF]","","",0.20);
-  addRule('X',"[srffffYYF]","","",0.133);
-  addRule('X',"[srfffFYY]","","",0.133);
-  addRule('X',"[srfffYF]","","",0.134);
-  
-  /*
-  addRule('Y',"[sssrffLYffYLFY]","","",0.225);
-  addRule('Y',"[sssrffLfYfYLLFY]","","",0.225);
-  addRule('Y',"[ssrffYfYYfYF]","","",0.15);
-  addRule('Y',"[ssrffYfLYfLLF]","","",0.15);
-  addRule('Y',"[srffLLYfLfYYfLYY]","","",0.125);
-  addRule('Y',"[srffLYLYfLYLF]","","",0.125);
-  */
-  addRule('Y',"[ssssrLLfLfLYfLLfLY]","","",0.25);
-  addRule('Y',"[ssssrfLfLYfYfYfLLL]","","",0.25);
-  addRule('Y',"[ssrffLLfYfYF]","","",0.15);
-  addRule('Y',"[ssrffLfYfLLF]","","",0.15);
-  addRule('Y',"[srffffYfF]","","",0.125);
-  addRule('Y',"[srfffFYY]","","",0.125);
+  addRule('Y',"[sssssrLLfLfLYfLLfLY]","","",0.25);
+  addRule('Y',"[sssssrfLfLYfYfYfLLL]","","",0.25);
+  addRule('Y',"[sssrffLLfYfYF]","","",0.15);
+  addRule('Y',"[sssrffLfYfLLF]","","",0.15);
+  addRule('Y',"[ssrffffYfF]","","",0.125);
+  addRule('Y',"[ssrfffFYY]","","",0.125);
 
   addRule('t', "t","","",1);
   addRule('f', "Lf","","",0.35);
@@ -152,6 +119,7 @@ void TreeGen::initialize() {
   addRule('f', "LfL","","",0.35);
   addRule('f', "f","","",0.3);
 
+  addRule('s', "","","",0.15);
 }
 
 // Generate a string of order n
@@ -161,7 +129,7 @@ string TreeGen::genString(int n) {
   // n interations
   for(int i = 0; i < n; ++i) {
     // iterate over the string
-    for(int j = 0; j < str.length(); ++j) {
+    for(unsigned int j = 0; j < str.length(); ++j) {
       char c = str.at(j);
       double r = drand();
       rule * charRule = rules[c];
