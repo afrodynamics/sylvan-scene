@@ -59,7 +59,7 @@ namespace Scene
     // Boolean Flahs
     bool showBounds = false;
     bool showFps = false;
-    bool showEagleTrajectory = true;
+    bool showEagleTrajectory = false;
     bool shaderOn = true;
     bool fullscreen = false;
     bool isSnowing = false;
