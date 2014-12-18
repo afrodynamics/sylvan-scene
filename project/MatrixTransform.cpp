@@ -39,3 +39,7 @@ void MatrixTransform::draw(Matrix4& C) {
 Matrix4& MatrixTransform::getMatrix() {
 	return mtx;
 }
+
+void MatrixTransform::setMatrix(Matrix4 m) {
+	mtx = Matrix4(m);
+}

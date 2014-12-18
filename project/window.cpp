@@ -50,7 +50,7 @@ namespace Scene
     BezierPatch *waterPatch;
     BezierSpline* eagleTrajectory;
     Terrain *terrain;
-    MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate, *treeTranslate;
+    MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate, *treeTranslate, *treeScale;
     TreeGen *tgen;
     Tree *tree;
     vector<MatrixTransform*> treeTransforms;
@@ -71,6 +71,8 @@ namespace Scene
     float eaglePos = 0.0;
     int skyBoxSize = 250;
     int tdepth = 5;       // Initial depth
+    const double PT_TOLERANCE = 0.01;
+    const int TERRAIN_SCALE = 125;
 
     GLuint textures[7];
     GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
@@ -97,9 +99,9 @@ namespace Scene
         world = new MatrixTransform(); // Top level of the scene graph
         waterPatch = new BezierPatch();
         terrain = new Terrain(); // Procedural generator FTW
-        Matrix4 scl = Matrix4::scale(Window::TERRAIN_SCALE,
-                                      Window::TERRAIN_SCALE,
-                                      Window::TERRAIN_SCALE);
+        Matrix4 scl = Matrix4::scale(TERRAIN_SCALE,
+                                      TERRAIN_SCALE,
+                                      TERRAIN_SCALE);
         Matrix4 skyScale = Matrix4::scale(skyBoxSize,skyBoxSize,skyBoxSize);
         snow = new Particles(125, 125, 125);
         BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
@@ -115,8 +117,26 @@ namespace Scene
         tgen->initialize();
 
         Matrix4 terTransMtx = Matrix4::translate(0.0,-125.0,0.0);
-        Matrix4 cylTransMtx = Matrix4::translate(0.0,-100.0,0.0);
-        treeTranslate = new MatrixTransform(cylTransMtx);
+        Matrix4 treeTransMtx = Matrix4::translate(0.0,-100.0,0.0);
+        Matrix4 treeScaleMtx = Matrix4::scale(1/(double)TERRAIN_SCALE,
+                                        1/(double)TERRAIN_SCALE,
+                                        1/(double)TERRAIN_SCALE) * Matrix4::scale(0.5,0.5,0.5);
+        Vector3 *p = nullptr;
+        for( Vector3 pos : *(terrain->getVertices()) ) {
+          if(Util::abs(pos.getX()) <= PT_TOLERANCE && Util::abs(pos.getZ()) <= PT_TOLERANCE) {
+            p = &pos;
+            cerr << "0 pos" << endl;
+          }
+        }
+        if(!p) {
+          cerr << "Use default" << endl;
+          treeTranslate = new MatrixTransform(treeTransMtx);
+        }
+        else {
+          cerr << "Use point" << endl;
+          treeTranslate = new MatrixTransform(Matrix4::translate(*p));
+        }
+        treeScale = new MatrixTransform(treeScaleMtx);
         terrainScale = new MatrixTransform( scl );
         skyBoxScale = new MatrixTransform( skyScale );
         terrainTranslate = new MatrixTransform( terTransMtx );
@@ -164,15 +184,16 @@ namespace Scene
         world->addChild( ptLight );
         world->addChild( terrainTranslate ); 
         world->addChild( skyBoxScale );
-        world->addChild( treeTranslate );
         world->addChild( eagleTrajectory );
         terrainTranslate->addChild( terrainScale );
         terrainScale->addChild( terrain ); // water patch
+        terrainScale->addChild( treeTranslate );
         skyBoxScale->addChild( sky );
 
         // Initiate tree
         tree = tgen->generate(); // Any number greater than 5 results in 2 FPS!!!
-        //treeTranslate->addChild(tree);
+        treeTranslate->addChild(treeScale);
+        treeScale->addChild(tree);
 
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
@@ -219,16 +240,22 @@ namespace Scene
     // Generate trees on the terrain
     void generateTrees() {
       vector<Vector3> * verts = Scene::terrain->getVertices();
-      Matrix4 scale = Matrix4::scale(1/(double)Window::TERRAIN_SCALE,
-                                    1/(double)Window::TERRAIN_SCALE,
-                                    1/(double)Window::TERRAIN_SCALE);
+      Matrix4 scale = Matrix4::scale(1/(double)TERRAIN_SCALE,
+                                    1/(double)TERRAIN_SCALE,
+                                    1/(double)TERRAIN_SCALE);
       scale = scale * Matrix4::scale(0.5,0.5,0.5);
       double p = 0.0003;
-      int depthRange = 5;
+      int depthRange = 4;
       int minDepth = 0;
       int count = 0;
       for( Vector3 pos : *verts ) {
-        if(pos.getX() == 0 && pos.getY() == 0 && pos.getZ()) cerr << "0 pos" << endl;
+        if(Util::abs(pos.getX()) <= PT_TOLERANCE && Util::abs(pos.getZ()) <= PT_TOLERANCE) {
+          cerr << "0 pos" << endl;
+          treeTranslate->setMatrix(Matrix4::translate(pos));
+          treeScale->removeChild(tree);
+          treeScale->addChild((tree = tgen->generate(tdepth)));
+          continue;
+        }
         if( Util::drand() < p ) {
           count++;
           MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
@@ -438,9 +465,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       break;
   case 'g':
       delete Scene::tree;
-      Scene::treeTranslate->removeChild(Scene::tree);
+      Scene::treeScale->removeChild(Scene::tree);
       Scene::tree = Scene::tgen->generate(Scene::tdepth);
-      Scene::treeTranslate->addChild(Scene::tree);
+      Scene::treeScale->addChild(Scene::tree);
       break;
   case 'G':
       cerr << Scene::tgen->genString(3) << endl;

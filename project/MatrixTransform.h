@@ -13,5 +13,6 @@ public:
 	~MatrixTransform();
 	void draw(Matrix4& C);
 	Matrix4& getMatrix(); // Returns the matrix stored in this Node
+  void setMatrix(Matrix4);
 };
 
