@@ -38,8 +38,6 @@ class Window	  // OpenGL output window related routines
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
     
-    static void removeTrees();
-    static void generateTrees();
 
     // Utility
     static void printGLError(std::string); // Prints a glError() with gluErrorString() if a glError has occurred

@@ -169,7 +169,7 @@ namespace Scene
 
         // Initiate tree
         tree = tgen->generate(); // Any number greater than 5 results in 2 FPS!!!
-        treeTranslate->addChild(tree);
+        //treeTranslate->addChild(tree);
 
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
@@ -202,6 +202,43 @@ namespace Scene
         ptLight = nullptr;
         cerr << "Dellocating memory..." << endl;
     };
+    
+    // Remove all nodes from terrain scale except the terrain
+    void removeTrees() {
+      list<Node*> * c = Scene::terrainScale->getChildren();
+      for( MatrixTransform* mt : Scene::treeTransforms) {
+        Scene::terrainScale->removeChild(mt);
+        delete mt;    // Delete trees
+      }
+      Scene::treeTransforms.clear();
+    }
+
+    // Generate trees on the terrain
+    void generateTrees() {
+      vector<Vector3> * verts = Scene::terrain->getVertices();
+      Matrix4 scale = Matrix4::scale(1/(double)Window::TERRAIN_SCALE,
+                                    1/(double)Window::TERRAIN_SCALE,
+                                    1/(double)Window::TERRAIN_SCALE);
+      scale = scale * Matrix4::scale(0.5,0.5,0.5);
+      double p = 0.0003;
+      int depthRange = 5;
+      int minDepth = 0;
+      int count = 0;
+      for( Vector3 pos : *verts ) {
+        if(pos.getX() == 0 && pos.getY() == 0 && pos.getZ()) cerr << "0 pos" << endl;
+        if( Util::drand() < p ) {
+          count++;
+          MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
+          MatrixTransform * s = new MatrixTransform(scale);
+          s->addChild(Scene::tgen->generate(
+                                Util::drand() * depthRange + minDepth));
+          trans->addChild(s);
+          Scene::terrainScale->addChild(trans);
+          Scene::treeTransforms.push_back(trans);   // Add to vector of tree transformations
+        }
+      }
+      cerr << "Created " << count << " trees!" << endl;
+    }
 };
 
 
@@ -249,7 +286,7 @@ void Window::idleCallback()
 // Callback method called by GLUT when graphics window is resized by the user
 void Window::reshapeCallback(int w, int h)
 {
-
+  cerr << "reshapeCallback!" << endl;
   glViewport(0, 0, w, h);  // set new viewport size
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -390,9 +427,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   // Regenerate the terrain/trees
   case 't':
       Scene::terrain->generate();
-      removeTrees();        // Still need to remove trees after flag has been turned off
+      Scene::removeTrees();        // Still need to remove trees after flag has been turned off
       if(Scene::forestFlag) {
-        generateTrees();
+        Scene::generateTrees();
       }
       cout << "New terrain generated!" << endl;
       break;
@@ -615,37 +652,3 @@ void Window::printGLError(string str) {
     int err = glGetError();
     if (err != GL_NO_ERROR) cerr << str << gluErrorString( err ) << endl;
 };
-
-// Remove all nodes from terrain scale except the terrain
-void Window::removeTrees() {
-  list<Node*> * c = Scene::terrainScale->getChildren();
-  for( MatrixTransform* mt : Scene::treeTransforms) {
-    Scene::terrainScale->removeChild(mt);
-    delete mt;    // Delete trees
-  }
-}
-
-void Window::generateTrees() {
-  vector<Vector3> * verts = Scene::terrain->getVertices();
-  Matrix4 scale = Matrix4::scale(1/(double)Window::TERRAIN_SCALE,
-                                1/(double)Window::TERRAIN_SCALE,
-                                1/(double)Window::TERRAIN_SCALE);
-  scale = scale * Matrix4::scale(0.5,0.5,0.5);
-  double p = 0.0005;
-  int depthRange = 6;
-  int minDepth = 0;
-  int count = 0;
-  for( Vector3 pos : *verts ) {
-    if( Util::drand() < p ) {
-      count++;
-      MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
-      MatrixTransform * s = new MatrixTransform(scale);
-      s->addChild(Scene::tgen->generate(
-                            Util::drand() * depthRange + minDepth));
-      trans->addChild(s);
-      Scene::terrainScale->addChild(trans);
-      Scene::treeTransforms.push_back(trans);   // Add to vector of tree transformations
-    }
-  }
-  cerr << "Created " << count << " trees!" << endl;
-}
