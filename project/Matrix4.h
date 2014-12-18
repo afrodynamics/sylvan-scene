@@ -49,6 +49,7 @@ class Matrix4
     static Matrix4 rotate(double angle, Vector3& axis);        // make a rotation matrix about an arbitrary axis
     static Matrix4 scale(double sx, double sy, double sz);     // make a nonuniform scaling matrix
     static Matrix4 translate(double tx, double ty, double tz); // make a translation matrix
+    static Matrix4 translate(Vector3 pos); // make a translation matrix
     static Matrix4 transpose(const Matrix4&); // returns a copy of the given matrix, transposed
     static Matrix4 create(const Vector3& x, const Vector3& y, const Vector3& z, const Vector3& w); //creates matrix from 4 Vector3s
     static Matrix4 viewport(const double xMin, const double xMax, const double yMin, const double yMax); // Creates a viewport matrix given window width and height in pixels

@@ -16,4 +16,5 @@ public:
 	void showBoundingBox(bool);
 	void setShader(Shader*); // Attach shader to this node
 	void enableShader(bool); // Enable/disable shader
+  std::list<Node*>* getChildren();
 };

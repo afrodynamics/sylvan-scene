@@ -4,7 +4,7 @@
 using namespace Util; // Unify all the RNG elements
                       // also, it cross-compiles nicely
 
-string TreeGen::axiom = "RIZXXtXT";
+string TreeGen::axiom = "RIZXXtXZT";
 const int TreeGen::MAX_SLICES = 10;
 const int TreeGen::MIN_SLICES = 5;
 const double TreeGen::LEN_ALTER = -0.15;
@@ -92,10 +92,10 @@ void TreeGen::initialize() {
 
   addRule('R',"SR","","",1);
 
-  addRule('T',"ttXZT","","",0.25);
-  addRule('T',"tttXXZT","","",0.30);
-  addRule('T',"ttXtXZT","","",0.30);
-  addRule('T',"ttXZTXX","","",0.15);
+  addRule('T',"tZtXZT","","",0.25);
+  addRule('T',"tZtZtXXZT","","",0.30);
+  addRule('T',"tZtXZtXZT","","",0.30);
+  addRule('T',"tZtXZTXX","","",0.15);
 
   addRule('F',"fYF","","",0.25);
   addRule('F',"fYYzF","","",0.25);
@@ -122,7 +122,7 @@ void TreeGen::initialize() {
   addRule('f', "LfL","","",0.35);
   addRule('f', "f","","",0.3);
 
-  //addRule('s', "","","",0.15);
+  addRule('Z', "","","",0.20);
 }
 
 // Generate a string of order n

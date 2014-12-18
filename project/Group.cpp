@@ -87,3 +87,8 @@ void Group::setShader(Shader* shad) {
 void Group::enableShader(bool toggle) {
 	useShader = toggle;
 }; // Enable/disable shader
+
+
+std::list<Node*>* Group::getChildren() {
+  return &children;
+}

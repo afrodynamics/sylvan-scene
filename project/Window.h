@@ -28,8 +28,7 @@ class Window	  // OpenGL output window related routines
     static int width, height;  // useful vars
     static double fov, deltaTime;
     static int currentFPS;
-    static int tdepth;
-    static int depthModFlag;
+    const static int TERRAIN_SCALE = 125;
 
 	// Courtesy of http://en.wikibooks.org/wiki/OpenGL_Programming/Intermediate/Textures
 	static GLuint loadPPM(const char *filename, int width, int height, int texID);
@@ -38,6 +37,7 @@ class Window	  // OpenGL output window related routines
     static void reshapeCallback(int, int);
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
+    
 
     // Utility
     static void printGLError(std::string); // Prints a glError() with gluErrorString() if a glError has occurred

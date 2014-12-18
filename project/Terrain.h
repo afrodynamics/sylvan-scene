@@ -35,4 +35,5 @@ public:
 	Vector3 getRandomGroundLocation(); // Returns a random vertex of the terrain
 	void render(); // Inherited from Geode, does the drawing of the terrain
 	void generate(); // Generates new terrain
+  std::vector<Vector3> * getVertices();     // Return the vertices vector
 };
