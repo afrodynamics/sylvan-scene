@@ -90,7 +90,6 @@
     <ClInclude Include="MatrixTransform.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="ObjModel.h" />
-    <ClInclude Include="Particles.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="Robot.h" />
