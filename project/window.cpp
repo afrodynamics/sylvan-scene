@@ -32,6 +32,7 @@ double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
 int Window::tdepth = 5;
+int Window::depthModFlag = 0;
 
 namespace Scene
 {
@@ -387,14 +388,22 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       cout << "New terrain generated!" << endl;
       break;
   case 'g':
-      cerr << Scene::tgen->genString(3) << endl;
-      break;
-  case 'G':
       delete Scene::tree;
       Scene::treeTranslate->removeChild(Scene::tree);
       Scene::tree = Scene::tgen->generate(tdepth);
       Scene::treeTranslate->addChild(Scene::tree);
       break;
+  case 'G':
+      cerr << Scene::tgen->genString(3) << endl;
+      break;
+  case '=':   // easier than '+'
+   if(depthModFlag) tdepth++;
+   cerr << "Tree depth: " << tdepth << endl;
+   break;
+  case '-':
+   if(depthModFlag && tdepth > 0) tdepth--;
+   cerr << "Tree depth: " << tdepth << endl;
+   break;
 
   // Allow wasd movement control of camera
   case 'w':
@@ -576,22 +585,9 @@ void Window::functionKeysCallback(int key, int x, int y) {
       }
       break;
   case GLUT_KEY_F2:
-    tdepth = 2;
-    break;
-  case GLUT_KEY_F3:
-    tdepth = 3;
-    break;
-  case GLUT_KEY_F4:
-    tdepth = 4;
-    break;
-  case GLUT_KEY_F5:
-    tdepth = 5;
-    break;
-  case GLUT_KEY_F6:
-    tdepth = 6;
-    break;
-  case GLUT_KEY_F7:
-    tdepth = 7;
+    depthModFlag = !depthModFlag;
+    if( depthModFlag ) cerr << "Modify depth!" << endl;
+    else cerr << "End modify" << endl;
     break;
   default:
       cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
