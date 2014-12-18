@@ -4,12 +4,13 @@
 using namespace Util; // Unify all the RNG elements
                       // also, it cross-compiles nicely
 
-string TreeGen::axiom = "IZXXtXT";
+string TreeGen::axiom = "RIZXXtXT";
 const int TreeGen::MAX_SLICES = 10;
 const int TreeGen::MIN_SLICES = 5;
 const double TreeGen::LEN_ALTER = -0.15;
 const double TreeGen::MIN_RAD = 0.2;
 const double TreeGen::BRANCH_SCALE = 0.80;
+const double TreeGen::TRUNK_SCALE = 1.07;
 const double TreeGen::TOP_SCALE = 0.9;
 const double TreeGen::TOP_T_SCALE = 0.95;
 const double TreeGen::TOT_DEG = 360.0;
@@ -89,6 +90,8 @@ void TreeGen::initialize() {
   addRule('I',"iI","","",1);
   addRule('i',"i","","",1);
 
+  addRule('R',"SR","","",1);
+
   addRule('T',"ttXZT","","",0.25);
   addRule('T',"tttXXZT","","",0.30);
   addRule('T',"ttXtXZT","","",0.30);
@@ -119,7 +122,7 @@ void TreeGen::initialize() {
   addRule('f', "LfL","","",0.35);
   addRule('f', "f","","",0.3);
 
-  addRule('s', "","","",0.15);
+  //addRule('s', "","","",0.15);
 }
 
 // Generate a string of order n
@@ -244,6 +247,8 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         // Do not update curr
         }
         break;
+      case 'R':
+        break;
       case 'r':
         {
         double vary = aVary * drand() + aVary/2.0;
@@ -261,6 +266,10 @@ Tree * TreeGen::generate(double h, double r, double a, int n) {
         // Push an angle that goes away from the originating branch
         yaStack.push(3/4.0*TOT_DEG * drand() - 5/8.0*TOT_DEG);
         }
+        break;
+      case 'S':
+        baseRad *= TRUNK_SCALE;
+        topRad *= TRUNK_SCALE;
         break;
       case 's':
         baseRad *= BRANCH_SCALE;

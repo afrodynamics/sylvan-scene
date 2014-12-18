@@ -104,6 +104,7 @@ private:
   const static double LEN_ALTER;
   const static double MIN_RAD;
   const static double BRANCH_SCALE;
+  const static double TRUNK_SCALE;
   const static double TOP_SCALE;
   const static double TOP_T_SCALE;
   const static double TOT_DEG;
