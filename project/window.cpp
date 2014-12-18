@@ -33,6 +33,8 @@ int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
+int Window::tdepth = 5;
+int Window::depthModFlag = 0;
 
 namespace Scene
 {
@@ -121,7 +123,7 @@ namespace Scene
         eagleTrajectory->push(curve3);
         eagleTrajectory->closeLoop();
         eagle = new ObjModel();
-        tgen = new TreeGen();
+        tgen = new TreeGen(5,5,35,5);
         tgen->initialize();
 
         Matrix4 terTransMtx = Matrix4::translate(0.0,-125.0,0.0);
@@ -193,7 +195,6 @@ namespace Scene
             // skyBoxScale->addChild(*iter);
             terrainScale->addChild(*iter);
         }
-
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
@@ -218,6 +219,7 @@ namespace Scene
         delete sky;
         delete terrain;
         delete world;
+        delete tgen;
         sky = nullptr;
         waterPatch = nullptr; terrainScale = terrainTranslate = nullptr;
         eagle = nullptr;
@@ -313,7 +315,7 @@ void Window::displayCallback()
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
     if ( Scene::isSnowing ) {
-        Scene::snow->render();
+        Scene::snow->render(invCamRot);
     }
 
     double angle = Scene::eagleTrajectory->getAngle(Scene::eaglePos); // this could be precomputed
@@ -415,15 +417,22 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       cout << "New terrain generated!" << endl;
       break;
   case 'g':
-      cerr << Scene::tgen->genString(3) << endl;
-      break;
-  case 'G':
       delete Scene::tree;
-      cerr << "Tree Gen" << endl;
       Scene::treeTranslate->removeChild(Scene::tree);
-      Scene::tree = Scene::tgen->generate( 2, 1.5, 40 + 20 * Util::drand(), 5);
+      Scene::tree = Scene::tgen->generate(tdepth);
       Scene::treeTranslate->addChild(Scene::tree);
       break;
+  case 'G':
+      cerr << Scene::tgen->genString(3) << endl;
+      break;
+  case '=':   // easier than '+'
+   if(depthModFlag) tdepth++;
+   cerr << "Tree depth: " << tdepth << endl;
+   break;
+  case '-':
+   if(depthModFlag && tdepth > 0) tdepth--;
+   cerr << "Tree depth: " << tdepth << endl;
+   break;
 
   // Allow wasd movement control of camera
   case 'w':
@@ -604,6 +613,11 @@ void Window::functionKeysCallback(int key, int x, int y) {
         // glutRepositionWindow(0,0)
       }
       break;
+  case GLUT_KEY_F2:
+    depthModFlag = !depthModFlag;
+    if( depthModFlag ) cerr << "Modify depth!" << endl;
+    else cerr << "End modify" << endl;
+    break;
   default:
       cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
       break;

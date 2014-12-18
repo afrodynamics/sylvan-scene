@@ -18,6 +18,8 @@
 /* Generates a stochastic L-system tree.
  * 
  * Alphabet:
+ *    R - forward (Root)
+ *    r - forward (non-replacing)
  *    T - forward (trunk)
  *    t - forward (non-replacing)
  *    F - forward (branches)
@@ -31,13 +33,13 @@
  *    z - shrink top by 90%
  *    [] - push/pop stack
  *
- * Axiom = "tTX"
+ * Axiom = "IzTXX"
  * 
  * Rules:
  *    T -> TXXz (30%)
- *    T -> XTzXT (15%)
- *    T -> XTTzX (15%)
- *    T -> XTTz (15%)
+ *    T -> TXTzXT (15%)
+ *    T -> TXTTzX (15%)
+ *    T -> TXTTz (15%)
  *    T -> TXzT (15%)
  *    T -> t (10%)
  *
@@ -47,6 +49,10 @@
  *    F -> YFYYF (20%)
  *    F -> YFYF (20%)
  *    F -> f (10%)
+ *
+ *    I -> iI (100%)
+ *    i -> ii (50%)
+ *    i -> i (50%)
  *
  *    t -> t (100%)
  *    f -> f (100%)
@@ -58,13 +64,12 @@
  *    X -> [srFYY] (12.5%)
  *    X -> [srFY] (12.5%)
  *
- *
- *    X -> [ssrFYL]T[sssrFYYFL]TX (50%)
- *    X -> [ssrFYL][sssrFYL]TXX (30%)
- *    X -> [ssrFYL]T[sssrFYL]TX (20%)
- *    Y -> LL[srLFLLFLY]FLLLFY (40%)
- *    Y -> L[srFLFYFLL][srFLLFLLYF]FY (40%)
- *    Y -> L[srFLFYFLL]F[srFLLFLLYF]FY (20%)
+ *    Y -> [sssrFFY] (22.5%)
+ *    Y -> [sssrFYFY] (22.5%)
+ *    Y -> [ssrFYYF] (15%)
+ *    Y -> [ssrFYF] (15%)
+ *    Y -> [srFFYY] (12.5%)
+ *    Y -> [srFFYF] (12.5%)
  */
 
 
@@ -90,24 +95,54 @@ private:
   map<char, rule*> rules;  // Map rules to variables
 
   void addRule(char, string, string, string, double);
+  void dRule( rule* r ); // delete a rule postorder-recursively
+  // Calculate the number fo slices for a cylinder as a fn of radius
+  int calcSlices(double initR, double r);
 
   static string axiom;
+  const static int MAX_SLICES;
+  const static int MIN_SLICES;
+  const static double LEN_ALTER;
+  const static double MIN_RAD;
   const static double BRANCH_SCALE;
+  const static double TRUNK_SCALE;
   const static double TOP_SCALE;
+  const static double TOP_T_SCALE;
   const static double TOT_DEG;
+  const static double G_ANG;      // Golden Angle
   static Material leafMat;
   static Material woodMat;
   static GLUquadricObj * q;
 
+  double length;
+  double radius;
+  double angle;
+  int depth;
+  double aVary;
+  double lVary;
+
 public:
   TreeGen();
+  TreeGen(double,double,double,int);
   ~TreeGen();
   void initialize();    // Initialize the rules
 
   /* Generate a new tree with branch length len and initial radius rad
    * n - the number of iterations
    */
-  Tree * generate(double h, double r, double ang, int n);     
+  Tree * generate();    // Default generation
+  Tree * generate(int n);    // Default generation with depth n
+  Tree * generate(double l, double r, double ang, int n);
+
+  /* Setter methods
+   */
+  TreeGen * setLength(double);
+  TreeGen * setRadius(double);
+  TreeGen * setAngle(double);
+  TreeGen * setDepth(int);
+  TreeGen * setAVary(double);
+  TreeGen * setLVary(double);
+
   string genString(int n);      // Generate a string of order n
   void destroyRules();
 };
