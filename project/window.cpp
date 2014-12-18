@@ -54,6 +54,7 @@ namespace Scene
     TreeGen *tgen;
     Tree *tree;
     vector<MatrixTransform*> treeTransforms;
+    vector<Tree*> trees;
     Particles *snow;
 
     // Boolean Flahs
@@ -66,6 +67,7 @@ namespace Scene
     bool stopEagle = false;
     bool depthModFlag = false;
     bool forestFlag = false;
+    bool windFlag = false;
     double znear = 1.0;
     double zfar = 1000; //1000.0;
     float eaglePos = 0.0;
@@ -235,6 +237,7 @@ namespace Scene
         delete mt;    // Delete trees
       }
       Scene::treeTransforms.clear();
+      Scene::trees.clear();
     }
 
     // Generate trees on the terrain
@@ -262,8 +265,9 @@ namespace Scene
           count++;
           MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
           MatrixTransform * s = new MatrixTransform(scale);
-          s->addChild(Scene::tgen->generate(
-                                Util::drand() * depthRange + minDepth));
+          Tree * t = Scene::tgen->generate( Util::drand() * depthRange + minDepth);
+          s->addChild(t);
+          Scene::trees.push_back(t);
           trans->addChild(s);
           Scene::terrainScale->addChild(trans);
           Scene::treeTransforms.push_back(trans);   // Add to vector of tree transformations
@@ -280,6 +284,12 @@ void Window::idleCallback()
 {
 
     static long frame = 0, time, timebase = 0;
+
+    if(Scene::windFlag) {
+      for(Tree * t : Scene::trees) {
+        t->animate();
+      }
+    }
 
     // Call draw on the Scene
     displayCallback(); // call display routine to show the cube
@@ -579,6 +589,11 @@ void Window::functionKeysCallback(int key, int x, int y) {
     Scene::forestFlag = !Scene::forestFlag;
     if( Scene::forestFlag ) cerr << "Creating Forests" << endl;
     else cerr << "No more forests" << endl;
+    break;
+  case GLUT_KEY_F4:
+    Scene::windFlag = !Scene::windFlag;
+    if( Scene::windFlag ) cerr << "Start Wind" << endl;
+    else cerr << "End Wind" << endl;
     break;
   default:
       cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
