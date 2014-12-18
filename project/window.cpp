@@ -195,7 +195,6 @@ namespace Scene
         ptLight = nullptr;
         cerr << "Dellocating memory..." << endl;
     };
->>>>>>> bhagya2
 };
 
 
