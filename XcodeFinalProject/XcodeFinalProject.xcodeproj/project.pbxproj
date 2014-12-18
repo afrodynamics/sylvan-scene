@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		CD5200EC1A3E66C7007DA384 /* BezierSpline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */; };
+		CD5201321A412491007DA384 /* Cylinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD52012C1A412491007DA384 /* Cylinder.cpp */; };
+		CD5201331A412491007DA384 /* Tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD52012E1A412491007DA384 /* Tree.cpp */; };
+		CD5201341A412491007DA384 /* TreeGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD5201301A412491007DA384 /* TreeGen.cpp */; };
 		CD7517921A3BACC600A8E1C3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517911A3BACC600A8E1C3 /* OpenGL.framework */; };
 		CD7517941A3BACCA00A8E1C3 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7517931A3BACCA00A8E1C3 /* GLUT.framework */; };
 		CD7517961A3BACFF00A8E1C3 /* BezierCurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD7517951A3BACFF00A8E1C3 /* BezierCurve.cpp */; };
@@ -55,6 +58,13 @@
 /* Begin PBXFileReference section */
 		CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BezierSpline.cpp; path = ../../project/BezierSpline.cpp; sourceTree = "<group>"; };
 		CD5200EB1A3E66C7007DA384 /* BezierSpline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BezierSpline.h; path = ../../project/BezierSpline.h; sourceTree = "<group>"; };
+		CD52012C1A412491007DA384 /* Cylinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Cylinder.cpp; path = ../../project/Cylinder.cpp; sourceTree = "<group>"; };
+		CD52012D1A412491007DA384 /* Cylinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Cylinder.h; path = ../../project/Cylinder.h; sourceTree = "<group>"; };
+		CD52012E1A412491007DA384 /* Tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Tree.cpp; path = ../../project/Tree.cpp; sourceTree = "<group>"; };
+		CD52012F1A412491007DA384 /* Tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Tree.h; path = ../../project/Tree.h; sourceTree = "<group>"; };
+		CD5201301A412491007DA384 /* TreeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TreeGen.cpp; path = ../../project/TreeGen.cpp; sourceTree = "<group>"; };
+		CD5201311A412491007DA384 /* TreeGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TreeGen.h; path = ../../project/TreeGen.h; sourceTree = "<group>"; };
+		CD5201351A413F73007DA384 /* snow.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = snow.ppm; sourceTree = "<group>"; };
 		CD7517871A3BACAB00A8E1C3 /* XcodeFinalProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = XcodeFinalProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7517911A3BACC600A8E1C3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		CD7517931A3BACCA00A8E1C3 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -173,6 +183,12 @@
 		CD7517891A3BACAB00A8E1C3 /* XcodeFinalProject */ = {
 			isa = PBXGroup;
 			children = (
+				CD52012C1A412491007DA384 /* Cylinder.cpp */,
+				CD52012D1A412491007DA384 /* Cylinder.h */,
+				CD52012E1A412491007DA384 /* Tree.cpp */,
+				CD52012F1A412491007DA384 /* Tree.h */,
+				CD5201301A412491007DA384 /* TreeGen.cpp */,
+				CD5201311A412491007DA384 /* TreeGen.h */,
 				CD5200EA1A3E66C7007DA384 /* BezierSpline.cpp */,
 				CD5200EB1A3E66C7007DA384 /* BezierSpline.h */,
 				CDBABC6A1A3E2A9B003A08B1 /* objectmodels */,
@@ -259,6 +275,7 @@
 		CD7517E11A3BAD4D00A8E1C3 /* tex */ = {
 			isa = PBXGroup;
 			children = (
+				CD5201351A413F73007DA384 /* snow.ppm */,
 				CD7517E21A3BAD4D00A8E1C3 /* back.ppm */,
 				CD7517E31A3BAD4D00A8E1C3 /* back1.ppm */,
 				CD7517E41A3BAD4D00A8E1C3 /* base.ppm */,
@@ -345,7 +362,9 @@
 				CD5200EC1A3E66C7007DA384 /* BezierSpline.cpp in Sources */,
 				CDBABC691A3E28A4003A08B1 /* Particles.cpp in Sources */,
 				CD7517F91A3BAD4D00A8E1C3 /* Util.cpp in Sources */,
+				CD5201331A412491007DA384 /* Tree.cpp in Sources */,
 				CD7517D91A3BAD3D00A8E1C3 /* PointLight.cpp in Sources */,
+				CD5201341A412491007DA384 /* TreeGen.cpp in Sources */,
 				CD7517B11A3BAD1700A8E1C3 /* GLee.c in Sources */,
 				CD7517D61A3BAD3D00A8E1C3 /* node.cpp in Sources */,
 				CD7517DA1A3BAD3D00A8E1C3 /* Robot.cpp in Sources */,
@@ -358,6 +377,7 @@
 				CD7517FA1A3BAD4D00A8E1C3 /* Vector3.cpp in Sources */,
 				CD7517B01A3BAD1700A8E1C3 /* Geode.cpp in Sources */,
 				CD7517AE1A3BAD1700A8E1C3 /* Cone.cpp in Sources */,
+				CD5201321A412491007DA384 /* Cylinder.cpp in Sources */,
 				CD7517AC1A3BAD1700A8E1C3 /* BezierPatch.cpp in Sources */,
 				CD7517FC1A3BAD4D00A8E1C3 /* window.cpp in Sources */,
 				CD7517DE1A3BAD3D00A8E1C3 /* SpotLight.cpp in Sources */,

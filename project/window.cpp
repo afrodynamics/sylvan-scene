@@ -287,7 +287,7 @@ void Window::displayCallback()
   // Draw our scene so long as it is actually in memory
   if ( Scene::camera && Scene::world ) {
     if ( Scene::isSnowing ) {
-        Scene::snow->render();
+        Scene::snow->render(invCamRot);
     }
 
     double angle = Scene::eagleTrajectory->getAngle(Scene::eaglePos); // this could be precomputed
