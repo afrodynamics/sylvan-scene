@@ -134,6 +134,7 @@ void BezierCurve::draw(int samples) {
 	glBegin(GL_LINE_STRIP);
 	while ( i < samples ) {
 		pt = calcPoint(t);
+		glColor3f(0, 0, 0);
 		glVertex3d( pt.getX(), pt.getY(), pt.getZ() );
 		t += t_inc; // Move forward
 		++i;
