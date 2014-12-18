@@ -29,8 +29,6 @@ class Window	  // OpenGL output window related routines
     static double fov, deltaTime;
     static int currentFPS;
     const static int TERRAIN_SCALE = 125;
-    static int tdepth;
-    static int depthModFlag;
 
 	// Courtesy of http://en.wikibooks.org/wiki/OpenGL_Programming/Intermediate/Textures
 	static GLuint loadPPM(const char *filename, int width, int height, int texID);

@@ -31,8 +31,6 @@ int Window::height = 512;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
-int Window::tdepth = 5;
-int Window::depthModFlag = 0;
 
 namespace Scene
 {
@@ -64,9 +62,12 @@ namespace Scene
     bool fullscreen = false;
     bool isSnowing = false;
     bool stopEagle = false;
+    bool depthModFlag = false;
+    bool forestFlag = false;
     double znear = 1.0;
     double zfar = 1000; //1000.0;
     float eaglePos = 0.0;
+    int tdepth = 5;       // Initial depth
 
     GLuint textures[7];
     GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
@@ -389,26 +390,28 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   // Regenerate the terrain/trees
   case 't':
       Scene::terrain->generate();
-      removeTrees();
-      generateTrees();
+      removeTrees();        // Still need to remove trees after flag has been turned off
+      if(Scene::forestFlag) {
+        generateTrees();
+      }
       cout << "New terrain generated!" << endl;
       break;
   case 'g':
       delete Scene::tree;
       Scene::treeTranslate->removeChild(Scene::tree);
-      Scene::tree = Scene::tgen->generate(tdepth);
+      Scene::tree = Scene::tgen->generate(Scene::tdepth);
       Scene::treeTranslate->addChild(Scene::tree);
       break;
   case 'G':
       cerr << Scene::tgen->genString(3) << endl;
       break;
   case '=':   // easier than '+'
-   if(depthModFlag) tdepth++;
-   cerr << "Tree depth: " << tdepth << endl;
+   if(Scene::depthModFlag) Scene::tdepth++;
+   cerr << "Tree depth: " << Scene::tdepth << endl;
    break;
   case '-':
-   if(depthModFlag && tdepth > 0) tdepth--;
-   cerr << "Tree depth: " << tdepth << endl;
+   if(Scene::depthModFlag && Scene::tdepth > 0) Scene::tdepth--;
+   cerr << "Tree depth: " << Scene::tdepth << endl;
    break;
 
   // Allow wasd movement control of camera
@@ -499,9 +502,14 @@ void Window::functionKeysCallback(int key, int x, int y) {
       }
       break;
   case GLUT_KEY_F2:
-    depthModFlag = !depthModFlag;
-    if( depthModFlag ) cerr << "Modify depth!" << endl;
+    Scene::depthModFlag = !Scene::depthModFlag;
+    if( Scene::depthModFlag ) cerr << "Modify depth!" << endl;
     else cerr << "End modify" << endl;
+    break;
+  case GLUT_KEY_F3:
+    Scene::forestFlag = !Scene::forestFlag;
+    if( Scene::forestFlag ) cerr << "Creating Forests" << endl;
+    else cerr << "No more forests" << endl;
     break;
   default:
       cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
