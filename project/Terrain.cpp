@@ -204,12 +204,15 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
  * Described in great detail here: http://www.gameprogrammer.com/fractal.html
  * A 2D application of the midpoint displacement algorithm.
  *
+ * Originally I implemented this recursively, but some striations were visible in the terrain.
+ * After trying to reimplement it iteratively, I resorted to SO. Don't judge me.
+ *
  * I referred to some other sources to verify my understanding of the algorithm:
  * http://www.paulboxley.com/blog/2011/03/terrain-generation-mark-one
  * http://gamedev.stackexchange.com/questions/37389/diamond-square-terrain-generation-problem
  *
  * (x1,y1) and (x2,y2) represent the top left and bottom right corners of the heightmap,
- * range is the maximum random displacement, and level is the depth of the recursion
+ * range is the maximum random displacement, and level is the depth of the recursion.
  */
 void Terrain::diamondSquare(int x1, int y1, int x2, int y2, double range, int level ) {
 	if (level < 1) return;

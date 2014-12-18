@@ -12,16 +12,13 @@ ObjModel::ObjModel()
 	fileLoaded = printWarn = false;
 	filename = "";
 	faces = 0;
-	mtx = new Matrix4();
-	mtx->identity();
+	mtx.identity();
+	modelScaleMtx.identity();
 	windowWidth = 20.0;
 }
 
 ObjModel::~ObjModel()
 {
-	if (mtx != nullptr) {
-		delete mtx;
-	}
 }
 
 /**
@@ -43,10 +40,19 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 
 void ObjModel::printInfo(string comment)
 {
+	string ft;
+	switch (faceType) {
+		case VERTEX_ONLY: ft = "Vertex Only"; break;
+		case VERTEX_SS_NORMAL: ft = "Vertex//Normal"; break;
+		case VERTEX_TEXTURE_NORMAL: ft = "Vertex/Texture/Normal"; break;
+		case VERTEX_TEXTURE_ONLY: ft = "Vertex/Texture Only"; break;
+		default: ft = "Uknown";
+	}
 	cout << comment << " (" << this->filename << ") " << endl
 		<< "\tVertices: " << vertexList.size() << endl
 		<< "\tTextures: " << uvwCoords.size() << endl
-		<< "\tFaces: " << faces << endl;
+		<< "\tFaces:    " << faces << endl
+		<< "\tFaceType: " << ft << endl;
 }
 
 /* What the outside can use to parse a .obj file
@@ -55,81 +61,6 @@ bool ObjModel::parseFile(string fname, double winWidth) {
 	windowWidth = winWidth;
 	return cppParseFile(fname);
 };
-
-bool ObjModel::cParseFile(string fname) {
-
-	/* BROKEN (but maybe faster one day) 
-	 * ALSO DOESN'T COMPUTE CENTER POINT
-	*/
-
-	// Don't load a second time
-	if (fileLoaded) {
-		std::cerr << "Cannot load " << fname << " because this ObjModel has already loaded " << filename << endl;
-		return false;
-	}
-
-	lineNumber = 0;
-
-	/*** BEGIN PARSING ***/
-
-	FILE *fp = fopen(fname.c_str(), "r");
-	char buf[256];
-	int t1, n1, t2, n2, t3, n3;
-	string s1, s2, s3;
-	while (fscanf(fp, "%s", buf) != 0 ) {
-
-		if (strncmp(buf, "#", 1) == 0) {
-			fscanf(fp, " %[^\n]", buf); // Discard line
-			continue;
-		}
-		else if (strncmp(buf, "vn", 2) == 0) {
-			symbolsRead = fscanf(fp, "%lf %lf %lf", &vnx, &vny, &vnz);
-			if (symbolsRead == 3) {
-				Vector4 norm = Vector4(vnx, vny, vnz, 0);
-				norm.normalize();
-				normalList.push_back(norm);
-			}
-		}
-		else if (strncmp(buf, "v", 2) == 0) {
-			symbolsRead = fscanf(fp, "%lf %lf %lf %lf %lf %lf", &vx, &vy, &vz, &r, &g, &b);
-			if (symbolsRead == 6) {
-				vertexList.push_back(Vector4(vx, vy, vz, 1));
-				colorList.push_back(Vector4(r, g, b, 0));
-			}
-			else if (symbolsRead == 3) {
-				vertexList.push_back(Vector4(vx, vy, vz, 1.0));
-			}
-		}
-        else if (strncmp(buf, "vt", 2) == 0) {
-            symbolsRead = fscanf(fp, "%lf %lf %lf", &vx, &vy, &vz);
-            if (symbolsRead == 3) {
-                uvwCoords.push_back(Vector4(vx, vy, vz, 1.0));
-            }
-        }
-		else if (strncmp(buf, "f", 2) == 0) {
-			fscanf(fp, "%d %[/] %d %d %[/] %d %d %[/] %d",
-				&t1, &s1, &n1, &t2, &s2, &n2, &t3, &s3, &n3);
-			triangleList.push_back(t1);
-			triangleList.push_back(n1);
-			triangleList.push_back(t2);
-			triangleList.push_back(n2);
-			triangleList.push_back(t3);
-			triangleList.push_back(n3);
-		}
-
-	};
-
-	fclose(fp);
-
-	/*** END PARSING ***/
-
-	std::cout << endl;
-	filename = fname;
-	fileLoaded = true;
-	printInfo("Done! ");
-
-	return true; // Successfully parsed a .obj model file
-}
 
 /**
  * Wavefront .OBJ file parser. 
@@ -154,7 +85,9 @@ bool ObjModel::cppParseFile(string fname) {
 	string tok;  // first token in the string
 	unsigned int fileSize = ifs.tellg();
 	unsigned int filePos = 0;
+	bool vFound, vnFound, vtFound;
 	symbolsRead = 0;
+	vFound = vnFound = vtFound = false;
 	stringstream s;
 
 	s << "Opened " << fname << "\t(" << fileSize << " bytes)" << endl;
@@ -238,6 +171,8 @@ bool ObjModel::cppParseFile(string fname) {
 
 			/* This is a vertex line */
 
+			vFound = true; // Flag that we found vertices in the file
+
 			if (symbolsRead == 7) {
 				/*  v (x) (y) (z) (r) (g) (b)  */
 				vx = std::stod( tokens.at(1) );
@@ -292,6 +227,8 @@ bool ObjModel::cppParseFile(string fname) {
 		else if ( tok.compare("vn") == 0 ) { 
 				
 			// Normal (have only one form)
+			
+			vnFound = true; // Flag that we found texture coords in the file
 
 			if (symbolsRead == 4) {
 				/*  vn (x) (y) (z) */
@@ -307,7 +244,9 @@ bool ObjModel::cppParseFile(string fname) {
 		else if (tok.compare("vt") == 0) { 
 				
 			// Texture Coords (u, w, [0])
-				
+			
+			vtFound = true; // Flag that we found texture coords in the file
+
 			if (symbolsRead == 4) {
 				/*  vt u v [w = 0] */
 				vtx = std::stod(tokens.at(1));
@@ -350,14 +289,28 @@ bool ObjModel::cppParseFile(string fname) {
 		}
 	}
 
-    /**
-	if (ifs.fail()) {
+	if (ifs.bad() && ifs.fail() && !ifs.eof()) {
 		std::cerr << "Parsing failed: " << strerror(errno) << endl;
 		ifs.close();
 		return false;
-	} */
+	}
 
 	ifs.close();
+
+	/** Set FaceType (so we know how to draw this model) **/
+
+	if ( vFound && !vnFound && !vtFound ) {
+		faceType = VERTEX_ONLY;
+	}
+	else if ( vFound && !vnFound && vtFound ) {
+		faceType = VERTEX_TEXTURE_ONLY;
+	}
+	else if ( vFound && vnFound && vtFound ) {
+		faceType = VERTEX_TEXTURE_NORMAL;
+	}
+	else if ( vFound && vnFound && !vtFound ) {
+		faceType = VERTEX_SS_NORMAL;
+	}
 
 	/*** END PARSING ***/
 
@@ -389,19 +342,24 @@ bool ObjModel::cppParseFile(string fname) {
 #else
 	boundingRadius = fmax((centerVector - minimum).length(), (centerVector - maximum).length());
 #endif
+
 	// Translate the model's vertices from its center to *THE* center
 	Matrix4 translationMtx = Matrix4::translate(-xMiddle, -yMiddle, -zMiddle);
-	mtx->transformWorld(translationMtx);
+	mtx.transformWorld(translationMtx);
 
 	for (int v = 0; v < vertexList.size(); ++v) {
-		vertexList[v] = *mtx * vertexList[v]; // Translate vertices
+		vertexList[v] = mtx * vertexList[v]; // Translate vertices
 	}
 
 	// Finally, reset our matrix to the identity & scale
 
 	Matrix4 scale = Matrix4::scale(scaleFactor, scaleFactor, scaleFactor);
-	mtx->identity();
-	mtx->transformWorld(scale);
+	mtx.identity();
+	mtx.transformWorld(scale);
+
+	// This original matrix needs to be stored
+	modelScaleMtx = mtx;
+	mtx.identity(); // we'll allow modifying this matrix as if it were obj2world
 
 	/** End of Centering **/
 	
@@ -421,7 +379,7 @@ bool ObjModel::isLoaded() { return fileLoaded; }
  */
 void ObjModel::draw(Matrix4& C) {
 
-	lastC = C * *mtx;
+	lastC = C * modelScaleMtx * mtx;
 	centerPos = lastC * Vector4(0,0,0,1);
     
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
@@ -457,48 +415,77 @@ void ObjModel::draw(Matrix4& C) {
 	glBegin(GL_TRIANGLES);
 
 	bool lookupColor = false;
+	// glColor3f(0.0, 0.0, 0.0); // Default to color black
 	for (int i = 0; i < triangleList.size(); ) {
 
 		// Grab the normal and vertex indices in their respective arrays
-		unsigned int vtxIndex = triangleList[i++] - 1;
-		//unsigned int nrmIndex = triangleList[i++] - 1;
-        unsigned int uvwIndex = triangleList[i++] - 1;
+		// Only grab the values from the array and inc i if those values
+		// should be pulled (see facetype definitions)
+		
+		int vtxIndex = -1, nrmIndex = -1, uvwIndex = -1;
 
-		if (vtxIndex >= vertSize) break;
-        if (uvwIndex >= uvwSize) break;
-		//if (nrmIndex >= normSize) break;
+		if ( faceType == VERTEX_ONLY || faceType == VERTEX_SS_NORMAL || faceType == VERTEX_TEXTURE_NORMAL || faceType == VERTEX_TEXTURE_ONLY ) { 
+			vtxIndex = triangleList[i++] - 1; 
+		}
+
+		if ( faceType == VERTEX_ONLY || faceType == VERTEX_SS_NORMAL || faceType == VERTEX_TEXTURE_NORMAL ) { 
+			nrmIndex = triangleList[i++] - 1; 
+		} 
+
+        if ( faceType == VERTEX_ONLY || faceType == VERTEX_TEXTURE_NORMAL || faceType == VERTEX_TEXTURE_ONLY ) { 
+        	uvwIndex = triangleList[i++] - 1; 
+        } 
+
+		// if (vtxIndex >= vertSize || uvwIndex >= uvwSize || nrmIndex >= normSize) break;
+
 		if (vtxIndex >= colorSize) {
-			glColor3f(0.0, 0.0, 0.0); // Default to color black
 			lookupColor = false;
 		}
-		else if (lookupColor) {
+		else if ( lookupColor && vtxIndex > 0 ) {
 			clr = colorList[vtxIndex];
 			glColor3f(clr.getX(), clr.getY(), clr.getZ());
 		}
 
 		// Grab the information we need from our std::vectors (in Vector4 format)
-		/* Vertex 1 */
-		//if (faceType == VERTEX_SS_NORMAL) {
+		/* Vertices Only */
+		if (faceType == VERTEX_ONLY) {
 			vtx = vertexList[vtxIndex];
-			//nrm = normalList[nrmIndex];
+            glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+		}
+		/* Vertex & Normal Pairs */
+		else if (faceType == VERTEX_SS_NORMAL) {
+			vtx = vertexList[vtxIndex];
+			nrm = normalList[nrmIndex];
+            glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+            glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+		}
+		/* Vertex & Texture Pairs */
+		else if (faceType == VERTEX_TEXTURE_ONLY) {
+			vtx = vertexList[vtxIndex];
             tex = uvwCoords[uvwIndex];
-			clr;
-		//}
-		/**else {
-			break; // Unsupported face type right now
-		} */
+            glTexCoord3f(tex.getX(), tex.getY(), tex.getZ());
+			glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+		}
+		/* Vertex, Textures & Normals */
+		else if (faceType == VERTEX_TEXTURE_NORMAL) {
+			vtx = vertexList[vtxIndex];
+            tex = uvwCoords[uvwIndex];
+            nrm = normalList[nrmIndex];
+            glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
+	        glTexCoord3f(tex.getX(), tex.getY(), tex.getZ());
+			glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
+		}
 		
-		//glNormal3f(nrm.getX(), nrm.getY(), nrm.getZ());
-        glTexCoord3f(tex.getX(), tex.getY(), tex.getZ());
-		glVertex3f(vtx.getX(), vtx.getY(), vtx.getZ());
 	}
 
 	glEnd();
+	
 	// Call draw on the children, if we have any
 	Group::draw(lastC);
 
 }
 
+// TODO: stip this function & replace with the Material class
 void ObjModel::setMaterial(Vector4 amb, Vector4 spec, Vector4 shiny, Vector4 diff) {
 	ambient[0] = amb.getX();
 	ambient[1] = amb.getY();

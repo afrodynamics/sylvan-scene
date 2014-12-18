@@ -4,11 +4,17 @@
 
 BezierSpline::~BezierSpline() {}
 
+// Allow positioning in the scene graph
+void BezierSpline::render() {
+    if (drawSpline)
+        draw(samples);
+}
+
 // Draw all the curves using uniform sampling
-void BezierSpline::draw(int samples) {
-	for (auto iter = curves.begin(); iter != curves.end(); ++iter) {
-		(*iter).draw(samples);
-	}
+void BezierSpline::draw(int s) {
+    for (auto iter = curves.begin(); iter != curves.end(); ++iter) {
+        (*iter).draw(s);
+    }
 }
 
 // Push a new BezierCurve onto the end of the loop. Once a curve
@@ -17,7 +23,7 @@ void BezierSpline::draw(int samples) {
 // the next-to-last curve to loop with the first curve if we delete 
 // the last curve. Adding curves to the end of a closed loop is weird.
 void BezierSpline::push(BezierCurve& newCurve) {
-    if(curves.size() == 0) {
+    if ( curves.size() == 0 ) {
         curves.push_back(newCurve);
     }
     else {
@@ -37,34 +43,33 @@ void BezierSpline::push(BezierCurve& newCurve) {
 // looping mode and has been closed, try to coerce the remaining
 // curves into looping with the first curve of the spline
 void BezierSpline::pop() {
-	
-	curves.pop_back(); // Delete the old spline 
-	if ( closed && loop ) {
-		if (curves.size() > 1 ) {
-			// Make the last curve in the spline pick up the slack
-			BezierCurve& lastCurve = curves.at( curves.size() - 1 );
-			lastCurve.makeContinuous( curves.at(0) );
-		}
-	}
+    curves.pop_back(); // Delete the old spline 
+    if ( closed && loop ) {
+        if (curves.size() > 1 ) {
+            // Make the last curve in the spline pick up the slack
+            BezierCurve& lastCurve = curves.at( curves.size() - 1 );
+            lastCurve.makeContinuous( curves.at(0) );
+        }
+    }
 }
 
 // Attempt to close the loop
 void BezierSpline::closeLoop() {
-	if (curves.size() > 1 ) {
-		// Make the last curve in the spline pick up the slack
-		BezierCurve& lastCurve = curves.at( curves.size() - 1 );
-		lastCurve.makeContinuous( curves.at(0) );
-	    loop = closed = true;
-	}
-	else {
-		// We can't close a spline with only one curve, since a
-		// cubic Bezier curve cannot be c1 continuous with itself
-		// withough becoming a line.
-		loop = closed = false;
-	}
+    if (curves.size() > 1 ) {
+        // Make the last curve in the spline pick up the slack
+        BezierCurve& lastCurve = curves.at( curves.size() - 1 );
+        lastCurve.makeContinuous( curves.at(0) );
+        loop = closed = true;
+    }
+    else {
+        // We can't close a spline with only one curve, since a
+        // cubic Bezier curve cannot be c1 continuous with itself
+        // withough becoming a line.
+        loop = closed = false;
+    }
 }
 
-//calcuate point
+// Calcuate point
 Vector4 BezierSpline::calcPoint(double t) {
     if ( t < 0 || t > 1 ) {
         throw std::runtime_error("Cannot calculate point on spline with parameter outside range [0,1]");

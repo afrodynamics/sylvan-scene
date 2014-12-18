@@ -6,6 +6,7 @@
 #include "Robot.h"
 #include "Plane.h"
 #include "ObjModel.h"
+#include "TreeGen.h"
 
 /**
  * Keeps all our scene data together

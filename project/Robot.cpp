@@ -6,16 +6,15 @@ using namespace std;
 
 Robot::Robot()
 {
-	mtx = new Matrix4();
-	mtx->identity();
+	mtx.identity();
 	x = y = z = 0;
 	createRobot();
 }
 
 Robot::Robot(Matrix4& copy)
 {
-	mtx = new Matrix4(copy);
-	centerPos = *mtx * Vector4(0, 0, 0, 1);
+	mtx = Matrix4(copy);
+	centerPos = mtx * Vector4(0, 0, 0, 1);
 	x = y = z = 0;
 	x = centerPos.getX();
 	y = centerPos.getY();
@@ -25,7 +24,7 @@ Robot::Robot(Matrix4& copy)
 
 Robot::Robot(double x, double y, double z)
 {
-	mtx = new Matrix4(Matrix4::translate(x,y,z));
+	mtx = Matrix4(Matrix4::translate(x,y,z));
 	this->x = x;
 	this->y = y;
 	this->z = z;
@@ -34,7 +33,6 @@ Robot::Robot(double x, double y, double z)
 
 Robot::~Robot()
 {
-	delete mtx;
 	for (auto iter = children.begin(); iter != children.end(); ++iter) {
 		delete (*iter); // Delete the child nodes
 	}
@@ -63,7 +61,7 @@ void Robot::createRobot() {
 	rightArmJoint = new MatrixTransform( rightArmMtx );
 
 	Matrix4 limbScale = Matrix4::scale(1, 3, 1);
-
+ 
 	leftLegScale = new MatrixTransform(limbScale);
 	rightLegScale = new MatrixTransform(limbScale);
 	leftArmScale = new MatrixTransform(limbScale);
@@ -172,7 +170,7 @@ void Robot::animate() {
 
 void Robot::draw(Matrix4& C) {
 	
-	lastC = C * *mtx;
+	lastC = C * mtx;
 	centerPos = lastC * Vector4(0, 0, 0, 1);
 	Group::draw(lastC);
 	animate();

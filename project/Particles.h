@@ -1,6 +1,7 @@
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 5000
 #include "Vector3.h"
 #include "shader.h"
+#include "Matrix4.h"
 #include <vector>
 #include <stdlib.h>
 #ifndef __APPLE__
@@ -28,7 +29,8 @@ private:
 public:
     GLuint textureID;
     Particles(int width, int height, int depth);
+    ~Particles();
     void update();
     void reincarnation(int index);
-    void render();
+    void render(Matrix4 m);
 };
