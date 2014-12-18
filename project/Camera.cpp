@@ -126,7 +126,7 @@ void Camera::moveRight() {
 }
 
 void Camera::moveUp() {
-    Vector3 copy = up;
+    Vector3 copy = upAxis;
     copy.scale(1.5);
     e = e + copy;
     d = d + copy;
