@@ -187,7 +187,7 @@ namespace Scene
         world->addChild( eagleTrajectory );
         terrainTranslate->addChild( terrainScale );
         terrainScale->addChild( terrain ); // water patch
-        terrainScale->addChild( treeTranslate );
+        //terrainScale->addChild( treeTranslate );
         skyBoxScale->addChild( sky );
 
         // Initiate tree
@@ -245,10 +245,11 @@ namespace Scene
                                     1/(double)TERRAIN_SCALE);
       scale = scale * Matrix4::scale(0.5,0.5,0.5);
       double p = 0.0003;
-      int depthRange = 4;
+      int depthRange = 5;
       int minDepth = 0;
       int count = 0;
       for( Vector3 pos : *verts ) {
+        /*
         if(Util::abs(pos.getX()) <= PT_TOLERANCE && Util::abs(pos.getZ()) <= PT_TOLERANCE) {
           cerr << "0 pos" << endl;
           treeTranslate->setMatrix(Matrix4::translate(pos));
@@ -256,6 +257,7 @@ namespace Scene
           treeScale->addChild((tree = tgen->generate(tdepth)));
           continue;
         }
+        */
         if( Util::drand() < p ) {
           count++;
           MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
