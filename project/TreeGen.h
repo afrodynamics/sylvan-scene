@@ -95,6 +95,7 @@ private:
   map<char, rule*> rules;  // Map rules to variables
 
   void addRule(char, string, string, string, double);
+  void dRule( rule* r ); // delete a rule postorder-recursively
   // Calculate the number fo slices for a cylinder as a fn of radius
   int calcSlices(double initR, double r);
 

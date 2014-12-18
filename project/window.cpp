@@ -191,6 +191,7 @@ namespace Scene
         delete sky;
         delete terrain;
         delete world;
+        delete tgen;
         sky = nullptr;
         waterPatch = nullptr; terrainScale = terrainTranslate = nullptr;
         eagle = nullptr;

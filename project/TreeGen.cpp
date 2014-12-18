@@ -42,7 +42,7 @@ TreeGen::TreeGen(double l, double r, double a, int n) {
 }
 
 TreeGen::~TreeGen() {
-  // TODO
+  destroyRules();   // Make sure rule structs are deallocated
 }
 
 
@@ -339,6 +339,21 @@ TreeGen* TreeGen::setLVary(double v) {
   return this;
 }
 
+void TreeGen::dRule( rule* r ) {
+  if(r == nullptr) return;
+
+  dRule(r->next);
+  delete r;
+}
+
+// Destroy the rules map
 void TreeGen::destroyRules() {
-  // TODO
+  map<char,rule*>::iterator it = rules.begin();
+  map<char,rule*>::iterator end = rules.end();
+  // Iterate through rules and destroy the created structs
+  while( it != end ) {
+    rule* r = it->second;
+    dRule(r);
+    it++;
+  }
 }
