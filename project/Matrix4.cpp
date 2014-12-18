@@ -363,6 +363,9 @@ Matrix4 Matrix4::translate(double tx, double ty, double tz) {
   transform.makeTranslate(tx,ty,tz);
   return transform;
 };
+Matrix4 Matrix4::translate(Vector3 pos) {
+  return translate(pos.getX(),pos.getY(),pos.getZ());
+}
 Matrix4 Matrix4::transpose( const Matrix4& other ) {
   Matrix4 transpose = other;
   transpose.transpose();

@@ -289,3 +289,8 @@ void Terrain::render() {
 	glEnd();
 
 }
+
+// Return the vertices vector
+std::vector<Vector3> * Terrain::getVertices() {
+  return &vertices;
+}

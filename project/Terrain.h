@@ -34,4 +34,5 @@ public:
 	~Terrain();
 	void render(); // Inherited from Geode, does the drawing of the terrain
 	void generate(); // Generates new terrain
+  std::vector<Vector3> * getVertices();     // Return the vertices vector
 };

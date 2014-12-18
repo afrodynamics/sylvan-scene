@@ -53,6 +53,7 @@ namespace Scene
     MatrixTransform *terrainScale, *skyBoxScale, *terrainTranslate, *treeTranslate;
     TreeGen *tgen;
     Tree *tree;
+    vector<MatrixTransform*> treeTransforms;
     Particles *snow;
 
     // Boolean Flahs
@@ -92,7 +93,9 @@ namespace Scene
         world = new MatrixTransform(); // Top level of the scene graph
         waterPatch = new BezierPatch();
         terrain = new Terrain(); // Procedural generator FTW
-        Matrix4 scl = Matrix4::scale(125,125,125);
+        Matrix4 scl = Matrix4::scale(Window::TERRAIN_SCALE,
+                                      Window::TERRAIN_SCALE,
+                                      Window::TERRAIN_SCALE);
         Matrix4 skyScale = Matrix4::scale(250,250,250);
         snow = new Particles(125, 125, 125);
         BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
@@ -386,6 +389,8 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   // Regenerate the terrain/trees
   case 't':
       Scene::terrain->generate();
+      removeTrees();
+      generateTrees();
       cout << "New terrain generated!" << endl;
       break;
   case 'g':
@@ -470,6 +475,37 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
   default:
     cerr << "Pressed: " << key << endl;
     break;
+  }
+};
+
+//----------------------------------------------------------------------------
+// Callback method called by GLUT when keys are pressed
+//    int key        - the key pressed
+//    int x          - mouse x position
+//    int y          - mouse y position
+//    
+//    https://www.opengl.org/resources/libraries/glut/spec3/node54.html
+//    See main.cpp line 56
+void Window::functionKeysCallback(int key, int x, int y) {
+  switch (key) {
+  case GLUT_KEY_F1:
+      Scene::fullscreen = !Scene::fullscreen;
+      if ( Scene::fullscreen ) {
+          glutFullScreen();
+      }
+      else {
+        glutReshapeWindow(640,480);
+        // glutRepositionWindow(0,0)
+      }
+      break;
+  case GLUT_KEY_F2:
+    depthModFlag = !depthModFlag;
+    if( depthModFlag ) cerr << "Modify depth!" << endl;
+    else cerr << "End modify" << endl;
+    break;
+  default:
+      cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
+      break;
   }
 };
 
@@ -565,40 +601,43 @@ GLuint Window::loadPPM(const char *filename, int width, int height, int texID) {
     return Scene::textures[texID];
 }
 
-//----------------------------------------------------------------------------
-// Callback method called by GLUT when keys are pressed
-//    int key        - the key pressed
-//    int x          - mouse x position
-//    int y          - mouse y position
-//    
-//    https://www.opengl.org/resources/libraries/glut/spec3/node54.html
-//    See main.cpp line 56
-void Window::functionKeysCallback(int key, int x, int y) {
-  switch (key) {
-  case GLUT_KEY_F1:
-      Scene::fullscreen = !Scene::fullscreen;
-      if ( Scene::fullscreen ) {
-          glutFullScreen();
-      }
-      else {
-        glutReshapeWindow(640,480);
-        // glutRepositionWindow(0,0)
-      }
-      break;
-  case GLUT_KEY_F2:
-    depthModFlag = !depthModFlag;
-    if( depthModFlag ) cerr << "Modify depth!" << endl;
-    else cerr << "End modify" << endl;
-    break;
-  default:
-      cout << "Pressed a function key or trigged glutSpecialFunc" << endl;
-      break;
-  }
-};
-
 // Checks to see if a GL error has occurred, and if so it prints out
 // the gluErrorString
 void Window::printGLError(string str) {
     int err = glGetError();
     if (err != GL_NO_ERROR) cerr << str << gluErrorString( err ) << endl;
 };
+
+// Remove all nodes from terrain scale except the terrain
+void Window::removeTrees() {
+  list<Node*> * c = Scene::terrainScale->getChildren();
+  for( MatrixTransform* mt : Scene::treeTransforms) {
+    Scene::terrainScale->removeChild(mt);
+    delete mt;    // Delete trees
+  }
+}
+
+void Window::generateTrees() {
+  vector<Vector3> * verts = Scene::terrain->getVertices();
+  Matrix4 scale = Matrix4::scale(1/(double)Window::TERRAIN_SCALE,
+                                1/(double)Window::TERRAIN_SCALE,
+                                1/(double)Window::TERRAIN_SCALE);
+  scale = scale * Matrix4::scale(0.5,0.5,0.5);
+  double p = 0.0005;
+  int depthRange = 6;
+  int minDepth = 0;
+  int count = 0;
+  for( Vector3 pos : *verts ) {
+    if( Util::drand() < p ) {
+      count++;
+      MatrixTransform * trans = new MatrixTransform(Matrix4::translate(pos));
+      MatrixTransform * s = new MatrixTransform(scale);
+      s->addChild(Scene::tgen->generate(
+                            Util::drand() * depthRange + minDepth));
+      trans->addChild(s);
+      Scene::terrainScale->addChild(trans);
+      Scene::treeTransforms.push_back(trans);   // Add to vector of tree transformations
+    }
+  }
+  cerr << "Created " << count << " trees!" << endl;
+}

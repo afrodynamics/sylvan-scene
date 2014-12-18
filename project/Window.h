@@ -28,6 +28,7 @@ class Window	  // OpenGL output window related routines
     static int width, height;  // useful vars
     static double fov, deltaTime;
     static int currentFPS;
+    const static int TERRAIN_SCALE = 125;
     static int tdepth;
     static int depthModFlag;
 
@@ -38,6 +39,9 @@ class Window	  // OpenGL output window related routines
     static void reshapeCallback(int, int);
     static void keyboardCallback(unsigned char,int,int);
     static void functionKeysCallback(int,int,int);
+    
+    static void removeTrees();
+    static void generateTrees();
 
     // Utility
     static void printGLError(std::string); // Prints a glError() with gluErrorString() if a glError has occurred
