@@ -134,7 +134,7 @@ void Terrain::generateColorsFromHeightmap(Vector3 valley, Vector3 peak) {
 			else {
 				colors.push_back(valley); // If it's too low or negative, just use valley color
 			}
-			//colors.push_back( normals[ z * tesselX + x ] );
+			//colors.push_back( normals[ z * tesselX + x ] ); // use colors for normals
 		}
 	}
 }
@@ -272,14 +272,19 @@ void Terrain::render() {
 	for ( int i = 0; i < tesselX - 1; ++i ) {
 		for ( int j = 0; j < tesselZ - 1; ++j ) {
 			
+			// Grab vertices
 			p0 = vertices.at( j * tesselX + i );
 			p1 = vertices.at( j * tesselX + i + 1 );
 			p2 = vertices.at( (j+1) * tesselX + i );
 			p3 = vertices.at( (j+1) * tesselX + (i+1) );
+
+			// Grab colors
 			c0 = colors.at(j * tesselX + i);
 			c1 = colors.at(j * tesselX + i + 1);
 			c2 = colors.at((j + 1) * tesselX + i);
 			c3 = colors.at((j + 1) * tesselX + (i + 1));
+
+			// Grab normals
 			n0 = normals.at( j * tesselX + i );
 			n1 = normals.at( j * tesselX + i + 1 );
 			n2 = normals.at( (j+1) * tesselX + i );
