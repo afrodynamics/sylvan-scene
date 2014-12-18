@@ -28,8 +28,8 @@
 
 using namespace std;
 
-int Window::width  = 512;   // set window width in pixels here
-int Window::height = 512;   // set window height in pixels here
+int Window::width  = 640;   // set window width in pixels here
+int Window::height = 480;   // set window height in pixels here
 double Window::deltaTime = 0;  // milliseconds elapsed between frames
 double Window::fov = 60.0;  // perspective frustum vertical field of view in degrees
 int Window::currentFPS = 60; // we hope
@@ -60,12 +60,13 @@ namespace Scene
     bool showBounds = false;
     bool showFps = false;
     bool showEagleTrajectory = true;
-    bool shaderOn = false;
+    bool shaderOn = true;
     bool fullscreen = false;
     bool isSnowing = false;
     bool stopEagle = false;
     bool depthModFlag = false;
     bool forestFlag = false;
+    bool overlay = true;
     double znear = 1.0;
     double zfar = 1000; //1000.0;
     float eaglePos = 0.0;
@@ -73,7 +74,7 @@ namespace Scene
     int tdepth = 5;       // Initial depth
 
     GLuint textures[7];
-    GLuint sky_left, sky_right, sky_up, sky_down, sky_front, sky_back;
+    GLuint cameraOverlay;
 
     // Create a new robot at the given position in world coordinates
     Robot* createRobot(Vector3& pos) {
@@ -130,7 +131,7 @@ namespace Scene
         
         sky = new SkyBox(); // Still don't have a good texture class here
 
-        glGenTextures(7, textures); // This needs to be made OOP
+        glGenTextures(8, textures); // This needs to be made OOP
 
         sky->right = Window::loadPPM("tex/right1.ppm",1024,1024,0);
         sky->left = Window::loadPPM("tex/left1.ppm",1024,1024,1);
@@ -140,6 +141,8 @@ namespace Scene
         sky->base = Window::loadPPM("tex/base1.ppm",1024,1024,5);
 
         snow->textureID = Window::loadPPM("tex/snow.ppm", 1024, 1024, 6);
+        cameraOverlay = Window::loadPPM("tex/camera.ppm",512,512,7);
+
 
         /*  Assign texture locations into the vertex & fragment shader  */
         // This did not belong inside of loadPPM
@@ -180,6 +183,7 @@ namespace Scene
         
         // Affix shaders to individual scene graph nodes
         terrain->setShader( shader ); // This patch should have a shader
+        terrain->enableShader(shaderOn);  // Make the snow shiny by default
 
     };
     // Deallocate all kinds of stuff
@@ -355,7 +359,7 @@ void Window::displayCallback()
   }
 
   // Show FPS on screen if the flag is set
-  if ( Scene::showFps ) {
+  if ( Scene::showFps || Scene::overlay ) {
 
     // Build the string
     stringstream fpsCounter;
@@ -375,17 +379,71 @@ void Window::displayCallback()
     glPushMatrix();
     glLoadIdentity();
 
-    // OpenGL's bottom left corner is (0,0) in screen coordinates
-    glRasterPos2i( 0, Window::height - 24 );
-    for( int i = 0; i < built.size(); i++ ) {
-      glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, built.at(i) );
+    // Disable stuff we don't want in 2D
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+
+    // Draw the overlay 
+    
+    if ( Scene::overlay ) {
+
+        // First the "instagram" filter
+        glBegin(GL_QUADS);
+        glColor4f(1.0,1.0,1.0,0.25);
+        glVertex2f(0,0);
+        glColor4f(1.0,0.0,1.0,0.25);
+        glVertex2f(0,Window::height);
+        glColor4f(1.0,1.0,0.0,0.25);
+        glVertex2f(Window::width,Window::height);
+        glColor4f(0.0,1.0,1.0,0.25);
+        glVertex2f(Window::width,0);
+        glEnd();
+
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D,Scene::cameraOverlay);
+        glBegin(GL_QUADS);
+        glColor4f(1.0,1.0,1.0,0.45);
+        glTexCoord2f(1,1);
+        glVertex2f(0,0);
+
+        // glColor4f(1.0,0.0,0.0,0.25);
+        glTexCoord2f(1,0);
+        glVertex2f(0,Window::height);
+
+        // glColor4f(1.0,0.0,0.0,0.25);
+        glTexCoord2f(0,0);
+        glVertex2f(Window::width,Window::height);
+
+        // glColor4f(1.0,0.0,0.0,0.25);
+        glTexCoord2f(0,1);
+        glVertex2f(Window::width,0);
+
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+
+    }
+
+    if ( Scene::showFps ) {
+        // OpenGL's bottom left corner is (0,0) in screen coordinates
+        glRasterPos2i( 0, Window::height - 24 );
+        glColor3f(0,0,0);
+        for( int i = 0; i < built.size(); i++ ) {
+          glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, built.at(i) );
+        }
     }
 
     // Pop the extra matrices we created off of their respective stacks
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix(); // pop GL_MODELVIEW
     glMatrixMode(GL_PROJECTION);
+    
     glPopMatrix();
+
+    // Re-enable stuff we need in 3D
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
   }
 
@@ -413,11 +471,6 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::dealloc(); 
       exit(0); 
       break;
-  case 'b':
-      Scene::showBounds = !Scene::showBounds;
-      Scene::world->showBoundingBox(Scene::showBounds);
-      cerr << "Bounding spheres are " << (Scene::showBounds ? "on" : "off") << endl;
-      break;
   case 'e':
       Scene::shaderOn = !Scene::shaderOn;
       cerr << "Shader is " << (Scene::shaderOn == true ? "on" : "off") << " for the terrain." << endl;
@@ -426,7 +479,9 @@ void Window::keyboardCallback(unsigned char key, int x, int y) {
       Scene::showFps = !Scene::showFps;
       cerr << "FPS counter is " << (Scene::showFps ? "on" : "off") << endl;
       break;
-
+  case 'b':
+      Scene::overlay = !Scene::overlay;
+      break;
   // Regenerate the terrain/trees
   case 't':
       Scene::terrain->generate();

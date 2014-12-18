@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
   glutIdleFunc(Window::idleCallback);
   glutKeyboardFunc(Window::keyboardCallback);
   glutSpecialFunc(Window::functionKeysCallback);
+  glutFullScreen();
     
   // Start the main loop
   glutMainLoop();

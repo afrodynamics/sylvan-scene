@@ -100,9 +100,9 @@ void Terrain::generateHeightmap() {
 	// setHeightmap(tesselX - 1, 0, drandRange(-.125, 0.125));
 	// setHeightmap(tesselX - 1, tesselZ - 1, drandRange(0.0, 0.5));
 	
-	double roughness = drandRange(.5,.55);
+	double roughness = 1.0;//drandRange(.5,1.0);
 	double random = drandRange(.25,1.0); // default .0625
-	diamondSquare(0,0,tesselX - 1, tesselZ - 1, random, tesselX - 1);
+	diamondSquare(0,0,tesselX - 1, tesselZ - 1, random, tesselX - 1, roughness);
 
 	// Make sure everything is averaged out
 
@@ -216,16 +216,20 @@ void Terrain::midpointDisplacement(int x1, int y1, int x2, int y2, double randRa
  * A 2D application of the midpoint displacement algorithm.
  *
  * Originally I implemented this recursively, but some striations were visible in the terrain.
- * After trying to reimplement it iteratively, I resorted to SO. Don't judge me.
+ * Reimplemented iteratively, with help from the internet.
  *
- * I referred to some other sources to verify my understanding of the algorithm:
+ * I referred to some other sources to verify my understanding of the algorithm, and found
+ * some help with the iterative rewrite when things stopped working:
  * http://www.paulboxley.com/blog/2011/03/terrain-generation-mark-one
  * http://gamedev.stackexchange.com/questions/37389/diamond-square-terrain-generation-problem
  *
  * (x1,y1) and (x2,y2) represent the top left and bottom right corners of the heightmap,
  * range is the maximum random displacement, and level is the depth of the recursion.
+ * roughness is another constant 0.0 <= x <= 1.0 which changes the terrain's random range.
+ * We left this at 1 for now, since it seemed to work well with our scene.
  */
-void Terrain::diamondSquare(int x1, int y1, int x2, int y2, double range, int level ) {
+void Terrain::diamondSquare(int x1, int y1, int x2, int y2, double range, int level, double roughness ) {
+	// If we'd be recursing on a sub-pixel-by-pixel basis, we're done.
 	if (level < 1) return;
 
     // Diamond Step:    
@@ -250,12 +254,14 @@ void Terrain::diamondSquare(int x1, int y1, int x2, int y2, double range, int le
             float d = getHeightmap(i, j);
             float e = getHeightmap(i - level / 2, j - level / 2);
 
+            // The offsets are a little non-intuitive, but this way we won't reach out into memory we don't have
             setHeightmap( i - level, j - level / 2, (a + c + e + getHeightmap( i - 3 * level / 2, j - level / 2)) / 4 + drand() * range );
             setHeightmap( i - level / 2, j - level, (a + b + e + getHeightmap( i - level / 2, j - 3 * level / 2)) / 4 + drand() * range );
         }
     }
 
-    diamondSquare(x1, y1, x2, y2, range / 2, level / 2);
+    // Random range has to fall off by 2 ^ (-roughness)
+    diamondSquare(x1, y1, x2, y2, range / pow(2, roughness), level / 2, roughness);
 }
 
 void Terrain::render() {

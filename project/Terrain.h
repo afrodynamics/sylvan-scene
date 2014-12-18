@@ -26,7 +26,7 @@ private:
 	// 1D Midpoint displacement algorithm, takes line segment
 	// (x1, y1, x2, y2) and initial random range & roughness const
 	void midpointDisplacement(int, int, int, int, double, double, int);
-	void diamondSquare(int, int, int, int, double, int); // iterative taken from SO
+	void diamondSquare(int, int, int, int, double, int, double); // rewritten to be iterative
 
 public:
 	Terrain();
