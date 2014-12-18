@@ -45,7 +45,6 @@ namespace Scene
     SkyBox *sky;
     vector<Node*> nodeList;
     vector<Robot*> robotList;
-    vector<MatrixTransform*> forest;
     vector<Plane> frustumList = vector<Plane>(6); // Culling doesn't work
     Shader *shader;
     BezierPatch *waterPatch;
@@ -87,21 +86,6 @@ namespace Scene
         return roboPtr;
     };
 
-    void createTree() {
-        double x, y, z;
-        if ( terrain != nullptr ) {
-            Vector3 pos = terrain->getRandomGroundLocation();
-            x = pos.getX();
-            y = pos.getY(); // for now
-            z = pos.getZ();
-            MatrixTransform* treePos = new MatrixTransform(Matrix4::translate(x,y,z));
-            MatrixTransform* treeScl = new MatrixTransform(Matrix4::scale(1.0/skyBoxSize, 1.0/skyBoxSize, 1.0/skyBoxSize));
-            treePos->addChild( treeScl );
-            treeScl->addChild( tgen->generate(3,1.5,50,5) );
-            forest.push_back( treePos );
-        }
-    }
-
     // Initialize pointers with defaults
     void setup() {
 
@@ -113,11 +97,9 @@ namespace Scene
         world = new MatrixTransform(); // Top level of the scene graph
         waterPatch = new BezierPatch();
         terrain = new Terrain(); // Procedural generator FTW
-        Matrix4 scl = Matrix4::scale(125,125,125);
         Matrix4 scl = Matrix4::scale(Window::TERRAIN_SCALE,
                                       Window::TERRAIN_SCALE,
                                       Window::TERRAIN_SCALE);
-        Matrix4 skyScale = Matrix4::scale(250,250,250);
         Matrix4 skyScale = Matrix4::scale(skyBoxSize,skyBoxSize,skyBoxSize);
         snow = new Particles(125, 125, 125);
         BezierCurve curve1 = BezierCurve(Vector4(0, 75, 0, 1), Vector4 (-50, 10, 30, 1), Vector4(-100, 60, 0, 1), Vector4(-10, 0, 10, 1));
@@ -192,15 +174,6 @@ namespace Scene
         tree = tgen->generate(); // Any number greater than 5 results in 2 FPS!!!
         //treeTranslate->addChild(tree);
 
-        // Create a forest of trees
-        for (int i = 0; i < TREE_MAX; ++i) {
-            createTree();
-        }
-        for (auto iter = forest.begin(); iter != forest.end(); ++iter) {
-            //world->addChild(*iter);
-            // skyBoxScale->addChild(*iter);
-            terrainScale->addChild(*iter);
-        }
         // ObjModels are scene graph compatible
         eagle->cppParseFile("objectmodels/eagle.obj");
         eagle->setMaterial(Vector4(0.35, 0.25, 0.2, 1), Vector4(0.5, 0.5, 0.5, 1), Vector4(0, 0, 0, 1), Vector4(0.5, 0.5, 0.5, 1));
